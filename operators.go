@@ -10,7 +10,15 @@ import (
 // eqOperator implements the equalty operation in SQL. The preference would be
 // to use the already implemented `sqrl.Eq`, however its implementation is not
 // very effective.
-type eqOperator [2]interface{}
+type (
+	eqOperator [2]interface{}
+
+	neOperator eqOperator
+
+	not struct {
+		cond Sqlizer
+	}
+)
 
 const (
 	equalOprStr    = "="
@@ -86,8 +94,13 @@ func (operator *eqOperator) ToSql() (string, []interface{}, error) {
 	return operator.toSql(false)
 }
 
-type neOperator eqOperator
-
 func (operator *neOperator) ToSql() (string, []interface{}, error) {
 	return (*eqOperator)(operator).toSql(true)
+}
+func (operator *not) ToSql() (string, []interface{}, error) {
+	sql, args, err := operator.cond.ToSql()
+	if err != nil {
+		return "", nil, err
+	}
+	return "NOT (" + sql + ")", args, err
 }

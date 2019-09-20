@@ -101,4 +101,14 @@ var _ = Describe("Operators", func() {
 			Expect(sql).To(Equal("(1=1)"))
 		})
 	})
+
+	Describe("Ne", func() {
+		It("should negate a condition", func() {
+			d := ceous.Not(ceous.Eq(tests.Schema.User.Name, "Snake Eyes"))
+			sql, args, err := d(tests.Schema.User).ToSql()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(args).To(ConsistOf("Snake Eyes"))
+			Expect(sql).To(Equal("NOT (name = ?)"))
+		})
+	})
 })

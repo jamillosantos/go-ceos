@@ -14,6 +14,6 @@ func NewUserQuery() *userQuery {
 	}
 }
 
-func (q *userQuery) ByID() {
-	// q.BaseQuery.Where()
+func (q *userQuery) ByID(id int) {
+	q.BaseQuery.Where(ceous.Eq(Schema.User.ID, id))
 }
