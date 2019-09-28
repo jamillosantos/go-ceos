@@ -1,27 +1,34 @@
 package ceous
 
 import (
-	"database/sql"
 	"io"
 )
 
 type ResultSet interface {
 	Next() bool
+	Scan(dest ...interface{}) error
+	Columns() ([]string, error)
 	io.Closer
 }
 
 type RecordResultSet struct {
-	*sql.Rows
+	ResultSet
+	lastErr error
 }
 
-func NewRecordResultSet(rows *sql.Rows) *RecordResultSet {
+func NewRecordResultSet(rows ResultSet, err error) *RecordResultSet {
 	return &RecordResultSet{
-		Rows: rows,
+		ResultSet: rows,
+		lastErr:   err,
 	}
 }
 
 func (rs *RecordResultSet) ToModel(model Model) error {
-	columns, err := rs.Rows.Columns()
+	if rs.lastErr != nil {
+		return rs.lastErr
+	}
+
+	columns, err := rs.ResultSet.Columns()
 	if err != nil {
 		return err
 	}
@@ -33,9 +40,12 @@ func (rs *RecordResultSet) ToModel(model Model) error {
 		}
 		scanColumns[i] = sValue
 	}
-	return rs.Rows.Scan(scanColumns...)
+	return rs.ResultSet.Scan(scanColumns...)
 }
 
 func (rs *RecordResultSet) Scan(columns ...interface{}) error {
-	return rs.Rows.Scan(columns...)
+	if rs.lastErr != nil {
+		return rs.lastErr
+	}
+	return rs.ResultSet.Scan(columns...)
 }
