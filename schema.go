@@ -1,20 +1,47 @@
 package ceous
 
-import (
-	"fmt"
+type (
+	SchemaField interface {
+		// String returns the string representation of the field. That is, its name.
+		String() string
+
+		// QualifiedString returns the name of the field qualified by the alias of
+		// the given schema.
+		QualifiedName(Schema) string
+	}
+
+	AliasedSchemaField interface {
+		SchemaField
+		Reference() string
+	}
+
+	BaseSchemaField struct {
+		name string
+	}
+
+	aliasSchemaField struct {
+		SchemaField
+		schema Schema
+	}
+
+	Schema interface {
+		Alias() string
+		Table() string
+		Columns() []SchemaField
+		As(string) Schema
+	}
+
+	BaseSchema struct {
+		tableName  string
+		alias      string
+		ColumnsArr []SchemaField
+	}
+
+	aliasSchema struct {
+		Schema
+		alias string
+	}
 )
-
-type SchemaField interface {
-	// String returns the string representation of the field. That is, its name.
-	String() string
-	// QualifiedString returns the name of the field qualified by the alias of
-	// the given schema.
-	QualifiedName(Schema) string
-}
-
-type BaseSchemaField struct {
-	name string
-}
 
 func NewSchemaField(name string) *BaseSchemaField {
 	return &BaseSchemaField{
@@ -27,28 +54,38 @@ func (field *BaseSchemaField) String() string {
 }
 
 func (field *BaseSchemaField) QualifiedName(schema Schema) string {
-	return fmt.Sprintf("%s.%s", schema.Alias(), field.name)
+	alias := schema.Alias()
+	if alias != "" {
+		return alias + "." + field.name
+	}
+	return field.name
 }
 
-type Schema interface {
-	Alias() string
-	Table() string
-	Columns() []SchemaField
+func NewAliasSchemaField(schema Schema, field SchemaField) AliasedSchemaField {
+	return &aliasSchemaField{field, schema}
 }
 
-type BaseSchema struct {
-	tableName string
-	alias     string
-	columns   []SchemaField
+func (field *aliasSchemaField) Reference() string {
+	return field.QualifiedName(field.schema)
 }
 
 func NewBaseSchema(tableName, alias string, columns ...SchemaField) *BaseSchema {
 	baseSchema := &BaseSchema{
-		tableName: tableName,
-		alias:     alias,
-		columns:   columns,
+		tableName:  tableName,
+		alias:      alias,
+		ColumnsArr: columns,
 	}
 	return baseSchema
+}
+
+// FieldAlias creates a function that will create a SchemaField that will be
+// bound to the schema passed.
+//
+// Example:
+func FieldAlias(schema Schema) func(SchemaField) AliasedSchemaField {
+	return func(field SchemaField) AliasedSchemaField {
+		return NewAliasSchemaField(schema, field)
+	}
 }
 
 func (schema *BaseSchema) Alias() string {
@@ -60,5 +97,16 @@ func (schema *BaseSchema) Table() string {
 }
 
 func (schema *BaseSchema) Columns() []SchemaField {
-	return schema.columns
+	return schema.ColumnsArr
+}
+
+func (schema *BaseSchema) As(alias string) Schema {
+	return &aliasSchema{schema, alias}
+}
+
+func (schema *aliasSchema) Alias() string {
+	if schema.Schema.Alias() == "" {
+		return schema.alias
+	}
+	return schema.Schema.Alias() + "_" + schema.alias
 }
