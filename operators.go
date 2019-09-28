@@ -18,6 +18,11 @@ type (
 	not struct {
 		cond Sqlizer
 	}
+
+	sqlCondition struct {
+		sql  string
+		args []interface{}
+	}
 )
 
 const (
@@ -97,10 +102,16 @@ func (operator *eqOperator) ToSql() (string, []interface{}, error) {
 func (operator *neOperator) ToSql() (string, []interface{}, error) {
 	return (*eqOperator)(operator).toSql(true)
 }
+
 func (operator *not) ToSql() (string, []interface{}, error) {
 	sql, args, err := operator.cond.ToSql()
 	if err != nil {
 		return "", nil, err
 	}
 	return "NOT (" + sql + ")", args, err
+}
+
+// ToSql will return the saved condition sql for operators...
+func (operator *sqlCondition) ToSql() (string, []interface{}, error) {
+	return operator.sql, operator.args, nil
 }
