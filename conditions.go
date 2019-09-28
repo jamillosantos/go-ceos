@@ -26,3 +26,12 @@ func Not(cond Condition) Condition {
 		return &not{cond(schema)}
 	}
 }
+
+// SqlCondition will return a new condition that will create a sqlCondition.
+//
+// See more at sqlCondition
+func SqlCondition(sql string, args []interface{}) Condition {
+	return func(Schema) Sqlizer {
+		return &sqlCondition{sql, args}
+	}
+}
