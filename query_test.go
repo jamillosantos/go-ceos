@@ -1,6 +1,7 @@
 package ceous_test
 
 import (
+	sq "github.com/elgris/sqrl"
 	"github.com/jamillosantos/go-ceous"
 	"github.com/jamillosantos/go-ceous/tests"
 	. "github.com/onsi/ginkgo"
@@ -31,6 +32,16 @@ var _ = Describe("Query", func() {
 					Expect(args).To(BeEmpty())
 				})
 
+				It("should not change the select fields when not providing fields", func() {
+					q := tests.NewUserQuery().Select( /* no fields specified. */ )
+					builder, err := q.BaseQuery.Builder()
+					Expect(err).ToNot(HaveOccurred())
+					sql, args, err := builder.ToSql()
+					Expect(err).ToNot(HaveOccurred())
+					Expect(sql).To(Equal("SELECT id, name, password, role, created_at, updated_at FROM users"))
+					Expect(args).To(BeEmpty())
+				})
+
 				It("should select specified fields", func() {
 					q := tests.NewUserQuery().Select(tests.Schema.User.Name, tests.Schema.User.CreatedAt)
 					builder, err := q.BaseQuery.Builder()
@@ -41,6 +52,16 @@ var _ = Describe("Query", func() {
 					Expect(args).To(BeEmpty())
 				})
 
+				It("should select specified fields calling Select multiple times", func() {
+					q := tests.NewUserQuery().Select(tests.Schema.User.ID).Select(tests.Schema.User.Name).Select(tests.Schema.User.CreatedAt)
+					builder, err := q.BaseQuery.Builder()
+					Expect(err).ToNot(HaveOccurred())
+					sql, args, err := builder.ToSql()
+					Expect(err).ToNot(HaveOccurred())
+					Expect(sql).To(Equal("SELECT id, name, created_at FROM users"))
+					Expect(args).To(BeEmpty())
+				})
+
 				It("should not select excluded fields", func() {
 					q := tests.NewUserQuery().ExcludeFields(tests.Schema.User.Name, tests.Schema.User.CreatedAt)
 					builder, err := q.BaseQuery.Builder()
@@ -48,6 +69,26 @@ var _ = Describe("Query", func() {
 					sql, args, err := builder.ToSql()
 					Expect(err).ToNot(HaveOccurred())
 					Expect(sql).To(Equal("SELECT id, password, role, updated_at FROM users"))
+					Expect(args).To(BeEmpty())
+				})
+
+				It("should not select excluded fields calling ExcludeFields muiltiple times", func() {
+					q := tests.NewUserQuery().ExcludeFields(tests.Schema.User.Name).ExcludeFields(tests.Schema.User.CreatedAt)
+					builder, err := q.BaseQuery.Builder()
+					Expect(err).ToNot(HaveOccurred())
+					sql, args, err := builder.ToSql()
+					Expect(err).ToNot(HaveOccurred())
+					Expect(sql).To(Equal("SELECT id, password, role, updated_at FROM users"))
+					Expect(args).To(BeEmpty())
+				})
+
+				It("should not change select when calling ExcludeFields with no fields defined", func() {
+					q := tests.NewUserQuery().ExcludeFields()
+					builder, err := q.BaseQuery.Builder()
+					Expect(err).ToNot(HaveOccurred())
+					sql, args, err := builder.ToSql()
+					Expect(err).ToNot(HaveOccurred())
+					Expect(sql).To(Equal("SELECT id, name, password, role, created_at, updated_at FROM users"))
 					Expect(args).To(BeEmpty())
 				})
 
@@ -155,6 +196,50 @@ var _ = Describe("Query", func() {
 					Expect(err).ToNot(HaveOccurred())
 					Expect(sql).To(Equal("SELECT id FROM users WHERE id = ? AND name = ?"))
 					Expect(args).To(ConsistOf(1, "Snake Eyes"))
+				})
+
+				It("should generate a where with string conditions", func() {
+					q := tests.NewUserQuery().Select(tests.Schema.User.ID).Where("LENGTH(password) < 6")
+					builder, err := q.BaseQuery.Builder()
+					Expect(err).ToNot(HaveOccurred())
+					sql, args, err := builder.ToSql()
+					Expect(err).ToNot(HaveOccurred())
+					Expect(sql).To(Equal("SELECT id FROM users WHERE LENGTH(password) < 6"))
+					Expect(args).To(BeEmpty())
+				})
+
+				It("should generate a where with string conditions with args", func() {
+					q := tests.NewUserQuery().Select(tests.Schema.User.ID).Where("LENGTH(password) < ?", 6)
+					builder, err := q.BaseQuery.Builder()
+					Expect(err).ToNot(HaveOccurred())
+					sql, args, err := builder.ToSql()
+					Expect(err).ToNot(HaveOccurred())
+					Expect(sql).To(Equal("SELECT id FROM users WHERE LENGTH(password) < ?"))
+					Expect(args).To(ConsistOf(6))
+				})
+
+				It("should generate a where with string pointer conditions with args", func() {
+					str := "LENGTH(password) < ?"
+					q := tests.NewUserQuery().Select(tests.Schema.User.ID).Where(&str, 6)
+					builder, err := q.BaseQuery.Builder()
+					Expect(err).ToNot(HaveOccurred())
+					sql, args, err := builder.ToSql()
+					Expect(err).ToNot(HaveOccurred())
+					Expect(sql).To(Equal("SELECT id FROM users WHERE LENGTH(password) < ?"))
+					Expect(args).To(ConsistOf(6))
+				})
+
+				It("should generate a where with Sqlizer conditions", func() {
+					q := tests.NewUserQuery().Select(tests.Schema.User.ID).Where(sq.And{
+						sq.Eq{"id": 1},
+						ceous.OpNot(sq.Eq{"password": "12345"}),
+					})
+					builder, err := q.BaseQuery.Builder()
+					Expect(err).ToNot(HaveOccurred())
+					sql, args, err := builder.ToSql()
+					Expect(err).ToNot(HaveOccurred())
+					Expect(sql).To(Equal("SELECT id FROM users WHERE (id = ? AND NOT (password = ?))"))
+					Expect(args).To(ConsistOf(1, "12345"))
 				})
 			})
 		})

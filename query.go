@@ -122,8 +122,6 @@ func (q *BaseQuery) Where(pred interface{}, args ...interface{}) {
 		q.where = append(q.where, &sqlCondition{c, args})
 	case *string:
 		q.where = append(q.where, &sqlCondition{*c, args})
-	case Sqlizer:
-		q.where = append(q.where, c)
 	default:
 		q.where = append(q.where, c)
 	}

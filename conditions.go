@@ -23,7 +23,7 @@ func Ne(field SchemaField, value interface{}) Condition {
 }
 func Not(cond Condition) Condition {
 	return func(schema Schema) Sqlizer {
-		return &not{cond(schema)}
+		return &notOperator{cond(schema)}
 	}
 }
 
