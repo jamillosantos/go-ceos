@@ -39,9 +39,9 @@ type BaseQuery struct {
 	IsDefaultScenarioDisabled bool
 }
 
-type QueryOption func(q *BaseQuery)
+type CeousOption func(q interface{})
 
-func NewBaseQuery(options ...QueryOption) *BaseQuery {
+func NewBaseQuery(options ...CeousOption) *BaseQuery {
 	q := &BaseQuery{}
 	// Apply all options to the recently created query.
 	for _, option := range options {
@@ -64,24 +64,45 @@ func DisableDefaultScenario(q *BaseQuery) {
 }
 
 // WithDB returns a query option for creating .
-func WithDB(db *sql.DB) QueryOption {
-	return func(q *BaseQuery) {
-		q.db = db
+func WithDB(db *sql.DB) CeousOption {
+	return func(obj interface{}) {
+		switch q := obj.(type) {
+		case *BaseQuery:
+			q.db = db
+		case *BaseStore:
+			q.db = db
+		default:
+			panic(errors.New(fmt.Sprintf("invalid obj: %T", obj)))
+		}
 	}
 }
 
 // WithCache returns a query option that will enable or disable the cache.
-func WithCache(useCache bool) QueryOption {
-	return func(q *BaseQuery) {
-		q.disableCache = useCache
+func WithCache(useCache bool) CeousOption {
+	return func(obj interface{}) {
+		switch q := obj.(type) {
+		case *BaseQuery:
+			q.disableCache = useCache
+		case *BaseStore:
+			q.disableCache = useCache
+		default:
+			panic(errors.New(fmt.Sprintf("invalid obj: %T", obj)))
+		}
 	}
 }
 
 // WithSchema returns a query option that will set the schema of a Query. Useful
 // for using aliases.
-func WithSchema(schema Schema) QueryOption {
-	return func(q *BaseQuery) {
-		q.Schema = schema
+func WithSchema(schema Schema) CeousOption {
+	return func(obj interface{}) {
+		switch q := obj.(type) {
+		case *BaseQuery:
+			q.Schema = schema
+		case *BaseStore:
+			q.schema = schema
+		default:
+			panic(errors.New(fmt.Sprintf("invalid obj: %T", obj)))
+		}
 	}
 }
 

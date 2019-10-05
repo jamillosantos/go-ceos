@@ -43,7 +43,7 @@ var _ = Describe("Query", func() {
 				})
 
 				It("should select specified fields", func() {
-					q := tests.NewUserQuery().Select(tests.Schema.User.Name, tests.Schema.User.CreatedAt)
+					q := tests.NewUserQuery(ceous.WithDB(tests.DB)).Select(tests.Schema.User.Name, tests.Schema.User.CreatedAt)
 					builder, err := q.BaseQuery.Builder()
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
