@@ -17,6 +17,10 @@ type User struct {
 	UpdatedAt time.Time
 }
 
+func (u *User) GetID() interface{} {
+	return u.ID
+}
+
 func (u *User) ColumnAddress(name string) (interface{}, error) {
 	switch name {
 	case "id":

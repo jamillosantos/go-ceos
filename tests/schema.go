@@ -23,7 +23,7 @@ func (schema *schemaUser) PrimaryKey() ceous.SchemaField {
 var userBaseSchema = ceous.NewBaseSchema(
 	"users",
 	"",
-	ceous.NewSchemaField("id"),
+	ceous.NewSchemaField("id", ceous.FieldPK),
 	ceous.NewSchemaField("name"),
 	ceous.NewSchemaField("password"),
 	ceous.NewSchemaField("role"),

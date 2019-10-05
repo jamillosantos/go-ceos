@@ -11,6 +11,10 @@ import (
 
 var (
 	ErrNonNewDocument = errors.New("ceous: cannot insert a non new document")
+	ErrNotWritable    = errors.New("ceous: record is not writable")
+	ErrNewDocument    = errors.New("ceous: cannot updated a new document")
+	ErrNoRowUpdate    = errors.New("ceous: update affected no rows")
+	ErrNotFound       = errors.New("ceous: entity not found")
 )
 
 type (
@@ -72,6 +76,7 @@ func (store *BaseStore) Insert(record Record, fields ...SchemaField) error {
 	for _, col := range fields {
 		fieldName = col.String()
 		if col.IsAutoInc() {
+			// TODO(jota): Add multi field PK support.
 			autoIncPks = append(autoIncPks, fieldName)
 			continue
 		}
@@ -125,6 +130,7 @@ func (store *BaseStore) Insert(record Record, fields ...SchemaField) error {
 				}
 				if rows.Next() {
 					err = rows.Scan(pk)
+					// TODO(jota): Add multi field PK support.
 					rows.Close()
 					if err != nil {
 						return err
@@ -145,4 +151,91 @@ func (store *BaseStore) Insert(record Record, fields ...SchemaField) error {
 	// record.setWritable(true)
 	record.setPersisted()
 	return nil
+}
+
+func (store *BaseStore) Update(record Record, fields ...SchemaField) (int64, error) {
+	if !record.IsWritable() {
+		return 0, ErrNotWritable
+	}
+
+	if !record.IsPersisted() {
+		return 0, ErrNewDocument
+	}
+
+	// TODO(jota): To take in consideration the primary key.
+	/*
+		if record.GetID().IsEmpty() {
+			return 0, ErrEmptyID
+		}
+	*/
+
+	if len(fields) == 0 {
+		fields = store.schema.Columns()
+	}
+
+	var (
+		columnNames  = make([]string, 0, len(fields))
+		columnValues = make([]interface{}, 0, len(fields))
+		fieldName    string
+		fieldValue   interface{}
+		err          error
+	)
+
+	// remove the ID from there
+	for _, col := range fields {
+		fieldName = col.String()
+		if col.IsAutoInc() {
+			continue
+		}
+		fieldValue, err = record.Value(fieldName)
+		if err != nil {
+			return 0, err
+		}
+		columnNames = append(columnNames, fieldName)
+		columnValues = append(columnValues, fieldValue)
+	}
+
+	/*
+		// TODO(jota): Add support for virtual columns.
+
+			virtualCols, virtualColValues := virtualColumns(record, columnNames)
+			columnNames = append(columnNames, virtualCols...)
+			values = append(values, virtualColValues...)
+	*/
+
+	var query bytes.Buffer
+	query.WriteString("UPDATE ")
+	query.WriteString(store.schema.Table())
+	query.WriteString(" SET ")
+	for i, col := range columnNames {
+		if i != 0 {
+			query.WriteRune(',')
+		}
+		query.WriteString(col)
+		query.WriteRune('=')
+		query.WriteString(fmt.Sprintf("$%d", i+1))
+	}
+	query.WriteString(" WHERE ")
+	// TODO(jota): Add multi field PK support.
+	query.WriteString(store.schema.PrimaryKey().String())
+	query.WriteRune('=')
+	query.WriteString(fmt.Sprintf("$%d", len(columnNames)+1))
+
+	// TODO(jota): Add multi field PK support to the values.
+	result, err := store.runner.Exec(query.String(), append(columnValues, record.GetID())...)
+	if err != nil {
+		return 0, err
+	}
+
+	cnt, err := result.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+
+	if cnt == 0 {
+		return 0, ErrNoRowUpdate
+	}
+
+	return cnt, nil
+
 }

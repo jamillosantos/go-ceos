@@ -29,8 +29,16 @@ func (q *userQuery) ByName(name string) *userQuery {
 }
 
 func (q *userQuery) One() (u User, err error) {
-	q.Limit(1).Offset(1)
-	err = NewUserResultSet(q.RawQuery()).ToModel(&u)
+	q.Limit(1).Offset(0)
+
+	rs := NewUserResultSet(q.RawQuery())
+	defer rs.Close()
+
+	if rs.Next() {
+		err = rs.ToModel(&u)
+	} else {
+		err = ceous.ErrNotFound
+	}
 	return
 }
 

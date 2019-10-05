@@ -184,7 +184,7 @@ var _ = Describe("Query", func() {
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(sql).To(Equal("SELECT id FROM users WHERE id = ?"))
+					Expect(sql).To(Equal("SELECT id FROM users WHERE id = $1"))
 					Expect(args).To(ConsistOf(1))
 				})
 
@@ -194,7 +194,7 @@ var _ = Describe("Query", func() {
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(sql).To(Equal("SELECT id FROM users WHERE id = ? AND name = ?"))
+					Expect(sql).To(Equal("SELECT id FROM users WHERE id = $1 AND name = $2"))
 					Expect(args).To(ConsistOf(1, "Snake Eyes"))
 				})
 
@@ -209,12 +209,12 @@ var _ = Describe("Query", func() {
 				})
 
 				It("should generate a where with string conditions with args", func() {
-					q := tests.NewUserQuery().Select(tests.Schema.User.ID).Where("LENGTH(password) < ?", 6)
+					q := tests.NewUserQuery().Select(tests.Schema.User.ID).Where("LENGTH(password) < $1", 6)
 					builder, err := q.BaseQuery.Builder()
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(sql).To(Equal("SELECT id FROM users WHERE LENGTH(password) < ?"))
+					Expect(sql).To(Equal("SELECT id FROM users WHERE LENGTH(password) < $1"))
 					Expect(args).To(ConsistOf(6))
 				})
 
@@ -225,7 +225,7 @@ var _ = Describe("Query", func() {
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(sql).To(Equal("SELECT id FROM users WHERE LENGTH(password) < ?"))
+					Expect(sql).To(Equal("SELECT id FROM users WHERE LENGTH(password) < $1"))
 					Expect(args).To(ConsistOf(6))
 				})
 
@@ -238,7 +238,7 @@ var _ = Describe("Query", func() {
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(sql).To(Equal("SELECT id FROM users WHERE (id = ? AND NOT (password = ?))"))
+					Expect(sql).To(Equal("SELECT id FROM users WHERE (id = $1 AND NOT (password = $2))"))
 					Expect(args).To(ConsistOf(1, "12345"))
 				})
 			})
