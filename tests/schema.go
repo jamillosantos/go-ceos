@@ -1,6 +1,9 @@
 package tests
 
-import "github.com/jamillosantos/go-ceous"
+import (
+	sq "github.com/elgris/sqrl"
+	"github.com/jamillosantos/go-ceous"
+)
 
 type schemaUser struct {
 	*ceous.BaseSchema
@@ -10,6 +13,10 @@ type schemaUser struct {
 	Role      ceous.SchemaField
 	CreatedAt ceous.SchemaField
 	UpdatedAt ceous.SchemaField
+}
+
+func init() {
+	sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 }
 
 type schema struct {

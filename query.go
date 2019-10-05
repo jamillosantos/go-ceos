@@ -148,6 +148,28 @@ func (q *BaseQuery) Where(pred interface{}, args ...interface{}) {
 	}
 }
 
+func (q *BaseQuery) applyConditions(sqQuery *sq.SelectBuilder) error {
+	for _, cond := range q.where {
+		switch c := cond.(type) {
+		case Condition:
+			sql, args, err := c(q.Schema).ToSql()
+			if err != nil {
+				return err
+			}
+			sqQuery.Where(sql, args...)
+		case Sqlizer:
+			sql, args, err := c.ToSql()
+			if err != nil {
+				return err
+			}
+			sqQuery.Where(sql, args...)
+		default:
+			return errors.Wrap(ErrConditionTypeNotSupported, fmt.Sprintf("%T not recognized", c))
+		}
+	}
+	return nil
+}
+
 // Builder will prepare a *sq.SelectBuilder and return it with all fields,
 // conditions and limits.
 func (q *BaseQuery) Builder() (*sq.SelectBuilder, error) {
@@ -190,24 +212,7 @@ func (q *BaseQuery) Builder() (*sq.SelectBuilder, error) {
 
 	// If we have conditions to be added ...
 	if len(q.where) > 0 {
-		for _, cond := range q.where {
-			switch c := cond.(type) {
-			case Condition:
-				sql, args, err := c(q.Schema).ToSql()
-				if err != nil {
-					return nil, err
-				}
-				sqQuery.Where(sql, args...)
-			case Sqlizer:
-				sql, args, err := c.ToSql()
-				if err != nil {
-					return nil, err
-				}
-				sqQuery.Where(sql, args...)
-			default:
-				return nil, errors.Wrap(ErrConditionTypeNotSupported, fmt.Sprintf("%T not recognized", c))
-			}
-		}
+		q.applyConditions(sqQuery)
 	}
 
 	// Applies the limit
@@ -219,10 +224,6 @@ func (q *BaseQuery) Builder() (*sq.SelectBuilder, error) {
 	if q.offset > 0 {
 		sqQuery.Offset(q.offset)
 	}
-
-	// TODO(jota): This should be done at the sqQuery creation.
-	// TODO(jota): Come up with a good idea for this.
-	sqQuery.PlaceholderFormat(sq.Dollar)
 
 	q._modified = sqQuery
 
@@ -253,11 +254,29 @@ func (q *BaseQuery) Offset(offset uint64) *BaseQuery {
 	return q
 }
 
+func (q *BaseQuery) Count() (int64, error) {
+	tableName := q.Schema.Table()
+	if q.Schema.Alias() != "" {
+		tableName += " " + q.Schema.Alias()
+	}
+
+	sqQuery := sq.Select("COUNT(*)").From(tableName)
+	// If we have conditions to be added ...
+	if len(q.where) > 0 {
+		q.applyConditions(sqQuery)
+	}
+
+	var n int64
+	err := sqQuery.PlaceholderFormat(sq.Dollar).RunWith(q.runner).QueryRow().Scan(&n)
+	return n, err
+}
+
 func (q *BaseQuery) RawQuery() (*sql.Rows, error) {
 	builder, err := q.Builder()
 	if err != nil {
 		return nil, err
 	}
+	builder.PlaceholderFormat(sq.Dollar) // TODO(jota): Make this placeholder configurable and optimize this.
 	return builder.RunWith(q.runner).Query()
 }
 
@@ -266,13 +285,16 @@ func (q *BaseQuery) RawQueryContext(ctx context.Context) (*sql.Rows, error) {
 	if err != nil {
 		return nil, err
 	}
+	builder.PlaceholderFormat(sq.Dollar) // TODO(jota): Make this placeholder configurable and optimize this.
 	return builder.RunWith(q.runner).QueryContext(ctx)
 }
 
 func (q *BaseQuery) RawQueryRow() sq.RowScanner {
+	q._modified.PlaceholderFormat(sq.Dollar) // TODO(jota): Make this placeholder configurable and optimize this.
 	return q._modified.RunWith(q.runner).QueryRow()
 }
 
 func (q *BaseQuery) RawQueryRowContext(ctx context.Context) sq.RowScanner {
+	q._modified.PlaceholderFormat(sq.Dollar) // TODO(jota): Make this placeholder configurable and optimize this.
 	return q._modified.RunWith(q.runner).QueryRowContext(ctx)
 }
