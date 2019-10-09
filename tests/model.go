@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/jamillosantos/go-ceous"
+	"github.com/pkg/errors"
 )
 
 type User struct {
@@ -36,7 +37,7 @@ func (u *User) ColumnAddress(name string) (interface{}, error) {
 	case "updated_at":
 		return &u.UpdatedAt, nil
 	default:
-		return nil, fmt.Errorf("field %s not found", name)
+		return nil, errors.Wrap(ceous.ErrFieldNotFound, fmt.Sprintf("field %s not found", name))
 	}
 }
 
@@ -55,6 +56,6 @@ func (u *User) Value(name string) (interface{}, error) {
 	case "updated_at":
 		return u.UpdatedAt, nil
 	default:
-		return nil, fmt.Errorf("field %s not found", name)
+		return nil, errors.Wrap(ceous.ErrFieldNotFound, fmt.Sprintf("field %s not found", name))
 	}
 }

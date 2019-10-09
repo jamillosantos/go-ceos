@@ -5,13 +5,17 @@ type Valuer interface {
 	Value(column string) (interface{}, error)
 }
 
-type Record interface {
+type ColumnAddresser interface {
 	ColumnAddress(name string) (interface{}, error)
+}
+
+type Record interface {
 	GetID() interface{}
 	IsPersisted() bool
 	setPersisted()
 	IsWritable() bool
 	setWritable(bool)
+	ColumnAddresser
 	Valuer
 }
 
