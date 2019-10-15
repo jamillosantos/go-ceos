@@ -52,8 +52,18 @@ func DBUsersCreate() {
 	ExpectWithOffset(1, err).ToNot(HaveOccurred())
 }
 
+func DBUserGroupsCreate() {
+	_, err := DB.Exec("CREATE TABLE user_groups (user_id int, group_id int, admin boolean not null default false)")
+	ExpectWithOffset(1, err).ToNot(HaveOccurred())
+}
+
 func DBUsersInsertJoes() {
 	_, err := DB.Exec("INSERT INTO users (name) VALUES ($1),($2),($3),($4);", "Snake Eyes", "Scarlet", "Tank", "Duke")
+	ExpectWithOffset(1, err).ToNot(HaveOccurred())
+}
+
+func DBUserGroupsInsert() {
+	_, err := DB.Exec("INSERT INTO user_groups (user_id, group_id) VALUES ($1, $2),($1, $3),($2, $1),($4, $1);", 1, 2, 3, 4)
 	ExpectWithOffset(1, err).ToNot(HaveOccurred())
 }
 

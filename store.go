@@ -57,12 +57,7 @@ func (store *BaseStore) Insert(record Record, fields ...SchemaField) error {
 	}
 
 	if len(fields) == 0 {
-		for _, field := range store.schema.Columns() {
-			if field.IsAutoInc() {
-				continue
-			}
-			fields = append(fields, field)
-		}
+		fields = store.schema.Columns()
 	}
 
 	var (
@@ -76,7 +71,6 @@ func (store *BaseStore) Insert(record Record, fields ...SchemaField) error {
 	for _, col := range fields {
 		fieldName = col.String()
 		if col.IsAutoInc() {
-			// TODO(jota): Add multi field PK support.
 			autoIncPks = append(autoIncPks, fieldName)
 			continue
 		}
@@ -113,38 +107,38 @@ func (store *BaseStore) Insert(record Record, fields ...SchemaField) error {
 	query.Write(valBuf.Bytes())
 	query.WriteString(")")
 
-	/*
-		TODO(jota): To uncomment this.
-			if true {
-				var pk interface{}
-				pk, err = record.ColumnAddress(store.schema.ID().String())
-				if err != nil {
-					return err
-				}
-
-				query.WriteString(fmt.Sprintf(" RETURNING %s", store.schema.ID().String()))
-				//err = s.runner.QueryRow(query.String(), values...).Scan(pk)
-				rows, err := store.runner.Query(query.String(), columnValues...)
-				if err != nil {
-					return err
-				}
-				if rows.Next() {
-					err = rows.Scan(pk)
-					// TODO(jota): Add multi field PK support.
-					rows.Close()
-					if err != nil {
-						return err
-					}
-				}
-			} else {
-	*/
-	_, err = store.runner.Exec(query.String(), columnValues...)
-	/*
+	if len(autoIncPks) > 0 {
+		pkRefs := make([]interface{}, len(autoIncPks))
+		query.WriteString(" RETURNING ")
+		for i, pkField := range autoIncPks {
+			if i > 0 {
+				query.WriteString(",")
+			}
+			query.WriteString(pkField)
+			pkFieldRef, err := record.ColumnAddress(pkField)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("could not find PK %s", pkField))
+			}
+			pkRefs[i] = pkFieldRef
 		}
-	*/
 
-	if err != nil {
-		return err
+		rows, err := store.runner.Query(query.String(), columnValues...)
+		if err != nil {
+			return errors.Wrap(err, "query error")
+		}
+		defer rows.Close()
+
+		if rows.Next() {
+			err = rows.Scan(pkRefs...)
+			if err != nil {
+				return errors.Wrap(err, "scan error")
+			}
+		}
+	} else {
+		_, err = store.runner.Exec(query.String(), columnValues...)
+		if err != nil {
+			return errors.Wrap(err, " error")
+		}
 	}
 
 	// TODO(jota): Uncomment this.
@@ -174,19 +168,33 @@ func (store *BaseStore) Update(record Record, fields ...SchemaField) (int64, err
 	}
 
 	var (
-		columnNames  = make([]string, 0, len(fields))
-		columnValues = make([]interface{}, 0, len(fields))
-		fieldName    string
-		fieldValue   interface{}
-		err          error
+		pkNames    = make([]string, 0, 1)
+		pkValues   = make([]interface{}, 0, 1)
+		fieldName  string
+		fieldValue interface{}
+		err        error
 	)
 
+	for _, col := range store.schema.Columns() {
+		if !col.IsPK() {
+			continue
+		}
+		fieldName = col.String()
+		fieldValue, err = record.Value(fieldName)
+		if err != nil {
+			return 0, err
+		}
+		pkNames = append(pkNames, fieldName)
+		pkValues = append(pkValues, fieldValue)
+	}
+
+	var (
+		columnNames  = make([]string, 0, len(fields))
+		columnValues = make([]interface{}, 0, len(fields))
+	)
 	// remove the ID from there
 	for _, col := range fields {
 		fieldName = col.String()
-		if col.IsAutoInc() {
-			continue
-		}
 		fieldValue, err = record.Value(fieldName)
 		if err != nil {
 			return 0, err
@@ -208,7 +216,7 @@ func (store *BaseStore) Update(record Record, fields ...SchemaField) (int64, err
 	query.WriteString(store.schema.Table())
 	query.WriteString(" SET ")
 	for i, col := range columnNames {
-		if i != 0 {
+		if i > 0 {
 			query.WriteRune(',')
 		}
 		query.WriteString(col)
@@ -216,13 +224,16 @@ func (store *BaseStore) Update(record Record, fields ...SchemaField) (int64, err
 		query.WriteString(fmt.Sprintf("$%d", i+1))
 	}
 	query.WriteString(" WHERE ")
-	// TODO(jota): Add multi field PK support.
-	query.WriteString(store.schema.PrimaryKey().String())
-	query.WriteRune('=')
-	query.WriteString(fmt.Sprintf("$%d", len(columnNames)+1))
+	for i, field := range pkNames {
+		if i > 0 {
+			query.WriteString(" AND ")
+		}
+		query.WriteString(field)
+		query.WriteRune('=')
+		query.WriteString(fmt.Sprintf("$%d", len(columnNames)+1+i)) // TODO(jota): Use a placeholder configuration to ensure multi database support.
+	}
 
-	// TODO(jota): Add multi field PK support to the values.
-	result, err := store.runner.Exec(query.String(), append(columnValues, record.GetID())...)
+	result, err := store.runner.Exec(query.String(), append(columnValues, pkValues...)...)
 	if err != nil {
 		return 0, err
 	}

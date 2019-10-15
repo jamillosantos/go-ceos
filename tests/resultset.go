@@ -12,3 +12,14 @@ func NewUserResultSet(rs ceous.ResultSet, err error) *userResultSet {
 		RecordResultSet: ceous.NewRecordResultSet(rs, err),
 	}
 }
+
+type userGroupResultSet struct {
+	*ceous.RecordResultSet
+	lastErr error
+}
+
+func NewUserGroupResultSet(rs ceous.ResultSet, err error) *userGroupResultSet {
+	return &userGroupResultSet{
+		RecordResultSet: ceous.NewRecordResultSet(rs, err),
+	}
+}

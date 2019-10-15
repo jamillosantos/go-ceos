@@ -4,15 +4,21 @@ import (
 	"strings"
 )
 
-type PrimaryKey interface {
-	ColumnAddresser
-	Valuer
-}
+type (
+	PrimaryKey interface {
+		Columnable
+		ColumnAddresser
+		Valuer
+	}
 
-type pkWrapper struct {
-	PrimaryKey
-	prefix string
-}
+	BasePrimaryKey struct {
+	}
+
+	pkWrapper struct {
+		PrimaryKey
+		prefix string
+	}
+)
 
 func WrapPK(prefix string, key PrimaryKey) *pkWrapper {
 	return &pkWrapper{
@@ -33,4 +39,8 @@ func (pkw *pkWrapper) Value(column string) (interface{}, error) {
 		return pkw.PrimaryKey.Value(column[len(pkw.prefix):])
 	}
 	return nil, ErrFieldNotFound
+}
+
+func (pkw *pkWrapper) Columns() []SchemaField {
+	return pkw.PrimaryKey.Columns()
 }
