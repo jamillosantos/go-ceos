@@ -259,13 +259,40 @@ func (store *BaseStore) Delete(record Record) error {
 		return ErrNewDocument
 	}
 
+	var (
+		pkNames    = make([]string, 0, 1)
+		pkValues   = make([]interface{}, 0, 1)
+		fieldName  string
+		fieldValue interface{}
+		err        error
+	)
+
+	for _, col := range store.schema.Columns() {
+		if !col.IsPK() {
+			continue
+		}
+		fieldName = col.String()
+		fieldValue, err = record.Value(fieldName)
+		if err != nil {
+			return err
+		}
+		pkNames = append(pkNames, fieldName)
+		pkValues = append(pkValues, fieldValue)
+	}
+
 	var query bytes.Buffer
 	query.WriteString("DELETE FROM ")
 	query.WriteString(store.schema.Table())
 	query.WriteString(" WHERE ")
-	query.WriteString(store.schema.PrimaryKey().String())
-	query.WriteString("=$1") // TODO(jota): Make this with the placeholder
+	for i, field := range pkNames {
+		if i > 0 {
+			query.WriteString(" AND ")
+		}
+		query.WriteString(field)
+		query.WriteRune('=')
+		query.WriteString(fmt.Sprintf("$%d", 1+i)) // TODO(jota): Use a placeholder configuration to ensure multi database support.
+	}
 
-	_, err := store.runner.Exec(query.String(), record.GetID())
+	_, err = store.runner.Exec(query.String(), pkValues...)
 	return err
 }

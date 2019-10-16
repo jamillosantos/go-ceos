@@ -218,6 +218,8 @@ var _ = Describe("Store", func() {
 				tests.DBStart()
 				tests.DBUsersCreate()
 				tests.DBUsersInsertJoes()
+				tests.DBUserGroupsCreate()
+				tests.DBUserGroupsInsert()
 			})
 
 			AfterEach(func() {
@@ -234,6 +236,24 @@ var _ = Describe("Store", func() {
 				Expect(store.Delete(&user)).To(Succeed())
 
 				_, err = tests.NewUserQuery(db).ByID(1).One()
+				Expect(err).To(Equal(ceous.ErrNotFound))
+			})
+
+			It("should delete a model with composite PK", func() {
+				db := ceous.WithDB(tests.DB)
+
+				pk := tests.UserGroupPK{
+					UserID:  1,
+					GroupID: 2,
+				}
+
+				userGroup, err := tests.NewUserGroupQuery(db).ByID(pk).One()
+				Expect(err).ToNot(HaveOccurred())
+
+				store := tests.NewUserGroupStore(db)
+				Expect(store.Delete(&userGroup)).To(Succeed())
+
+				_, err = tests.NewUserGroupQuery(db).ByID(pk).One()
 				Expect(err).To(Equal(ceous.ErrNotFound))
 			})
 
