@@ -25,6 +25,34 @@ type (
 	}
 )
 
+func Asc(field interface{}) string {
+	switch f := field.(type) {
+	case string:
+		return f + " ASC"
+	case *string:
+		return *f + " ASC"
+	case AliasedSchemaField:
+		return f.Reference() + " ASC"
+	case fmt.Stringer:
+		return f.String() + " ASC"
+	}
+	return fmt.Sprint(field, " ASC")
+}
+
+func Desc(field interface{}) string {
+	switch f := field.(type) {
+	case string:
+		return f + " DESC"
+	case *string:
+		return *f + " DESC"
+	case AliasedSchemaField:
+		return f.Reference() + " DESC"
+	case fmt.Stringer:
+		return f.String() + " DESC"
+	}
+	return fmt.Sprint(field, " DESC")
+}
+
 func OpEq(a, b interface{}) *eqOperator {
 	return &eqOperator{a, b}
 }

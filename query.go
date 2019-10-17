@@ -13,33 +13,37 @@ var (
 	ErrConditionTypeNotSupported = errors.New("condition type not supported")
 )
 
-type Query interface {
-	RawQuery() (*sql.Rows, error)
-	RawQueryContext(context.Context) (*sql.Rows, error)
-	RawQueryRow() sq.RowScanner
-	RawQueryRowContext(context.Context) sq.RowScanner
-}
+type (
+	Query interface {
+		RawQuery() (*sql.Rows, error)
+		RawQueryContext(context.Context) (*sql.Rows, error)
+		RawQueryRow() sq.RowScanner
+		RawQueryRowContext(context.Context) sq.RowScanner
+	}
 
-type BaseQuery struct {
-	_modified *sq.SelectBuilder
-	Schema    Schema
-	db        *sql.DB
-	runner    sq.DBProxy
+	BaseQuery struct {
+		_modified *sq.SelectBuilder
+		Schema    Schema
+		db        *sql.DB
+		runner    sq.DBProxy
 
-	where          []interface{}
-	selectedFields []SchemaField
-	fieldsExcluded map[SchemaField]bool
+		where          []interface{}
+		selectedFields []SchemaField
+		fieldsExcluded map[SchemaField]bool
+		Relations      []Relation
 
-	builder *sq.SelectBuilder
+		builder *sq.SelectBuilder
 
-	limit  uint64
-	offset uint64
+		limit  uint64
+		offset uint64
+		order  []string
 
-	disableCache              bool
-	IsDefaultScenarioDisabled bool
-}
+		disableCache              bool
+		IsDefaultScenarioDisabled bool
+	}
 
-type CeousOption func(q interface{})
+	CeousOption func(q interface{})
+)
 
 func NewBaseQuery(options ...CeousOption) *BaseQuery {
 	q := &BaseQuery{}
@@ -170,6 +174,24 @@ func (q *BaseQuery) applyConditions(sqQuery *sq.SelectBuilder) error {
 	return nil
 }
 
+func (q *BaseQuery) OrderBy(fields ...interface{}) {
+	if q.order == nil {
+		q.order = make([]string, 0, len(fields))
+	}
+	for _, field := range fields {
+		switch f := field.(type) {
+		case string:
+			q.order = append(q.order, f)
+		case *string:
+			q.order = append(q.order, *f)
+		case fmt.Stringer:
+			q.order = append(q.order, f.String())
+		default:
+			q.order = append(q.order, fmt.Sprint(f))
+		}
+	}
+}
+
 // Builder will prepare a *sq.SelectBuilder and return it with all fields,
 // conditions and limits.
 func (q *BaseQuery) Builder() (*sq.SelectBuilder, error) {
@@ -223,6 +245,10 @@ func (q *BaseQuery) Builder() (*sq.SelectBuilder, error) {
 	// Applies the offset
 	if q.offset > 0 {
 		sqQuery.Offset(q.offset)
+	}
+
+	if len(q.order) > 0 {
+		sqQuery.OrderBy(q.order...)
 	}
 
 	q._modified = sqQuery

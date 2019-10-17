@@ -102,6 +102,10 @@ func (field *aliasSchemaField) Reference() string {
 	return field.QualifiedName(field.schema)
 }
 
+func (field *aliasSchemaField) String() string {
+	return field.Reference()
+}
+
 func NewBaseSchema(tableName, alias string, columns ...SchemaField) *BaseSchema {
 	baseSchema := &BaseSchema{
 		tableName:  tableName,

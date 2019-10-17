@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/jamillosantos/go-ceous"
@@ -32,7 +33,8 @@ type (
 	UserGroup struct {
 		ceous.Model `tableName:"user_groups"`
 		ID          UserGroupPK `ceous:",pk"`
-		Admin       bool        `ceous:"admin"`
+		User        *User
+		Admin       bool `ceous:"admin"`
 	}
 )
 
@@ -45,4 +47,8 @@ var (
 
 func (ugPK *UserGroupPK) Columns() []ceous.SchemaField {
 	return userGroupPKFields
+}
+
+func (ugPK *UserGroupPK) String() string {
+	return strconv.Itoa(ugPK.UserID) + ":" + strconv.Itoa(ugPK.GroupID)
 }
