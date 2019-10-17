@@ -18,7 +18,7 @@ An ORM experiment in GO.
 * Minimum overhead;
 * Multi dialect;
 * Custom data types;
-* Ready for cancelation;
+* Ready for cancellation;
 * Avoid escaping;
 * Easy to use;
 * Fun;
