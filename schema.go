@@ -29,12 +29,16 @@ type (
 		schema Schema
 	}
 
+	Columnable interface {
+		Columns() []SchemaField
+	}
+
 	Schema interface {
 		PrimaryKey() SchemaField
 		Alias() string
 		Table() string
-		Columns() []SchemaField
 		As(string) Schema
+		Columnable
 	}
 
 	BaseSchema struct {

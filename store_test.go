@@ -13,13 +13,14 @@ var _ = Describe("Store", func() {
 			BeforeEach(func() {
 				tests.DBStart()
 				tests.DBUsersCreate()
+				tests.DBUserGroupsCreate()
 			})
 
 			AfterEach(func() {
 				tests.DBStop()
 			})
 
-			It("should insert a user specifying not fields", func() {
+			It("should insert a user specifying no fields", func() {
 				db := ceous.WithDB(tests.DB)
 
 				user := tests.User{
@@ -40,6 +41,44 @@ var _ = Describe("Store", func() {
 				Expect(userFound.Name).To(Equal("Snake Eyes"))
 				Expect(userFound.Password).To(Equal("12345"))
 				Expect(userFound.Role).To(Equal("stealth"))
+				Expect(rs.Next()).To(BeFalse())
+			})
+
+			It("should insert multiple users returning the PK", func() {
+				db := ceous.WithDB(tests.DB)
+
+				user1 := tests.User{
+					Name:     "Snake Eyes",
+					Password: "12345",
+					Role:     "stealth",
+				}
+				user2 := tests.User{
+					Name:     "Scarlet",
+					Password: "54321",
+					Role:     "intelligence",
+				}
+
+				userStore := tests.NewUserStore(db)
+				Expect(userStore.Insert(&user1)).To(Succeed())
+				Expect(user1.ID).To(Equal(1))
+
+				Expect(userStore.Insert(&user2)).To(Succeed())
+				Expect(user2.ID).To(Equal(2))
+
+				b, err := tests.NewUserQuery(db).Builder()
+				Expect(err).ToNot(HaveOccurred())
+				rs := tests.NewUserResultSet(b.RunWith(tests.DB).Query())
+				Expect(rs.Next()).To(BeTrue())
+				var userFound tests.User
+				Expect(rs.ToModel(&userFound)).To(Succeed())
+				Expect(userFound.Name).To(Equal("Snake Eyes"))
+				Expect(userFound.Password).To(Equal("12345"))
+				Expect(userFound.Role).To(Equal("stealth"))
+				Expect(rs.Next()).To(BeTrue())
+				Expect(rs.ToModel(&userFound)).To(Succeed())
+				Expect(userFound.Name).To(Equal("Scarlet"))
+				Expect(userFound.Password).To(Equal("54321"))
+				Expect(userFound.Role).To(Equal("intelligence"))
 				Expect(rs.Next()).To(BeFalse())
 			})
 
@@ -64,6 +103,32 @@ var _ = Describe("Store", func() {
 				Expect(userFound.Role).To(Equal(""))
 				Expect(rs.Next()).To(BeFalse())
 			})
+
+			It("should insert a model with a composite PK", func() {
+				db := ceous.WithDB(tests.DB)
+
+				userGroup := tests.UserGroup{
+					ID: tests.UserGroupPK{
+						UserID:  1,
+						GroupID: 2,
+					},
+					Admin: true,
+				}
+
+				userGroupStore := tests.NewUserGroupStore(db)
+				Expect(userGroupStore.Insert(&userGroup)).To(Succeed())
+
+				b, err := tests.NewUserGroupQuery(db).Builder()
+				Expect(err).ToNot(HaveOccurred())
+				rs := tests.NewUserGroupResultSet(b.RunWith(tests.DB).Query())
+				Expect(rs.Next()).To(BeTrue())
+				var userGroupFound tests.UserGroup
+				Expect(rs.ToModel(&userGroupFound)).To(Succeed())
+				Expect(userGroupFound.ID.UserID).To(Equal(1))
+				Expect(userGroupFound.ID.GroupID).To(Equal(2))
+				Expect(userGroupFound.Admin).To(BeTrue())
+				Expect(rs.Next()).To(BeFalse())
+			})
 		})
 
 		Context("Update", func() {
@@ -71,6 +136,8 @@ var _ = Describe("Store", func() {
 				tests.DBStart()
 				tests.DBUsersCreate()
 				tests.DBUsersInsertJoes()
+				tests.DBUserGroupsCreate()
+				tests.DBUserGroupsInsert()
 			})
 
 			AfterEach(func() {
@@ -119,6 +186,30 @@ var _ = Describe("Store", func() {
 				Expect(userFound.Role).To(Equal(""))
 			})
 
+			It("should update a model with composite PK", func() {
+				db := ceous.WithDB(tests.DB)
+
+				pk := tests.UserGroupPK{
+					UserID:  1,
+					GroupID: 2,
+				}
+
+				userGroup, err := tests.NewUserGroupQuery(db).ByID(pk).One()
+				Expect(err).ToNot(HaveOccurred())
+
+				store := tests.NewUserGroupStore(db)
+				userGroup.Admin = true
+				n, err := store.Update(&userGroup, tests.Schema.UserGroup.Admin)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(n).To(Equal(int64(1)))
+
+				userGroupFound, err := tests.NewUserGroupQuery(db).ByID(pk).One()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(userGroupFound.ID.UserID).To(Equal(1))
+				Expect(userGroupFound.ID.GroupID).To(Equal(2))
+				Expect(userGroupFound.Admin).To(BeTrue())
+			})
+
 			PIt("should fail updating a non existing model")
 		})
 
@@ -127,6 +218,8 @@ var _ = Describe("Store", func() {
 				tests.DBStart()
 				tests.DBUsersCreate()
 				tests.DBUsersInsertJoes()
+				tests.DBUserGroupsCreate()
+				tests.DBUserGroupsInsert()
 			})
 
 			AfterEach(func() {
@@ -143,6 +236,24 @@ var _ = Describe("Store", func() {
 				Expect(store.Delete(&user)).To(Succeed())
 
 				_, err = tests.NewUserQuery(db).ByID(1).One()
+				Expect(err).To(Equal(ceous.ErrNotFound))
+			})
+
+			It("should delete a model with composite PK", func() {
+				db := ceous.WithDB(tests.DB)
+
+				pk := tests.UserGroupPK{
+					UserID:  1,
+					GroupID: 2,
+				}
+
+				userGroup, err := tests.NewUserGroupQuery(db).ByID(pk).One()
+				Expect(err).ToNot(HaveOccurred())
+
+				store := tests.NewUserGroupStore(db)
+				Expect(store.Delete(&userGroup)).To(Succeed())
+
+				_, err = tests.NewUserGroupQuery(db).ByID(pk).One()
 				Expect(err).To(Equal(ceous.ErrNotFound))
 			})
 
