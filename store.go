@@ -29,7 +29,7 @@ type (
 	}
 )
 
-// NewStore returns a new base implementaiton of a Store. That does not aims to
+// NewStore returns a new base implementation of a Store. That does not aims to
 // be used by itself, but to be used as composition on real stores.
 //
 // TODO(jota): Improve documentation.
