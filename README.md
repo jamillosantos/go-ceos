@@ -1,3 +1,5 @@
+**:warning::warning::warning: THIS IS A WORK IN PROGRESS! DO NOT USE IT YET! Please. :warning::warning::warning:**
+
 # go-ceos
 
 An ORM experiment in GO.
