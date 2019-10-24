@@ -52,4 +52,9 @@ jobs:
         run: go mod download
 
       - name: Test
-        run: go run github.com/onsi/ginkgo/ginkgo -r --randomizeAllSpecs --randomizeSuites --cover --trace --race --compilers=2
+        run: go run github.com/onsi/ginkgo/ginkgo -r --randomizeAllSpecs --randomizeSuites --cover --trace --race --compilers=2 -coverprofile=coverage.txt -covermode=atomic
+
+      - name: Upload to Codecov
+        run: bash <(curl -s https://codecov.io/bash)
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
