@@ -16,6 +16,10 @@ type schema struct {
 	User *schemaUser
 }
 
+func (schema *schemaUser) PrimaryKey() ceous.SchemaField {
+	return schema.ID
+}
+
 var userBaseSchema = ceous.NewBaseSchema(
 	"users",
 	"",

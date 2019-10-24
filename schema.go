@@ -8,6 +8,9 @@ type (
 		// QualifiedString returns the name of the field qualified by the alias of
 		// the given schema.
 		QualifiedName(Schema) string
+
+		IsPK() bool
+		IsAutoInc() bool
 	}
 
 	AliasedSchemaField interface {
@@ -16,7 +19,9 @@ type (
 	}
 
 	BaseSchemaField struct {
-		name string
+		name    string
+		pk      bool
+		autoInc bool
 	}
 
 	aliasSchemaField struct {
@@ -25,6 +30,7 @@ type (
 	}
 
 	Schema interface {
+		PrimaryKey() SchemaField
 		Alias() string
 		Table() string
 		Columns() []SchemaField
@@ -32,6 +38,7 @@ type (
 	}
 
 	BaseSchema struct {
+		id         SchemaField
 		tableName  string
 		alias      string
 		ColumnsArr []SchemaField
@@ -43,10 +50,24 @@ type (
 	}
 )
 
-func NewSchemaField(name string) *BaseSchemaField {
-	return &BaseSchemaField{
+type FieldOption func(*BaseSchemaField)
+
+func NewSchemaField(name string, options ...FieldOption) *BaseSchemaField {
+	field := &BaseSchemaField{
 		name: name,
 	}
+	for _, option := range options {
+		option(field)
+	}
+	return field
+}
+
+func FieldPK(field *BaseSchemaField) {
+	field.pk = true
+}
+
+func FieldAutoIncrement(field *BaseSchemaField) {
+	field.autoInc = true
 }
 
 func (field *BaseSchemaField) String() string {
@@ -59,6 +80,14 @@ func (field *BaseSchemaField) QualifiedName(schema Schema) string {
 		return alias + "." + field.name
 	}
 	return field.name
+}
+
+func (field *BaseSchemaField) IsAutoInc() bool {
+	return field.autoInc
+}
+
+func (field *BaseSchemaField) IsPK() bool {
+	return field.pk
 }
 
 func NewAliasSchemaField(schema Schema, field SchemaField) AliasedSchemaField {
@@ -86,6 +115,10 @@ func FieldAlias(schema Schema) func(SchemaField) AliasedSchemaField {
 	return func(field SchemaField) AliasedSchemaField {
 		return NewAliasSchemaField(schema, field)
 	}
+}
+
+func (schema *BaseSchema) PrimaryKey() SchemaField {
+	return schema.id
 }
 
 func (schema *BaseSchema) Alias() string {

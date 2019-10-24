@@ -23,7 +23,7 @@ func NewRecordResultSet(rows ResultSet, err error) *RecordResultSet {
 	}
 }
 
-func (rs *RecordResultSet) ToModel(model Model) error {
+func (rs *RecordResultSet) ToModel(model Record) error {
 	if rs.lastErr != nil {
 		return rs.lastErr
 	}

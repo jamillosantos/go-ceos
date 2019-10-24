@@ -24,7 +24,7 @@ var _ = Describe("ResultSet", func() {
 			Expect(err).ToNot(HaveOccurred())
 			defer rs.Close()
 			resultSet := ceous.NewRecordResultSet(rs, err)
-			var u UserTestModel
+			var u tests.User
 			Expect(resultSet.Next()).To(BeTrue())
 			Expect(resultSet.ToModel(&u)).ToNot(HaveOccurred())
 			Expect(u.Name).To(Equal("Snake Eyes"))

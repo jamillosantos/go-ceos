@@ -8,7 +8,7 @@ type userQuery struct {
 	*ceous.BaseQuery
 }
 
-func NewUserQuery(options ...ceous.QueryOption) *userQuery {
+func NewUserQuery(options ...ceous.CeousOption) *userQuery {
 	bq := ceous.NewBaseQuery(options...)
 	if bq.Schema == nil {
 		bq.Schema = Schema.User.BaseSchema
