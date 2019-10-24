@@ -237,5 +237,24 @@ func (store *BaseStore) Update(record Record, fields ...SchemaField) (int64, err
 	}
 
 	return cnt, nil
+}
 
+func (store *BaseStore) Delete(record Record) error {
+	if !record.IsWritable() {
+		return ErrNotWritable
+	}
+
+	if !record.IsPersisted() {
+		return ErrNewDocument
+	}
+
+	var query bytes.Buffer
+	query.WriteString("DELETE FROM ")
+	query.WriteString(store.schema.Table())
+	query.WriteString(" WHERE ")
+	query.WriteString(store.schema.PrimaryKey().String())
+	query.WriteString("=$1") // TODO(jota): Make this with the placeholder
+
+	_, err := store.runner.Exec(query.String(), record.GetID())
+	return err
 }

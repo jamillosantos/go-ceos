@@ -121,5 +121,32 @@ var _ = Describe("Store", func() {
 
 			PIt("should fail updating a non existing model")
 		})
+
+		Context("Delete", func() {
+			BeforeEach(func() {
+				tests.DBStart()
+				tests.DBUsersCreate()
+				tests.DBUsersInsertJoes()
+			})
+
+			AfterEach(func() {
+				tests.DBStop()
+			})
+
+			FIt("should delete a user", func() {
+				db := ceous.WithDB(tests.DB)
+
+				user, err := tests.NewUserQuery(db).ByID(1).One()
+				Expect(err).ToNot(HaveOccurred())
+
+				store := tests.NewUserStore(db)
+				Expect(store.Delete(&user)).To(Succeed())
+
+				_, err = tests.NewUserQuery(db).ByID(1).One()
+				Expect(err).To(Equal(ceous.ErrNotFound))
+			})
+
+			PIt("should fail deleting a non existing model")
+		})
 	})
 })
