@@ -40,7 +40,16 @@ func (rs *RecordResultSet) ToModel(model Record) error {
 		}
 		scanColumns[i] = sValue
 	}
-	return rs.ResultSet.Scan(scanColumns...)
+	err = rs.ResultSet.Scan(scanColumns...)
+	if err != nil {
+		return err
+	}
+
+	// TODO(jota): Check for read only models... /// model.setWritable(!rs.readOnly)
+	model.setWritable(true)
+	model.setPersisted()
+
+	return nil
 }
 
 func (rs *RecordResultSet) Scan(columns ...interface{}) error {

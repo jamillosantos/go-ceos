@@ -104,6 +104,12 @@ func NewBaseSchema(tableName, alias string, columns ...SchemaField) *BaseSchema 
 		alias:      alias,
 		ColumnsArr: columns,
 	}
+	for _, col := range columns {
+		if col.IsPK() {
+			baseSchema.id = col
+			break
+		}
+	}
 	return baseSchema
 }
 

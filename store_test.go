@@ -65,5 +65,61 @@ var _ = Describe("Store", func() {
 				Expect(rs.Next()).To(BeFalse())
 			})
 		})
+
+		Context("Update", func() {
+			BeforeEach(func() {
+				tests.DBStart()
+				tests.DBUsersCreate()
+				tests.DBUsersInsertJoes()
+			})
+
+			AfterEach(func() {
+				tests.DBStop()
+			})
+
+			It("should update a user not specifying fields", func() {
+				db := ceous.WithDB(tests.DB)
+
+				user, err := tests.NewUserQuery(db).ByID(1).One()
+				Expect(err).ToNot(HaveOccurred())
+
+				store := tests.NewUserStore(db)
+				user.Name = "Snake Eyes 02"
+				user.Password = "67890"
+				user.Role = "stealth 02"
+				n, err := store.Update(&user)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(n).To(Equal(int64(1)))
+
+				userFound, err := tests.NewUserQuery(db).ByID(1).One()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(userFound.Name).To(Equal("Snake Eyes 02"))
+				Expect(userFound.Password).To(Equal("67890"))
+				Expect(userFound.Role).To(Equal("stealth 02"))
+			})
+
+			It("should update a user specifying fields", func() {
+				db := ceous.WithDB(tests.DB)
+
+				user, err := tests.NewUserQuery(db).ByID(1).One()
+				Expect(err).ToNot(HaveOccurred())
+
+				store := tests.NewUserStore(db)
+				user.Name = "Snake Eyes 02"
+				user.Password = "67890"
+				user.Role = "stealth 02"
+				n, err := store.Update(&user, tests.Schema.User.Name)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(n).To(Equal(int64(1)))
+
+				userFound, err := tests.NewUserQuery(db).ByID(1).One()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(userFound.Name).To(Equal("Snake Eyes 02"))
+				Expect(userFound.Password).To(Equal(""))
+				Expect(userFound.Role).To(Equal(""))
+			})
+
+			PIt("should fail updating a non existing model")
+		})
 	})
 })

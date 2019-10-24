@@ -7,13 +7,17 @@ type Valuer interface {
 
 type Record interface {
 	ColumnAddress(name string) (interface{}, error)
+	GetID() interface{}
 	IsPersisted() bool
-	Valuer
 	setPersisted()
+	IsWritable() bool
+	setWritable(bool)
+	Valuer
 }
 
 type Model struct {
 	persisted bool
+	writable  bool
 }
 
 func (model *Model) IsPersisted() bool {
@@ -22,4 +26,12 @@ func (model *Model) IsPersisted() bool {
 
 func (model *Model) setPersisted() {
 	model.persisted = true
+}
+
+func (model *Model) IsWritable() bool {
+	return model.writable
+}
+
+func (model *Model) setWritable(value bool) {
+	model.writable = value
 }

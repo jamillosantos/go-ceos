@@ -220,6 +220,10 @@ func (q *BaseQuery) Builder() (*sq.SelectBuilder, error) {
 		sqQuery.Offset(q.offset)
 	}
 
+	// TODO(jota): This should be done at the sqQuery creation.
+	// TODO(jota): Come up with a good idea for this.
+	sqQuery.PlaceholderFormat(sq.Dollar)
+
 	q._modified = sqQuery
 
 	return sqQuery, nil
@@ -250,11 +254,19 @@ func (q *BaseQuery) Offset(offset uint64) *BaseQuery {
 }
 
 func (q *BaseQuery) RawQuery() (*sql.Rows, error) {
-	return q._modified.RunWith(q.runner).Query()
+	builder, err := q.Builder()
+	if err != nil {
+		return nil, err
+	}
+	return builder.RunWith(q.runner).Query()
 }
 
 func (q *BaseQuery) RawQueryContext(ctx context.Context) (*sql.Rows, error) {
-	return q._modified.RunWith(q.runner).QueryContext(ctx)
+	builder, err := q.Builder()
+	if err != nil {
+		return nil, err
+	}
+	return builder.RunWith(q.runner).QueryContext(ctx)
 }
 
 func (q *BaseQuery) RawQueryRow() sq.RowScanner {
