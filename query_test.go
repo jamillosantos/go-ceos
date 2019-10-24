@@ -10,16 +10,6 @@ import (
 
 var _ = Describe("Query", func() {
 	Describe("BaseQuery", func() {
-		BeforeEach(func() {
-			// tests.DBStart()
-			// tests.DBUsersCreate()
-			// tests.DBUsersInsertJoes()
-		})
-
-		AfterEach(func() {
-			// tests.DBStop()
-		})
-
 		Context("SQL Generation", func() {
 			Context("Select Fields", func() {
 				It("should select all fields", func() {
@@ -184,7 +174,7 @@ var _ = Describe("Query", func() {
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(sql).To(Equal("SELECT id FROM users WHERE id = $1"))
+					Expect(sql).To(Equal("SELECT id FROM users WHERE id = ?"))
 					Expect(args).To(ConsistOf(1))
 				})
 
@@ -194,7 +184,7 @@ var _ = Describe("Query", func() {
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(sql).To(Equal("SELECT id FROM users WHERE id = $1 AND name = $2"))
+					Expect(sql).To(Equal("SELECT id FROM users WHERE id = ? AND name = ?"))
 					Expect(args).To(ConsistOf(1, "Snake Eyes"))
 				})
 
@@ -209,12 +199,12 @@ var _ = Describe("Query", func() {
 				})
 
 				It("should generate a where with string conditions with args", func() {
-					q := tests.NewUserQuery().Select(tests.Schema.User.ID).Where("LENGTH(password) < $1", 6)
+					q := tests.NewUserQuery().Select(tests.Schema.User.ID).Where("LENGTH(password) < ?", 6)
 					builder, err := q.BaseQuery.Builder()
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(sql).To(Equal("SELECT id FROM users WHERE LENGTH(password) < $1"))
+					Expect(sql).To(Equal("SELECT id FROM users WHERE LENGTH(password) < ?"))
 					Expect(args).To(ConsistOf(6))
 				})
 
@@ -225,7 +215,7 @@ var _ = Describe("Query", func() {
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(sql).To(Equal("SELECT id FROM users WHERE LENGTH(password) < $1"))
+					Expect(sql).To(Equal("SELECT id FROM users WHERE LENGTH(password) < ?"))
 					Expect(args).To(ConsistOf(6))
 				})
 
@@ -238,10 +228,71 @@ var _ = Describe("Query", func() {
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(sql).To(Equal("SELECT id FROM users WHERE (id = $1 AND NOT (password = $2))"))
+					Expect(sql).To(Equal("SELECT id FROM users WHERE (id = ? AND NOT (password = ?))"))
 					Expect(args).To(ConsistOf(1, "12345"))
 				})
 			})
+		})
+	})
+
+	Context("Count", func() {
+		BeforeEach(func() {
+			tests.DBStart()
+			tests.DBUsersCreate()
+			tests.DBUsersInsertJoes()
+		})
+
+		AfterEach(func() {
+			tests.DBStop()
+		})
+
+		It("should count using one condition", func() {
+			n, err := tests.NewUserQuery(ceous.WithDB(tests.DB)).ByID(1).Count()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(n).To(BeEquivalentTo(1))
+		})
+
+		It("should count using a where", func() {
+			n, err := tests.NewUserQuery(ceous.WithDB(tests.DB)).Where(ceous.Ne(tests.Schema.User.ID, 1)).Count()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(n).To(BeEquivalentTo(3))
+		})
+
+		It("should count not matching anything", func() {
+			n, err := tests.NewUserQuery(ceous.WithDB(tests.DB)).ByID(50).Count()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(n).To(BeEquivalentTo(0))
+		})
+
+		It("should not take limit into consideration", func() {
+			n, err := tests.NewUserQuery(ceous.WithDB(tests.DB)).Limit(3).Count()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(n).To(BeEquivalentTo(4))
+		})
+
+		It("should count using alias", func() {
+			n, err := tests.NewUserQuery(ceous.WithDB(tests.DB), ceous.WithSchema(tests.Schema.User.As("u"))).Count()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(n).To(BeEquivalentTo(4))
+		})
+	})
+
+	Context("Select", func() {
+		BeforeEach(func() {
+			tests.DBStart()
+			tests.DBUsersCreate()
+			tests.DBUsersInsertJoes()
+		})
+
+		AfterEach(func() {
+			tests.DBStop()
+		})
+
+		It("should retrieve a user", func() {
+			user, err := tests.NewUserQuery(ceous.WithDB(tests.DB)).ByID(1).One()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(user.ID).To(Equal(1))
+			Expect(user.Name).To(Equal("Snake Eyes"))
 		})
 	})
 })

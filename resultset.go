@@ -52,6 +52,20 @@ func (rs *RecordResultSet) ToModel(model Record) error {
 	return nil
 }
 
+func (rs *RecordResultSet) Next() bool {
+	if rs.lastErr != nil {
+		return false
+	}
+	return rs.ResultSet.Next()
+}
+
+func (rs *RecordResultSet) Close() error {
+	if rs.lastErr != nil {
+		return rs.lastErr
+	}
+	return rs.ResultSet.Close()
+}
+
 func (rs *RecordResultSet) Scan(columns ...interface{}) error {
 	if rs.lastErr != nil {
 		return rs.lastErr

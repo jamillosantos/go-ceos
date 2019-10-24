@@ -31,7 +31,12 @@ func (q *userQuery) ByName(name string) *userQuery {
 func (q *userQuery) One() (u User, err error) {
 	q.Limit(1).Offset(0)
 
-	rs := NewUserResultSet(q.RawQuery())
+	query, err := q.RawQuery()
+	if err != nil {
+		return User{}, err
+	}
+
+	rs := NewUserResultSet(query, nil)
 	defer rs.Close()
 
 	if rs.Next() {

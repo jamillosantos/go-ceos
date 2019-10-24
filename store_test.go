@@ -133,7 +133,7 @@ var _ = Describe("Store", func() {
 				tests.DBStop()
 			})
 
-			FIt("should delete a user", func() {
+			It("should delete a user", func() {
 				db := ceous.WithDB(tests.DB)
 
 				user, err := tests.NewUserQuery(db).ByID(1).One()
