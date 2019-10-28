@@ -1,0 +1,43 @@
+@{
+	import generatorModels "github.com/jamillosantos/go-ceous/generator/models"
+
+	import "github.com/lab259/go-my-ast-hurts"
+
+	var pkg *myasthurts.Package
+	var models []*generatorModels.Model
+-}
+package @pkg.Name
+
+import (
+	sq "github.com/elgris/sqrl"
+	"github.com/jamillosantos/go-ceous"
+)
+
+@for _, m := range models {
+	@raw("\n\n")
+	@:/** @raw("\n")
+	@: * Declare @m.Name@raw("\n")
+	@: */
+	@{RenderModel(_buffer, pkg, m)}
+	//////////////////////////////
+}
+
+type schema struct {
+@for _, m := range models {
+	@raw("\n")
+@	@m.Name@: @raw("*")@m.SchemaName()
+}
+}
+
+// Schema represents the schema of the package "@pkg.Name@:".
+var Schema = schema{
+@for _, m := range models {
+	@raw("\n")
+@	@m.Name@: @raw("&")@m.SchemaName() {
+@		BaseSchema: @m.BaseSchemaName(),
+	@for i, field := range m.Fields {
+@	@field.Name: @m.BaseSchemaName()@:.ColumnsArr[@i],
+	}
+	}
+}
+}

@@ -1,0 +1,25 @@
+@{
+	import "github.com/jamillosantos/go-ceous/generator/models"
+
+	import myasthurts "github.com/lab259/go-my-ast-hurts"
+
+	var pkg *myasthurts.Package
+	var model *models.Model
+}
+
+var @model.BaseSchemaName() = ceous.SchemaField(
+	"@model.Name",
+	"",
+@for _, field := range model.Fields {
+	@raw("\n")
+@	ceous.NewSchemaField("@field.FieldName"),
+}
+)
+
+type @model.SchemaName() {
+	*ceous.BaseSchema,
+@for _, field := range model.Fields {
+	@raw("\n")
+@	@field.Name	ceous.SchemaField
+}
+}

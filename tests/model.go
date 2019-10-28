@@ -11,12 +11,12 @@ import (
 type (
 	User struct {
 		ceous.Model
-		ID        int
-		Name      string
-		Password  string
-		Role      string
-		CreatedAt time.Time
-		UpdatedAt time.Time
+		ID        int       `ceous:"id,pk"`
+		Name      string    `ceous:"name"`
+		Password  string    `ceous:"password"`
+		Role      string    `ceous:"role"`
+		CreatedAt time.Time `ceous:"created_at"`
+		UpdatedAt time.Time `ceous:"updated_at"`
 	}
 
 	Group struct {
