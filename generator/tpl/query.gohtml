@@ -1,0 +1,107 @@
+@{
+	import "github.com/jamillosantos/go-ceous/generator/models"
+
+	import myasthurts "github.com/lab259/go-my-ast-hurts"
+
+	var pkg *myasthurts.Package
+	var model *models.Model
+}
+
+// @model.QueryName() is the query for the model `@model.Name`.
+type @model.QueryName()@: struct {
+	*ceous.BaseQuery
+@for _, field := range model.Fields {
+	@raw("\n")
+@	@field.Name	ceous.SchemaField
+}
+}
+
+// New@model.Name@:Query creates a new query for model `@model.Name`.
+func New@model.Name@:Query(options ...ceous.CeousOption) @raw("*")@model.QueryName()@: {
+	bq := ceous.NewBaseQuery(options...)
+	if bq.Schema == nil {
+		bq.Schema = Schema.@model.Name@:.BaseSchema
+	}
+@	return &@model.QueryName()@:{
+		BaseQuery: bq,
+	}
+}
+
+@for _, field := range model.Fields {
+	@raw("\n\n")
+	@// By@field.Name@: add a filter by `@field.Name@:`.
+@:func (q @raw("*")@model.QueryName()) By@field.Name@:(value interface{}) @raw("*")@model.QueryName()@: {
+	q.BaseQuery.Where(ceous.Eq(Schema.@model.Name@:.@field.Name, value))
+	return q
+}
+}
+
+// Select defines what fields should be selected from the database.
+func (q @raw("*")@model.QueryName()) Select(fields ...ceous.SchemaField) @raw("*")@model.QueryName() {
+	q.BaseQuery.Select(fields...)
+	return q
+}
+
+// ExcludeFields defines what fields should not be selected from the database.
+func (q @raw("*")@model.QueryName()) ExcludeFields(fields ...ceous.SchemaField) @raw("*")@model.QueryName() {
+	q.BaseQuery.ExcludeFields(fields...)
+	return q
+}
+
+// Where defines the conditions for 
+func (q @raw("*")@model.QueryName()) Where(pred interface{}, args ...interface{}) @raw("*")@model.QueryName() {
+	q.BaseQuery.Where(pred, args...)
+	return q
+}
+
+func (q @raw("*")@model.QueryName()) Limit(limit uint64) @raw("*")@model.QueryName() {
+	q.BaseQuery.Limit(limit)
+	return q
+}
+
+func (q @raw("*")@model.QueryName()) Offset(offset uint64) @raw("*")@model.QueryName() {
+	q.BaseQuery.Offset(offset)
+	return q
+}
+
+// One results only one record matching the query.
+func (q @raw("*")@model.QueryName()) One() (m @model.Name@:, err error) {
+	q.Limit(1).Offset(0)
+
+	query, err := q.RawQuery()
+	if err != nil {
+		return
+	}
+
+	rs := New@model.Name@:ResultSet(query, nil)
+	defer rs.Close()
+
+	if rs.Next() {
+		err = rs.ToModel(&m)
+	} else {
+		err = ceous.ErrNotFound
+	}
+	return
+}
+
+// All return all records that match the query.
+func (q @raw("*")@model.QueryName()) All() ([]@model.Name@:, error) {
+	query, err := q.RawQuery()
+	if err != nil {
+		return nil, err
+	}
+
+	rs := New@model.Name@:ResultSet(query, nil)
+	defer rs.Close()
+
+	ms := make([]@model.Name, 0)
+	for rs.Next() {
+		var m @model.Name
+		err = rs.ToModel(&m)
+		if err != nil {
+			return nil, err
+		}
+		ms = append(ms, m)
+	}
+	return ms, nil
+}

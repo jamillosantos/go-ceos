@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 
+	"github.com/jamillosantos/go-ceous/generator/helpers"
 	myasthurts "github.com/lab259/go-my-ast-hurts"
 )
 
@@ -48,12 +49,23 @@ func NewModelField(field *myasthurts.Field) *ModelField {
 	return f
 }
 
+func isModel(r myasthurts.RefType) bool {
+	return r.Pkg().Name == "ceous" && r.Name() == "Model"
+}
+
 func NewModel(s *myasthurts.Struct) *Model {
 	m := &Model{
-		Name:   s.Name(),
-		Fields: make([]*ModelField, 0, len(s.Fields)),
+		Name:      s.Name(),
+		TableName: s.Name(), // TODO(jota): Set the table name convention.
+		Fields:    make([]*ModelField, 0, len(s.Fields)),
 	}
 	for _, field := range s.Fields {
+		if isModel(field.RefType) {
+			tableNameTag := field.Tag.TagParamByName("tableName")
+			if tableNameTag != nil {
+				m.TableName = tableNameTag.Value
+			}
+		}
 		if field.Name == "" {
 			continue
 		}
@@ -68,4 +80,12 @@ func (m *Model) SchemaName() string {
 
 func (m *Model) BaseSchemaName() string {
 	return "baseSchema" + m.Name
+}
+
+func (m *Model) QueryName() string {
+	return helpers.CamelCase(m.Name) + "Query"
+}
+
+func (m *Model) StoreName() string {
+	return helpers.CamelCase(m.Name) + "Store"
 }

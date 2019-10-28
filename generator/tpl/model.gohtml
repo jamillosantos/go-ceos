@@ -7,8 +7,8 @@
 	var model *models.Model
 }
 
-var @model.BaseSchemaName() = ceous.SchemaField(
-	"@model.Name",
+var @model.BaseSchemaName() = ceous.NewBaseSchema(
+	"@model.TableName",
 	"",
 @for _, field := range model.Fields {
 	@raw("\n")
@@ -16,8 +16,32 @@ var @model.BaseSchemaName() = ceous.SchemaField(
 }
 )
 
-type @model.SchemaName() {
-	*ceous.BaseSchema,
+func (model @raw("*")@model.Name@:) ColumnAddress(name string) (interface{}, error) {
+	switch name {
+@for _, field := range model.Fields {
+	@raw("\n")
+@	case "@field.FieldName":
+@		return &model.@field.Name@:, nil
+}
+	default:
+		return nil, errors.Wrapf(ceous.ErrFieldNotFound, "field %s not found", name)
+	}
+}
+
+func (model @raw("*")@model.Name) Value(name string) (interface{}, error) {
+	switch name {
+@for _, field := range model.Fields {
+	@raw("\n")
+@	case "@field.FieldName":
+@		return model.@field.Name@:, nil
+}
+	default:
+		return nil, errors.Wrapf(ceous.ErrFieldNotFound, "field %s not found", name)
+	}
+}
+
+type @model.SchemaName()@: struct {
+	*ceous.BaseSchema
 @for _, field := range model.Fields {
 	@raw("\n")
 @	@field.Name	ceous.SchemaField

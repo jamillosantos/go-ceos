@@ -23,7 +23,7 @@ func Schema(pkg *myasthurts.Package, models []*generatorModels.Model) string {
 func RenderSchema(_buffer io.StringWriter, pkg *myasthurts.Package, models []*generatorModels.Model) {
 	_buffer.WriteString("\npackage ")
 	_buffer.WriteString(gorazor.HTMLEscape(pkg.Name))
-	_buffer.WriteString("\n\nimport (\n\tsq \"github.com/elgris/sqrl\"\n\t\"github.com/jamillosantos/go-ceous\"\n)")
+	_buffer.WriteString("\n\nimport (\n\t\"github.com/jamillosantos/go-ceous\"\n\t\"github.com/pkg/errors\"\n)")
 	for _, m := range models {
 
 		_buffer.WriteString(("\n\n"))
@@ -38,7 +38,6 @@ func RenderSchema(_buffer io.StringWriter, pkg *myasthurts.Package, models []*ge
 		_buffer.WriteString(" */")
 
 		RenderModel(_buffer, pkg, m)
-		//////////////////////////////
 	}
 	_buffer.WriteString("\n\ntype schema struct {")
 	for _, m := range models {
@@ -60,7 +59,7 @@ func RenderSchema(_buffer io.StringWriter, pkg *myasthurts.Package, models []*ge
 
 		_buffer.WriteString("\t")
 		_buffer.WriteString(gorazor.HTMLEscape(m.Name))
-		_buffer.WriteString(" ")
+		_buffer.WriteString(": ")
 		_buffer.WriteString(("&"))
 		_buffer.WriteString(gorazor.HTMLEscape(m.SchemaName()))
 		_buffer.WriteString(" {\n\t\tBaseSchema: ")
@@ -76,8 +75,26 @@ func RenderSchema(_buffer io.StringWriter, pkg *myasthurts.Package, models []*ge
 			_buffer.WriteString(gorazor.HTMLEscape(i))
 			_buffer.WriteString("],\n\t")
 		}
-		_buffer.WriteString("\n\t}")
+		_buffer.WriteString("\n\t},")
 	}
 	_buffer.WriteString("\n}")
+	for _, m := range models {
+
+		_buffer.WriteString(("\n\n"))
+
+		RenderResultset(_buffer, m)
+	}
+	for _, m := range models {
+
+		_buffer.WriteString(("\n\n"))
+
+		RenderQuery(_buffer, pkg, m)
+	}
+	for _, m := range models {
+
+		_buffer.WriteString(("\n\n"))
+
+		RenderStore(_buffer, m)
+	}
 
 }

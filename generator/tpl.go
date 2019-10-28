@@ -1,3 +1,3 @@
-//go:generate go run github.com/sipin/gorazor ./tpl ./tpl
+//go:generate go run github.com/sipin/gorazor -q ./tpl ./tpl
 
 package templates

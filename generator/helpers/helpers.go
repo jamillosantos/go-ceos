@@ -1,8 +1,8 @@
-package tpl
+package helpers
 
 import "strings"
 
-func camelCase(name string) string {
+func CamelCase(name string) string {
 	if name == "" {
 		return ""
 	}

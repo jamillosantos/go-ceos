@@ -22,27 +22,55 @@ func Model(pkg *myasthurts.Package, model *models.Model) string {
 // RenderModel render tpl/model.gohtml
 func RenderModel(_buffer io.StringWriter, pkg *myasthurts.Package, model *models.Model) {
 	_buffer.WriteString("\n\nvar ")
-	_buffer.WriteString(gorazor.HTMLEscStr(model.BaseSchemaName()))
-	_buffer.WriteString(" = ceous.SchemaField(\n\t\"")
-	_buffer.WriteString(gorazor.HTMLEscStr(model.Name))
+	_buffer.WriteString(gorazor.HTMLEscape(model.BaseSchemaName()))
+	_buffer.WriteString(" = ceous.NewBaseSchema(\n\t\"")
+	_buffer.WriteString(gorazor.HTMLEscape(model.TableName))
 	_buffer.WriteString("\",\n\t\"\",")
 	for _, field := range model.Fields {
 
 		_buffer.WriteString(("\n"))
 
 		_buffer.WriteString("\tceous.NewSchemaField(\"")
-		_buffer.WriteString(gorazor.HTMLEscStr(field.FieldName))
+		_buffer.WriteString(gorazor.HTMLEscape(field.FieldName))
 		_buffer.WriteString("\"),")
 	}
-	_buffer.WriteString("\n)\n\ntype ")
-	_buffer.WriteString(gorazor.HTMLEscStr(model.SchemaName()))
-	_buffer.WriteString(" {\n\t*ceous.BaseSchema,")
+	_buffer.WriteString("\n)\n\nfunc (model ")
+	_buffer.WriteString(("*"))
+	_buffer.WriteString(gorazor.HTMLEscape(model.Name))
+	_buffer.WriteString(") ColumnAddress(name string) (interface{}, error) {\n\tswitch name {")
+	for _, field := range model.Fields {
+
+		_buffer.WriteString(("\n"))
+
+		_buffer.WriteString("\tcase \"")
+		_buffer.WriteString(gorazor.HTMLEscape(field.FieldName))
+		_buffer.WriteString("\":\n\t\treturn &model.")
+		_buffer.WriteString(gorazor.HTMLEscape(field.Name))
+		_buffer.WriteString(", nil")
+	}
+	_buffer.WriteString("\n\tdefault:\n\t\treturn nil, errors.Wrapf(ceous.ErrFieldNotFound, \"field %s not found\", name)\n\t}\n}\n\nfunc (model ")
+	_buffer.WriteString(("*"))
+	_buffer.WriteString(gorazor.HTMLEscape(model.Name))
+	_buffer.WriteString(") Value(name string) (interface{}, error) {\n\tswitch name {")
+	for _, field := range model.Fields {
+
+		_buffer.WriteString(("\n"))
+
+		_buffer.WriteString("\tcase \"")
+		_buffer.WriteString(gorazor.HTMLEscape(field.FieldName))
+		_buffer.WriteString("\":\n\t\treturn model.")
+		_buffer.WriteString(gorazor.HTMLEscape(field.Name))
+		_buffer.WriteString(", nil")
+	}
+	_buffer.WriteString("\n\tdefault:\n\t\treturn nil, errors.Wrapf(ceous.ErrFieldNotFound, \"field %s not found\", name)\n\t}\n}\n\ntype ")
+	_buffer.WriteString(gorazor.HTMLEscape(model.SchemaName()))
+	_buffer.WriteString(" struct {\n\t*ceous.BaseSchema")
 	for _, field := range model.Fields {
 
 		_buffer.WriteString(("\n"))
 
 		_buffer.WriteString("\t")
-		_buffer.WriteString(gorazor.HTMLEscStr(field.Name))
+		_buffer.WriteString(gorazor.HTMLEscape(field.Name))
 		_buffer.WriteString("\tceous.SchemaField")
 	}
 	_buffer.WriteString("\n}")

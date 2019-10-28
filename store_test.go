@@ -44,7 +44,7 @@ var _ = Describe("Store", func() {
 				Expect(rs.Next()).To(BeFalse())
 			})
 
-			It("should insert multiple users returning the PK", func() {
+			FIt("should insert multiple users returning the PK", func() {
 				db := ceous.WithDB(tests.DB)
 
 				user1 := tests.User{

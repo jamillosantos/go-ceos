@@ -9,8 +9,8 @@
 package @pkg.Name
 
 import (
-	sq "github.com/elgris/sqrl"
 	"github.com/jamillosantos/go-ceous"
+	"github.com/pkg/errors"
 )
 
 @for _, m := range models {
@@ -19,7 +19,6 @@ import (
 	@: * Declare @m.Name@raw("\n")
 	@: */
 	@{RenderModel(_buffer, pkg, m)}
-	//////////////////////////////
 }
 
 type schema struct {
@@ -33,11 +32,26 @@ type schema struct {
 var Schema = schema{
 @for _, m := range models {
 	@raw("\n")
-@	@m.Name@: @raw("&")@m.SchemaName() {
+@	@m.Name@:: @raw("&")@m.SchemaName() {
 @		BaseSchema: @m.BaseSchemaName(),
 	@for i, field := range m.Fields {
-@	@field.Name: @m.BaseSchemaName()@:.ColumnsArr[@i],
+@	@field.Name@:: @m.BaseSchemaName()@:.ColumnsArr[@i],
 	}
-	}
+	},
 }
+}
+
+@for _, m := range models {
+	@raw("\n\n")
+	@{RenderResultset(_buffer, m)}
+}
+
+@for _, m := range models {
+	@raw("\n\n")
+	@{RenderQuery(_buffer, pkg, m)}
+}
+
+@for _, m := range models {
+	@raw("\n\n")
+	@{RenderStore(_buffer, m)}
 }

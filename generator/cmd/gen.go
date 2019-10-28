@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"fmt"
+	"os"
 
 	generatorModels "github.com/jamillosantos/go-ceous/generator/models"
 	"github.com/jamillosantos/go-ceous/generator/tpl"
@@ -31,11 +31,10 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			panic(err) // TODO(jota): Decide how critical errors will be reported.
 		}
-		for _, pkgName := range args {
-			_, err := env.Parse(pkgName)
-			if err != nil {
-				panic(err) // TODO(jota): Decide how critical errors will be reported.
-			}
+
+		pkg, err := env.Parse(".")
+		if err != nil {
+			panic(err) // TODO(jota): Decide how critical errors will be reported.
 		}
 
 		ceousPkg, ok := env.PackageByImportPath("github.com/jamillosantos/go-ceous")
@@ -50,27 +49,26 @@ to quickly create a Cobra application.`,
 
 		// Models will be a list of the structs that implement Model
 
-		for _, pkgName := range args {
-			models := make([]*generatorModels.Model, 0)
+		models := make([]*generatorModels.Model, 0)
 
-			pkg, ok := env.PackageByImportPath(pkgName)
-			if !ok {
-				panic(pkgName + " not found") // TODO(jota): Decide how critical errors will be reported.
-			}
-
-			for _, s := range pkg.Structs {
-				for _, f := range s.Fields {
-					if f.RefType == ceousModel {
-						models = append(models, generatorModels.NewModel(s))
-					}
+		for _, s := range pkg.Structs {
+			for _, f := range s.Fields {
+				if f.RefType == ceousModel {
+					models = append(models, generatorModels.NewModel(s))
 				}
 			}
-
-			fmt.Println("#", pkg.Name)
-			fmt.Println("")
-			fmt.Println(tpl.Schema(pkg, models))
 		}
 
+		f, err := os.OpenFile("ceous.go", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0755)
+		if err != nil {
+			panic(err) // TODO(jota): To formalize this error
+		}
+		defer f.Close()
+
+		tpl.RenderSchema(f, pkg, models)
+		if err != nil {
+			panic(err) // TODO(jota): To formalize this error
+		}
 	},
 }
 
