@@ -5,6 +5,7 @@
 
 	var pkg *myasthurts.Package
 	var models []*generatorModels.Model
+	var embeddeds []*generatorModels.Model
 -}
 package @pkg.Name
 
@@ -21,8 +22,17 @@ import (
 	@{RenderModel(_buffer, pkg, m)}
 }
 
+@for _, m := range embeddeds {
+	@raw("\n\n")
+	@{RenderEmbedded(_buffer, m)}
+}
+
 type schema struct {
 @for _, m := range models {
+	@raw("\n")
+@	@m.Name@: @raw("*")@m.SchemaName()
+}
+@for _, m := range embeddeds {
 	@raw("\n")
 @	@m.Name@: @raw("*")@m.SchemaName()
 }

@@ -1,0 +1,15 @@
+@{
+	import "github.com/jamillosantos/go-ceous/generator/models"
+
+	var model *models.Model
+}
+
+@{RenderColumnAddress(_buffer, model)}
+@{RenderColumnValue(_buffer, model)}
+
+type schema@model.Name struct {
+@for _, f := range model.Fields {
+	@raw("\n")
+@	@f.Name  ceous.SchemaField
+}
+}

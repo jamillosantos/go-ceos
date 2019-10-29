@@ -15,6 +15,14 @@ var (
 	excludedFiles []string
 )
 
+func isModel(refType myasthurts.RefType) bool {
+	return refType.Pkg().Name == "ceous" && refType.Name() == "Model"
+}
+
+func isEmbedded(refType myasthurts.RefType) bool {
+	return refType.Pkg().Name == "ceous" && refType.Name() == "Embedded"
+}
+
 // genCmd represents the gen command
 var genCmd = &cobra.Command{
 	Use:   "gen",
@@ -33,16 +41,6 @@ to quickly create a Cobra application.`,
 			panic(err) // TODO(jota): Decide how critical errors will be reported.
 		}
 
-		ceousPkg, err := env.Parse("github.com/jamillosantos/go-ceous")
-		if err != nil {
-			panic(errors.Wrapf(err, "error parsing the go-ceous")) // TODO(jota): To formalize this error
-		}
-
-		ceousModel, ok := ceousPkg.RefTypeByName("Model")
-		if !ok {
-			panic(errors.New("ceous.Model definition not found")) // TODO(jota): To formalize this error
-		}
-
 		pkg, err := env.Parse(".")
 		if err != nil {
 			panic(errors.Wrap(err, "could not parse the package")) // TODO(jota): Decide how critical errors will be reported.
@@ -51,26 +49,33 @@ to quickly create a Cobra application.`,
 		// Models will be a list of the structs that implement Model
 
 		models := make([]*generatorModels.Model, 0)
+		embeddeds := make([]*generatorModels.Model, 0)
 
 		for _, s := range pkg.Structs {
 			for _, f := range s.Fields {
-				if f.RefType == ceousModel {
+				if isModel(f.RefType) {
 					model, err := generatorModels.NewModel(s)
 					if err != nil {
-						panic(errors.Wrapf(err, "error parsing model %s", s.Name())) // TODO(jota): To formalize this error.
+						panic(errors.Wrapf(err, "error parsing model %s", s.Name())) // TODO(jota): Decide how critical errors will be reported.
 					}
 					models = append(models, model)
+				} else if isEmbedded(f.RefType) {
+					model, err := generatorModels.NewModel(s)
+					if err != nil {
+						panic(errors.Wrapf(err, "error parsing embedded %s", s.Name())) // TODO(jota): Decide how critical errors will be reported.
+					}
+					embeddeds = append(embeddeds, model)
 				}
 			}
 		}
 
 		f, err := os.OpenFile("ceous.go", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0755)
 		if err != nil {
-			panic(errors.Wrapf(err, "error generating ceous.go")) // TODO(jota): To formalize this error
+			panic(errors.Wrapf(err, "error generating ceous.go")) // TODO(jota): Decide how critical errors will be reported.
 		}
 		defer f.Close()
 
-		tpl.RenderSchema(f, pkg, models)
+		tpl.RenderSchema(f, pkg, models, embeddeds)
 	},
 }
 

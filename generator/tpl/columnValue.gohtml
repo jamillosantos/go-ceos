@@ -1,0 +1,17 @@
+@{
+	import "github.com/jamillosantos/go-ceous/generator/models"
+
+	var model *models.Model
+}
+
+func (model @raw("*")@model.Name) Value(name string) (interface{}, error) {
+	switch name {
+@for _, field := range model.Columns {
+	@raw("\n")
+@	case "@field.Column":
+@		return model.@field.Field@:, nil
+}
+	default:
+		return nil, errors.Wrapf(ceous.ErrFieldNotFound, "field %s not found", name)
+	}
+}

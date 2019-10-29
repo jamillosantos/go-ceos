@@ -1,11 +1,9 @@
 package tests
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/jamillosantos/go-ceous"
-	"github.com/pkg/errors"
 )
 
 type (
@@ -26,14 +24,15 @@ type (
 	}
 
 	UserGroupPK struct {
-		UserID  int
-		GroupID int
+		ceous.Embedded
+		UserID  int `ceous:"user_id"`
+		GroupID int `ceous:"group_id"`
 	}
 
 	UserGroup struct {
 		ceous.Model `tableName:"user_groups"`
-		ID          UserGroupPK
-		Admin       bool
+		ID          UserGroupPK `ceous:",pk"`
+		Admin       bool        `ceous:"admin"`
 	}
 )
 
@@ -43,32 +42,6 @@ var (
 		ceous.NewSchemaField("group_id"),
 	}
 )
-
-func (ug *UserGroup) GetID() interface{} {
-	return ug.ID
-}
-
-func (ugPK *UserGroupPK) ColumnAddress(name string) (interface{}, error) {
-	switch name {
-	case "user_id":
-		return &ugPK.UserID, nil
-	case "group_id":
-		return &ugPK.GroupID, nil
-	default:
-		return nil, errors.Wrap(ceous.ErrFieldNotFound, fmt.Sprintf("field %s not found", name))
-	}
-}
-
-func (ugPK *UserGroupPK) Value(name string) (interface{}, error) {
-	switch name {
-	case "user_id":
-		return ugPK.UserID, nil
-	case "group_id":
-		return ugPK.GroupID, nil
-	default:
-		return nil, errors.Wrap(ceous.ErrFieldNotFound, fmt.Sprintf("field %s not found", name))
-	}
-}
 
 func (ugPK *UserGroupPK) Columns() []ceous.SchemaField {
 	return userGroupPKFields

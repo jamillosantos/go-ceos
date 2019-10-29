@@ -50,26 +50,26 @@ func RenderQuery(_buffer io.StringWriter, pkg *myasthurts.Package, model *models
 	_buffer.WriteString(".BaseSchema\n\t}\n\treturn &")
 	_buffer.WriteString(gorazor.HTMLEscape(model.QueryName()))
 	_buffer.WriteString("{\n\t\tBaseQuery: bq,\n\t}\n}")
-	for _, field := range model.Fields {
+	for _, field := range model.Conditions {
 
 		_buffer.WriteString(("\n\n"))
 
 		_buffer.WriteString("// By")
-		_buffer.WriteString(gorazor.HTMLEscape(field.Name))
+		_buffer.WriteString(gorazor.HTMLEscape(field.NameForMethod))
 		_buffer.WriteString(" add a filter by `")
-		_buffer.WriteString(gorazor.HTMLEscape(field.Name))
+		_buffer.WriteString(gorazor.HTMLEscape(field.Field))
 		_buffer.WriteString("`.\nfunc (q ")
 		_buffer.WriteString(("*"))
 		_buffer.WriteString(gorazor.HTMLEscape(model.QueryName()))
 		_buffer.WriteString(") By")
-		_buffer.WriteString(gorazor.HTMLEscape(field.Name))
+		_buffer.WriteString(gorazor.HTMLEscape(field.NameForMethod))
 		_buffer.WriteString("(value interface{}) ")
 		_buffer.WriteString(("*"))
 		_buffer.WriteString(gorazor.HTMLEscape(model.QueryName()))
 		_buffer.WriteString(" {\n\tq.BaseQuery.Where(ceous.Eq(Schema.")
 		_buffer.WriteString(gorazor.HTMLEscape(model.Name))
 		_buffer.WriteString(".")
-		_buffer.WriteString(gorazor.HTMLEscape(field.Name))
+		_buffer.WriteString(gorazor.HTMLEscape(field.Field))
 		_buffer.WriteString(", value))\n\treturn q\n}")
 	}
 	_buffer.WriteString("\n\n// Select defines what fields should be selected from the database.\nfunc (q ")

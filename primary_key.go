@@ -11,7 +11,7 @@ type (
 		Valuer
 	}
 
-	BasePrimaryKey struct {
+	Embedded struct {
 	}
 
 	pkWrapper struct {

@@ -13,7 +13,7 @@ require (
 	github.com/elgris/sqrl v0.0.0-20190909141434-5a439265eeec
 	github.com/gotestyourself/gotestyourself v2.2.0+incompatible // indirect
 	github.com/jamillosantos/macchiato v0.0.0-20171220130318-3be045cc5033
-	github.com/lab259/go-my-ast-hurts v0.0.0-20191029190856-fe56ff0b5ec3
+	github.com/lab259/go-my-ast-hurts v0.0.0-20191029192755-70e0dd09e3eb
 	github.com/lib/pq v1.2.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/novln/macchiato v1.0.0

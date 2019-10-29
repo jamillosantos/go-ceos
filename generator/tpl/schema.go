@@ -13,14 +13,14 @@ import (
 )
 
 // Schema generates tpl/schema.gohtml
-func Schema(pkg *myasthurts.Package, models []*generatorModels.Model) string {
+func Schema(pkg *myasthurts.Package, models []*generatorModels.Model, embeddeds []*generatorModels.Model) string {
 	var _b strings.Builder
-	RenderSchema(&_b, pkg, models)
+	RenderSchema(&_b, pkg, models, embeddeds)
 	return _b.String()
 }
 
 // RenderSchema render tpl/schema.gohtml
-func RenderSchema(_buffer io.StringWriter, pkg *myasthurts.Package, models []*generatorModels.Model) {
+func RenderSchema(_buffer io.StringWriter, pkg *myasthurts.Package, models []*generatorModels.Model, embeddeds []*generatorModels.Model) {
 	_buffer.WriteString("\npackage ")
 	_buffer.WriteString(gorazor.HTMLEscape(pkg.Name))
 	_buffer.WriteString("\n\nimport (\n\t\"github.com/jamillosantos/go-ceous\"\n\t\"github.com/pkg/errors\"\n)")
@@ -39,8 +39,24 @@ func RenderSchema(_buffer io.StringWriter, pkg *myasthurts.Package, models []*ge
 
 		RenderModel(_buffer, pkg, m)
 	}
+	for _, m := range embeddeds {
+
+		_buffer.WriteString(("\n\n"))
+
+		RenderEmbedded(_buffer, m)
+	}
 	_buffer.WriteString("\n\ntype schema struct {")
 	for _, m := range models {
+
+		_buffer.WriteString(("\n"))
+
+		_buffer.WriteString("\t")
+		_buffer.WriteString(gorazor.HTMLEscape(m.Name))
+		_buffer.WriteString(" ")
+		_buffer.WriteString(("*"))
+		_buffer.WriteString(gorazor.HTMLEscape(m.SchemaName()))
+	}
+	for _, m := range embeddeds {
 
 		_buffer.WriteString(("\n"))
 
