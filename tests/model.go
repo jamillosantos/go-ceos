@@ -11,7 +11,7 @@ import (
 type (
 	User struct {
 		ceous.Model `tableName:"users"`
-		ID          int       `ceous:"id,pk"`
+		ID          int       `ceous:"id,pk,autoincr"`
 		Name        string    `ceous:"name"`
 		Password    string    `ceous:"password"`
 		Role        string    `ceous:"role"`
@@ -20,9 +20,9 @@ type (
 	}
 
 	Group struct {
-		ceous.Model
-		ID   int
-		Name string
+		ceous.Model `tableName:"groups"`
+		ID          int    `ceous:"id,pk,autoincr"`
+		Name        string `ceous:"name"`
 	}
 
 	UserGroupPK struct {
@@ -31,9 +31,9 @@ type (
 	}
 
 	UserGroup struct {
-		ceous.Model
-		ID    UserGroupPK
-		Admin bool
+		ceous.Model `tableName:"user_groups"`
+		ID          UserGroupPK
+		Admin       bool
 	}
 )
 
@@ -43,14 +43,6 @@ var (
 		ceous.NewSchemaField("group_id"),
 	}
 )
-
-func (u *User) GetID() interface{} {
-	return u.ID
-}
-
-func (g *Group) GetID() interface{} {
-	return g.ID
-}
 
 func (ug *UserGroup) GetID() interface{} {
 	return ug.ID

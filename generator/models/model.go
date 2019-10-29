@@ -1,14 +1,14 @@
 package models
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/jamillosantos/go-ceous/generator/helpers"
 	myasthurts "github.com/lab259/go-my-ast-hurts"
 )
 
 type (
-	ModelFieldModifier interface{} // TODO(jota): To specify this...
+	ModelFieldModifier func() string
 
 	ModelField struct {
 		Name      string
@@ -19,13 +19,31 @@ type (
 
 	Model struct {
 		_s        *myasthurts.Struct
+		PK        *ModelField
 		Name      string
 		TableName string
 		Fields    []*ModelField
 	}
 )
 
-func NewModelField(field *myasthurts.Field) *ModelField {
+func fieldPK() string {
+	return "ceous.FieldPK"
+}
+
+func fieldAutoInc() string {
+	return "ceous.FieldAutoIncrement"
+}
+
+var SkipField = errors.New("field skipped")
+
+func NewModelField(m *Model, field *myasthurts.Field) (*ModelField, error) {
+	t := field.Tag.TagParamByName("ceous")
+	if t == nil {
+		return nil, SkipField
+	}
+	if t.Value == "-" {
+		return nil, SkipField
+	}
 	f := &ModelField{
 		Name:      field.Name,
 		FieldName: field.Name, // TODO(jota): Let the developer to choose its default naming convention...
@@ -33,27 +51,37 @@ func NewModelField(field *myasthurts.Field) *ModelField {
 		Modifiers: make([]ModelFieldModifier, 0), // TODO(jota): To check this..
 	}
 
-	for _, t := range field.Tag.Params {
-		switch t.Name {
-		case "ceous":
-			if t.Value != "" {
-				f.FieldName = t.Value
+	switch field.RefType.Type().(type) {
+	case *myasthurts.Struct:
+		// field.
+	}
+
+	if t.Value != "" {
+		f.FieldName = t.Value
+	}
+	// TODO(jota): To support multiple options...
+	for _, o := range t.Options {
+		switch o {
+		case "pk":
+			if m.PK != nil {
+				panic(errors.New("PK already defined")) // TODO(jota): To formalize this error.
 			}
-			// TODO(jota): To support multiple options...
-			for _, o := range t.Options {
-				fmt.Println(" *", o)
-			}
+			f.Modifiers = append(f.Modifiers, fieldPK)
+			m.PK = f
+		case "autoincr":
+			f.Modifiers = append(f.Modifiers, fieldAutoInc)
+			m.PK = f
 		}
 	}
 
-	return f
+	return f, nil
 }
 
 func isModel(r myasthurts.RefType) bool {
 	return r.Pkg().Name == "ceous" && r.Name() == "Model"
 }
 
-func NewModel(s *myasthurts.Struct) *Model {
+func NewModel(s *myasthurts.Struct) (*Model, error) {
 	m := &Model{
 		Name:      s.Name(),
 		TableName: s.Name(), // TODO(jota): Set the table name convention.
@@ -69,9 +97,15 @@ func NewModel(s *myasthurts.Struct) *Model {
 		if field.Name == "" {
 			continue
 		}
-		m.Fields = append(m.Fields, NewModelField(field))
+		mField, err := NewModelField(m, field)
+		if err == SkipField {
+			continue
+		} else if err != nil {
+			return nil, err
+		}
+		m.Fields = append(m.Fields, mField)
 	}
-	return m
+	return m, nil
 }
 
 func (m *Model) SchemaName() string {

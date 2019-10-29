@@ -12,9 +12,21 @@ var @model.BaseSchemaName() = ceous.NewBaseSchema(
 	"",
 @for _, field := range model.Fields {
 	@raw("\n")
-@	ceous.NewSchemaField("@field.FieldName"),
+	@:	ceous.NewSchemaField("@field.FieldName"
+	@if len(field.Modifiers) > 0 {
+		@for _, m := range field.Modifiers {
+			@raw(", ")@raw(m())
+		}
+	}@),
 }
 )
+
+@if model.PK != nil {
+@
+@:func (model @raw("*")@model.Name@:) GetID() interface{} {
+@		return model.@model.PK.Name
+@	}
+}
 
 func (model @raw("*")@model.Name@:) ColumnAddress(name string) (interface{}, error) {
 	switch name {

@@ -44,7 +44,7 @@ var _ = Describe("Store", func() {
 				Expect(rs.Next()).To(BeFalse())
 			})
 
-			FIt("should insert multiple users returning the PK", func() {
+			It("should insert multiple users returning the PK", func() {
 				db := ceous.WithDB(tests.DB)
 
 				user1 := tests.User{
@@ -104,7 +104,7 @@ var _ = Describe("Store", func() {
 				Expect(rs.Next()).To(BeFalse())
 			})
 
-			It("should insert a model with a composite PK", func() {
+			FIt("should insert a model with a composite PK", func() {
 				db := ceous.WithDB(tests.DB)
 
 				userGroup := tests.UserGroup{

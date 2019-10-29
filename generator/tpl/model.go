@@ -32,9 +32,29 @@ func RenderModel(_buffer io.StringWriter, pkg *myasthurts.Package, model *models
 
 		_buffer.WriteString("\tceous.NewSchemaField(\"")
 		_buffer.WriteString(gorazor.HTMLEscape(field.FieldName))
-		_buffer.WriteString("\"),")
+		_buffer.WriteString("\"")
+
+		if len(field.Modifiers) > 0 {
+			for _, m := range field.Modifiers {
+
+				_buffer.WriteString((", "))
+				_buffer.WriteString((m()))
+
+			}
+		}
+		_buffer.WriteString("),")
 	}
-	_buffer.WriteString("\n)\n\nfunc (model ")
+	_buffer.WriteString("\n)")
+	if model.PK != nil {
+
+		_buffer.WriteString("\nfunc (model ")
+		_buffer.WriteString(("*"))
+		_buffer.WriteString(gorazor.HTMLEscape(model.Name))
+		_buffer.WriteString(") GetID() interface{} {\n\t\treturn model.")
+		_buffer.WriteString(gorazor.HTMLEscape(model.PK.Name))
+		_buffer.WriteString("\n\t}")
+	}
+	_buffer.WriteString("\n\nfunc (model ")
 	_buffer.WriteString(("*"))
 	_buffer.WriteString(gorazor.HTMLEscape(model.Name))
 	_buffer.WriteString(") ColumnAddress(name string) (interface{}, error) {\n\tswitch name {")

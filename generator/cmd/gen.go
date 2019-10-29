@@ -6,6 +6,7 @@ import (
 	generatorModels "github.com/jamillosantos/go-ceous/generator/models"
 	"github.com/jamillosantos/go-ceous/generator/tpl"
 	myasthurts "github.com/lab259/go-my-ast-hurts"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -32,19 +33,19 @@ to quickly create a Cobra application.`,
 			panic(err) // TODO(jota): Decide how critical errors will be reported.
 		}
 
-		pkg, err := env.Parse(".")
+		ceousPkg, err := env.Parse("github.com/jamillosantos/go-ceous")
 		if err != nil {
-			panic(err) // TODO(jota): Decide how critical errors will be reported.
-		}
-
-		ceousPkg, ok := env.PackageByImportPath("github.com/jamillosantos/go-ceous")
-		if !ok {
-			panic("ceous package not found") // TODO(jota): To formalize this error
+			panic(errors.Wrapf(err, "error parsing the go-ceous")) // TODO(jota): To formalize this error
 		}
 
 		ceousModel, ok := ceousPkg.RefTypeByName("Model")
 		if !ok {
-			panic("ceous.Model definition not found") // TODO(jota): To formalize this error
+			panic(errors.New("ceous.Model definition not found")) // TODO(jota): To formalize this error
+		}
+
+		pkg, err := env.Parse(".")
+		if err != nil {
+			panic(errors.Wrap(err, "could not parse the package")) // TODO(jota): Decide how critical errors will be reported.
 		}
 
 		// Models will be a list of the structs that implement Model
@@ -54,21 +55,22 @@ to quickly create a Cobra application.`,
 		for _, s := range pkg.Structs {
 			for _, f := range s.Fields {
 				if f.RefType == ceousModel {
-					models = append(models, generatorModels.NewModel(s))
+					model, err := generatorModels.NewModel(s)
+					if err != nil {
+						panic(errors.Wrapf(err, "error parsing model %s", s.Name())) // TODO(jota): To formalize this error.
+					}
+					models = append(models, model)
 				}
 			}
 		}
 
 		f, err := os.OpenFile("ceous.go", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0755)
 		if err != nil {
-			panic(err) // TODO(jota): To formalize this error
+			panic(errors.Wrapf(err, "error generating ceous.go")) // TODO(jota): To formalize this error
 		}
 		defer f.Close()
 
 		tpl.RenderSchema(f, pkg, models)
-		if err != nil {
-			panic(err) // TODO(jota): To formalize this error
-		}
 	},
 }
 
