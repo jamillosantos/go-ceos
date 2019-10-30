@@ -1,17 +1,21 @@
 @{
 	import generatorModels "github.com/jamillosantos/go-ceous/generator/models"
 
-	import "github.com/lab259/go-my-ast-hurts"
-
-	var pkg *myasthurts.Package
+	var ctxPkg *generatorModels.Ctx
 	var models []*generatorModels.Model
 	var embeddeds []*generatorModels.Model
--}
-package @pkg.Name
+-}@:package @ctxPkg.Pkg.Name
 
 import (
 	"github.com/jamillosantos/go-ceous"
 	"github.com/pkg/errors"
+@for _, pkg := range ctxPkg.Imports {
+	if pkg.Alias == "-" {
+		continue
+	}
+	@raw("\n")
+@	@pkg.Alias "@pkg.Pkg.ImportPath@:"
+}
 )
 
 @for _, m := range models {
@@ -19,7 +23,7 @@ import (
 	@:/** @raw("\n")
 	@: * Declare @m.Name@raw("\n")
 	@: */
-	@{RenderModel(_buffer, pkg, m)}
+	@{RenderModel(_buffer, ctxPkg.Pkg, m)}
 }
 
 @for _, m := range embeddeds {
@@ -32,20 +36,21 @@ type schema struct {
 	@raw("\n")
 @	@m.Name@: @raw("*")@m.SchemaName()
 }
-@for _, m := range embeddeds {
-	@raw("\n")
-@	@m.Name@: @raw("*")@m.SchemaName()
-}
 }
 
-// Schema represents the schema of the package "@pkg.Name@:".
+// Schema represents the schema of the package "@ctxPkg.Pkg.Name@:".
 var Schema = schema{
 @for _, m := range models {
 	@raw("\n")
 @	@m.Name@:: @raw("&")@m.SchemaName() {
 @		BaseSchema: @m.BaseSchemaName(),
-	@for i, field := range m.Fields {
-@	@field.Name@:: @m.BaseSchemaName()@:.ColumnsArr[@i],
+	@for _, field := range m.Fields {
+@	@field.Name@:: @if field.SchemaType == "" {
+		i := m.ColumnsMap[field.FieldName]
+		@m.BaseSchemaName()@:.ColumnsArr[@i],
+	} else {
+		@field.SchemaType@:Schema,
+	}
 	}
 	},
 }
@@ -58,7 +63,7 @@ var Schema = schema{
 
 @for _, m := range models {
 	@raw("\n\n")
-	@{RenderQuery(_buffer, pkg, m)}
+	@{RenderQuery(_buffer, ctxPkg.Pkg, m)}
 }
 
 @for _, m := range models {

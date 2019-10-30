@@ -33,6 +33,21 @@ func RenderEmbedded(_buffer io.StringWriter, model *models.Model) {
 		_buffer.WriteString(gorazor.HTMLEscape(f.Name))
 		_buffer.WriteString("  ceous.SchemaField")
 	}
+	_buffer.WriteString("\n}\n\nvar ")
+	_buffer.WriteString(gorazor.HTMLEscape(model.Name))
+	_buffer.WriteString("Schema = schema")
+	_buffer.WriteString(gorazor.HTMLEscape(model.Name))
+	_buffer.WriteString(" {")
+	for _, f := range model.Fields {
+
+		_buffer.WriteString(("\n"))
+
+		_buffer.WriteString("\t")
+		_buffer.WriteString(gorazor.HTMLEscape(f.Name))
+		_buffer.WriteString(": ceous.NewSchemaField(\"")
+		_buffer.WriteString(gorazor.HTMLEscape(f.FieldName))
+		_buffer.WriteString("\"),")
+	}
 	_buffer.WriteString("\n}")
 
 }

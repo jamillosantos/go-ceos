@@ -1,9 +1,9 @@
-
 package tests
 
 import (
 	"github.com/jamillosantos/go-ceous"
 	"github.com/pkg/errors"
+	time "time"
 )
 
 /** 
@@ -64,12 +64,14 @@ func (model *User) Value(name string) (interface{}, error) {
 
 type schemaUser struct {
 	*ceous.BaseSchema
+	
 	ID	ceous.SchemaField
-	Name	ceous.SchemaField
-	Password	ceous.SchemaField
-	Role	ceous.SchemaField
-	CreatedAt	ceous.SchemaField
-	UpdatedAt	ceous.SchemaField
+		Name	ceous.SchemaField
+		Password	ceous.SchemaField
+		Role	ceous.SchemaField
+		CreatedAt	ceous.SchemaField
+		UpdatedAt	ceous.SchemaField
+	
 }
 
 /** 
@@ -110,8 +112,10 @@ func (model *Group) Value(name string) (interface{}, error) {
 
 type schemaGroup struct {
 	*ceous.BaseSchema
+	
 	ID	ceous.SchemaField
-	Name	ceous.SchemaField
+		Name	ceous.SchemaField
+	
 }
 
 /** 
@@ -121,6 +125,8 @@ type schemaGroup struct {
 var baseSchemaUserGroup = ceous.NewBaseSchema(
 	"user_groups",
 	"",
+	ceous.NewSchemaField("user_id", ceous.FieldPK),
+	ceous.NewSchemaField("group_id", ceous.FieldPK),
 	ceous.NewSchemaField("admin"),
 )
 func (model *UserGroup) GetID() interface{} {
@@ -155,9 +161,10 @@ func (model *UserGroup) Value(name string) (interface{}, error) {
 
 type schemaUserGroup struct {
 	*ceous.BaseSchema
-	UserID	ceous.SchemaField
-	GroupID	ceous.SchemaField
-	Admin	ceous.SchemaField
+	
+	ID	schemaUserGroupPK
+		Admin	ceous.SchemaField
+	
 }
 
 
@@ -189,11 +196,15 @@ type schemaUserGroupPK struct {
 	GroupID  ceous.SchemaField
 }
 
+var UserGroupPKSchema = schemaUserGroupPK {
+	UserID: ceous.NewSchemaField("user_id"),
+	GroupID: ceous.NewSchemaField("group_id"),
+}
+
 type schema struct {
 	User *schemaUser
 	Group *schemaGroup
 	UserGroup *schemaUserGroup
-	UserGroupPK *schemaUserGroupPK
 }
 
 // Schema represents the schema of the package "tests".
@@ -216,7 +227,8 @@ var Schema = schema{
 	},
 	UserGroup: &schemaUserGroup {
 		BaseSchema: baseSchemaUserGroup,
-		Admin: baseSchemaUserGroup.ColumnsArr[0],
+		ID: UserGroupPKSchema,
+		Admin: baseSchemaUserGroup.ColumnsArr[2],
 	
 	},
 }
@@ -282,38 +294,44 @@ func NewUserQuery(options ...ceous.CeousOption) *userQuery {
 }
 
 // ByID add a filter by `ID`.
-func (q *userQuery) ByID(value interface{}) *userQuery {
-	q.BaseQuery.Where(ceous.Eq(Schema.User.ID, value))
+func (q *userQuery) ByID(value int) *userQuery {
+		q.BaseQuery.Where(ceous.Eq(Schema.User.ID, value))
+	
 	return q
 }
 
 // ByName add a filter by `Name`.
-func (q *userQuery) ByName(value interface{}) *userQuery {
-	q.BaseQuery.Where(ceous.Eq(Schema.User.Name, value))
+func (q *userQuery) ByName(value string) *userQuery {
+		q.BaseQuery.Where(ceous.Eq(Schema.User.Name, value))
+	
 	return q
 }
 
 // ByPassword add a filter by `Password`.
-func (q *userQuery) ByPassword(value interface{}) *userQuery {
-	q.BaseQuery.Where(ceous.Eq(Schema.User.Password, value))
+func (q *userQuery) ByPassword(value string) *userQuery {
+		q.BaseQuery.Where(ceous.Eq(Schema.User.Password, value))
+	
 	return q
 }
 
 // ByRole add a filter by `Role`.
-func (q *userQuery) ByRole(value interface{}) *userQuery {
-	q.BaseQuery.Where(ceous.Eq(Schema.User.Role, value))
+func (q *userQuery) ByRole(value string) *userQuery {
+		q.BaseQuery.Where(ceous.Eq(Schema.User.Role, value))
+	
 	return q
 }
 
 // ByCreatedAt add a filter by `CreatedAt`.
-func (q *userQuery) ByCreatedAt(value interface{}) *userQuery {
-	q.BaseQuery.Where(ceous.Eq(Schema.User.CreatedAt, value))
+func (q *userQuery) ByCreatedAt(value time.Time) *userQuery {
+		q.BaseQuery.Where(ceous.Eq(Schema.User.CreatedAt, value))
+	
 	return q
 }
 
 // ByUpdatedAt add a filter by `UpdatedAt`.
-func (q *userQuery) ByUpdatedAt(value interface{}) *userQuery {
-	q.BaseQuery.Where(ceous.Eq(Schema.User.UpdatedAt, value))
+func (q *userQuery) ByUpdatedAt(value time.Time) *userQuery {
+		q.BaseQuery.Where(ceous.Eq(Schema.User.UpdatedAt, value))
+	
 	return q
 }
 
@@ -408,14 +426,16 @@ func NewGroupQuery(options ...ceous.CeousOption) *groupQuery {
 }
 
 // ByID add a filter by `ID`.
-func (q *groupQuery) ByID(value interface{}) *groupQuery {
-	q.BaseQuery.Where(ceous.Eq(Schema.Group.ID, value))
+func (q *groupQuery) ByID(value int) *groupQuery {
+		q.BaseQuery.Where(ceous.Eq(Schema.Group.ID, value))
+	
 	return q
 }
 
 // ByName add a filter by `Name`.
-func (q *groupQuery) ByName(value interface{}) *groupQuery {
-	q.BaseQuery.Where(ceous.Eq(Schema.Group.Name, value))
+func (q *groupQuery) ByName(value string) *groupQuery {
+		q.BaseQuery.Where(ceous.Eq(Schema.Group.Name, value))
+	
 	return q
 }
 
@@ -494,6 +514,7 @@ func (q *groupQuery) All() ([]Group, error) {
 // userGroupQuery is the query for the model `UserGroup`.
 type userGroupQuery struct {
 	*ceous.BaseQuery
+	ID	ceous.SchemaField
 	Admin	ceous.SchemaField
 }
 
@@ -508,9 +529,18 @@ func NewUserGroupQuery(options ...ceous.CeousOption) *userGroupQuery {
 	}
 }
 
+// ByID add a filter by `ID`.
+func (q *userGroupQuery) ByID(value UserGroupPK) *userGroupQuery {
+		q.BaseQuery.Where(ceous.Eq(Schema.UserGroup.ID.UserID, value.UserID))
+		q.BaseQuery.Where(ceous.Eq(Schema.UserGroup.ID.GroupID, value.GroupID))
+	
+	return q
+}
+
 // ByAdmin add a filter by `Admin`.
-func (q *userGroupQuery) ByAdmin(value interface{}) *userGroupQuery {
-	q.BaseQuery.Where(ceous.Eq(Schema.UserGroup.Admin, value))
+func (q *userGroupQuery) ByAdmin(value bool) *userGroupQuery {
+		q.BaseQuery.Where(ceous.Eq(Schema.UserGroup.Admin, value))
+	
 	return q
 }
 

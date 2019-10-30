@@ -10,9 +10,9 @@
 var @model.BaseSchemaName() = ceous.NewBaseSchema(
 	"@model.TableName",
 	"",
-@for _, field := range model.Fields {
+@for _, field := range model.Columns {
 	@raw("\n")
-	@:	ceous.NewSchemaField("@field.FieldName"
+	@:	ceous.NewSchemaField("@field.Column"
 	@if len(field.Modifiers) > 0 {
 		@for _, m := range field.Modifiers {
 			@raw(", ")@raw(m())
@@ -33,8 +33,12 @@ var @model.BaseSchemaName() = ceous.NewBaseSchema(
 
 type @model.SchemaName()@: struct {
 	*ceous.BaseSchema
-@for _, field := range model.SchemaFields {
 	@raw("\n")
-@	@field.Name	ceous.SchemaField
+@for _, field := range model.SchemaFields {
+@	@field.Name@if field.SchemaType == "" {
+		@	ceous.SchemaField
+	} else {
+		@	schema@field.SchemaType@:
+	}
 }
 }

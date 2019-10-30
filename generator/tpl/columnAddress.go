@@ -31,7 +31,7 @@ func RenderColumnAddress(_buffer io.StringWriter, model *models.Model) {
 		_buffer.WriteString("\tcase \"")
 		_buffer.WriteString(gorazor.HTMLEscape(field.Column))
 		_buffer.WriteString("\":\n\t\treturn &model.")
-		_buffer.WriteString(gorazor.HTMLEscape(field.Field))
+		_buffer.WriteString(gorazor.HTMLEscape(field.FullField))
 		_buffer.WriteString(", nil")
 	}
 	_buffer.WriteString("\n\tdefault:\n\t\treturn nil, errors.Wrapf(ceous.ErrFieldNotFound, \"field %s not found\", name)\n\t}\n}")

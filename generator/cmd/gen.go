@@ -51,16 +51,18 @@ to quickly create a Cobra application.`,
 		models := make([]*generatorModels.Model, 0)
 		embeddeds := make([]*generatorModels.Model, 0)
 
+		ctx := generatorModels.NewCtx(pkg, env.BuiltIn)
+
 		for _, s := range pkg.Structs {
 			for _, f := range s.Fields {
 				if isModel(f.RefType) {
-					model, err := generatorModels.NewModel(s)
+					model, err := generatorModels.NewModel(ctx, s)
 					if err != nil {
 						panic(errors.Wrapf(err, "error parsing model %s", s.Name())) // TODO(jota): Decide how critical errors will be reported.
 					}
 					models = append(models, model)
 				} else if isEmbedded(f.RefType) {
-					model, err := generatorModels.NewModel(s)
+					model, err := generatorModels.NewModel(ctx, s)
 					if err != nil {
 						panic(errors.Wrapf(err, "error parsing embedded %s", s.Name())) // TODO(jota): Decide how critical errors will be reported.
 					}
@@ -75,7 +77,7 @@ to quickly create a Cobra application.`,
 		}
 		defer f.Close()
 
-		tpl.RenderSchema(f, pkg, models, embeddeds)
+		tpl.RenderSchema(f, ctx, models, embeddeds)
 	},
 }
 

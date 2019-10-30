@@ -26,12 +26,12 @@ func RenderModel(_buffer io.StringWriter, pkg *myasthurts.Package, model *models
 	_buffer.WriteString(" = ceous.NewBaseSchema(\n\t\"")
 	_buffer.WriteString(gorazor.HTMLEscape(model.TableName))
 	_buffer.WriteString("\",\n\t\"\",")
-	for _, field := range model.Fields {
+	for _, field := range model.Columns {
 
 		_buffer.WriteString(("\n"))
 
 		_buffer.WriteString("\tceous.NewSchemaField(\"")
-		_buffer.WriteString(gorazor.HTMLEscape(field.FieldName))
+		_buffer.WriteString(gorazor.HTMLEscape(field.Column))
 		_buffer.WriteString("\"")
 
 		if len(field.Modifiers) > 0 {
@@ -58,14 +58,21 @@ func RenderModel(_buffer io.StringWriter, pkg *myasthurts.Package, model *models
 	RenderColumnValue(_buffer, model)
 	_buffer.WriteString("\n\ntype ")
 	_buffer.WriteString(gorazor.HTMLEscape(model.SchemaName()))
-	_buffer.WriteString(" struct {\n\t*ceous.BaseSchema")
+	_buffer.WriteString(" struct {\n\t*ceous.BaseSchema\n\t")
+	_buffer.WriteString(("\n"))
 	for _, field := range model.SchemaFields {
-
-		_buffer.WriteString(("\n"))
 
 		_buffer.WriteString("\t")
 		_buffer.WriteString(gorazor.HTMLEscape(field.Name))
-		_buffer.WriteString("\tceous.SchemaField")
+		if field.SchemaType == "" {
+
+			_buffer.WriteString("\tceous.SchemaField\n\t")
+		} else {
+
+			_buffer.WriteString("\tschema")
+			_buffer.WriteString(gorazor.HTMLEscape(field.SchemaType))
+			_buffer.WriteString("\n\t")
+		}
 	}
 	_buffer.WriteString("\n}")
 

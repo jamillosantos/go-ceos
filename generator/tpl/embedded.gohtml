@@ -13,3 +13,10 @@ type schema@model.Name struct {
 @	@f.Name  ceous.SchemaField
 }
 }
+
+var @model.Name@:Schema = schema@model.Name {
+@for _, f := range model.Fields {
+	@raw("\n")
+@	@f.Name: ceous.NewSchemaField("@f.FieldName@:"),
+}
+}

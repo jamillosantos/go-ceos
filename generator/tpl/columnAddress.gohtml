@@ -9,7 +9,7 @@ func (model @raw("*")@model.Name@:) ColumnAddress(name string) (interface{}, err
 @for _, field := range model.Columns {
 	@raw("\n")
 @	case "@field.Column":
-@		return &model.@field.Field@:, nil
+@		return &model.@field.FullField@:, nil
 }
 	default:
 		return nil, errors.Wrapf(ceous.ErrFieldNotFound, "field %s not found", name)

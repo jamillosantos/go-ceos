@@ -30,8 +30,10 @@ func New@model.Name@:Query(options ...ceous.CeousOption) @raw("*")@model.QueryNa
 @for _, field := range model.Conditions {
 	@raw("\n\n")
 	@// By@field.NameForMethod@: add a filter by `@field.Field@:`.
-@:func (q @raw("*")@model.QueryName()) By@field.NameForMethod@:(value interface{}) @raw("*")@model.QueryName()@: {
-	q.BaseQuery.Where(ceous.Eq(Schema.@model.Name@:.@field.Field, value))
+@:func (q @raw("*")@model.QueryName()) By@field.NameForMethod@:(value @field.Type@:) @raw("*")@model.QueryName()@: {
+	@for _, condition := range field.Conditions {
+@	q.BaseQuery.Where(ceous.Eq(Schema.@condition.SchemaField@:, value@condition.StringField()@:))
+	}
 	return q
 }
 }

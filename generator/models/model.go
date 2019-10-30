@@ -13,26 +13,39 @@ type (
 
 	ModelSchemaField struct {
 		Name string
-		Type myasthurts.RefType
+		Type *ModelType
 	}
 
 	ModelField struct {
-		Name      string
-		FieldName string
-		Type      myasthurts.RefType
-		Modifiers []ModelFieldModifier
+		Name       string
+		FieldName  string
+		Type       *ModelType
+		SchemaType string
+		Modifiers  []ModelFieldModifier
 	}
 
 	ModelColumn struct {
-		Column string
-		Field  string
+		Column    string
+		FullField string
+		Modifiers []ModelFieldModifier
+	}
+
+	ModelConditionCondition struct {
+		SchemaField string
+		FullField   string
+		Field       string
 	}
 
 	ModelCondition struct {
 		Field         string
 		NameForMethod string
-		RefType       myasthurts.RefType
-		Conditions    []string
+		Type          *ModelType
+		Conditions    []*ModelConditionCondition
+	}
+
+	ModelType struct {
+		ctx     *Ctx
+		RefType myasthurts.RefType
 	}
 
 	Model struct {
@@ -43,17 +56,25 @@ type (
 		SchemaFields []*ModelField
 		Columns      []*ModelColumn
 		Fields       []*ModelField
+		ColumnsMap   map[string]int
 		Conditions   []*ModelCondition
 	}
 )
 
-func NewModelCondition(field string, refType myasthurts.RefType) *ModelCondition {
+func NewModelType(ctx *Ctx, refType myasthurts.RefType) *ModelType {
+	return &ModelType{
+		ctx:     ctx,
+		RefType: refType,
+	}
+}
+
+func NewModelCondition(ctx *Ctx, field string, refType myasthurts.RefType) *ModelCondition {
 	nfM := strings.Replace(field, ".", "", 0) // Prepare name for method by removing possible dots from property members.
 	return &ModelCondition{
 		Field:         field,
 		NameForMethod: nfM,
-		RefType:       refType,
-		Conditions:    make([]string, 0),
+		Type:          NewModelType(ctx, refType),
+		Conditions:    make([]*ModelConditionCondition, 0),
 	}
 }
 
@@ -76,7 +97,7 @@ func isStructEmbedded(s *myasthurts.Struct) bool {
 	return false
 }
 
-func (m *Model) ParseField(field *myasthurts.Field) error {
+func (m *Model) ParseField(ctx *Ctx, field *myasthurts.Field) error {
 	t := field.Tag.TagParamByName("ceous")
 	if t == nil {
 		return SkipField
@@ -87,37 +108,14 @@ func (m *Model) ParseField(field *myasthurts.Field) error {
 
 	isStructE := false
 
-	if s, ok := field.RefType.Type().(*myasthurts.Struct); ok && isStructEmbedded(s) {
-		isStructE = true
-		for _, embeddedField := range s.Fields {
-			ceousTag := embeddedField.Tag.TagParamByName("ceous")
-			if ceousTag == nil || ceousTag.Value == "" {
-				continue
-			}
-			columnName := ceousTag.Value
-			if columnName == "" {
-				columnName = embeddedField.Name // TODO(jota): Apply the default naming convention here.
-			}
-			m.Columns = append(m.Columns, &ModelColumn{
-				Column: ceousTag.Value,
-				Field:  field.Name + "." + embeddedField.Name,
-			})
-
-			m.SchemaFields = append(m.SchemaFields, &ModelField{
-				Name:      embeddedField.Name,
-				FieldName: columnName,
-				Type:      embeddedField.RefType,
-				Modifiers: make([]ModelFieldModifier, 0),
-			})
-		}
-	}
-
 	f := &ModelField{
 		Name:      field.Name,
 		FieldName: field.Name, // TODO(jota): Let the developer to choose its default naming convention...
-		Type:      field.RefType,
+		Type:      NewModelType(ctx, field.RefType),
 		Modifiers: make([]ModelFieldModifier, 0), // TODO(jota): To check this..
 	}
+
+	ctx.AddRefType(field.RefType)
 
 	if t.Value != "" {
 		f.FieldName = t.Value
@@ -136,20 +134,56 @@ func (m *Model) ParseField(field *myasthurts.Field) error {
 		}
 	}
 
+	if s, ok := field.RefType.Type().(*myasthurts.Struct); ok && isStructEmbedded(s) {
+		isStructE = true
+		cond := NewModelCondition(ctx, field.Name, field.RefType)
+		for _, embeddedField := range s.Fields {
+			ceousTag := embeddedField.Tag.TagParamByName("ceous")
+			if ceousTag == nil || ceousTag.Value == "" {
+				continue
+			}
+			columnName := ceousTag.Value
+			if columnName == "" {
+				columnName = embeddedField.Name // TODO(jota): Apply the default naming convention here.
+			}
+			column := &ModelColumn{
+				Column:    ceousTag.Value,
+				FullField: field.Name + "." + embeddedField.Name,
+				Modifiers: f.Modifiers,
+			}
+			m.Columns = append(m.Columns, column)
+			m.ColumnsMap[column.Column] = len(m.Columns) - 1
+
+			cond.Conditions = append(cond.Conditions, &ModelConditionCondition{
+				FullField:   field.Name + "." + embeddedField.Name,
+				Field:       embeddedField.Name,
+				SchemaField: m.Name + "." + field.Name + "." + embeddedField.Name,
+			})
+		}
+		m.Conditions = append(m.Conditions, cond)
+		f.SchemaType = field.RefType.Name()
+	}
+
+	m.Fields = append(m.Fields, f)
+	m.SchemaFields = append(m.SchemaFields, f)
+
 	if isStructE { /// If is a embedded struct, it does not need to have the field appended. Instead, only the m.PK will be set.
 		return nil
 	}
-
-	cond := NewModelCondition(f.Name, field.RefType)
-	cond.Conditions = append(cond.Conditions, f.Name)
-
-	m.Fields = append(m.Fields, f)
-	m.Conditions = append(m.Conditions, cond)
-	m.Columns = append(m.Columns, &ModelColumn{
-		Column: f.FieldName,
-		Field:  field.Name,
+	cond := NewModelCondition(ctx, f.Name, field.RefType)
+	cond.Conditions = append(cond.Conditions, &ModelConditionCondition{
+		SchemaField: m.Name + "." + field.Name,
+		FullField:   field.Name,
 	})
-	m.SchemaFields = append(m.SchemaFields, f)
+	m.Conditions = append(m.Conditions, cond)
+
+	column := &ModelColumn{
+		Column:    f.FieldName,
+		FullField: field.Name,
+		Modifiers: f.Modifiers,
+	}
+	m.Columns = append(m.Columns, column)
+	m.ColumnsMap[f.FieldName] = len(m.Columns) - 1
 
 	return nil
 }
@@ -162,7 +196,7 @@ func isEmbedded(r myasthurts.RefType) bool {
 	return r.Pkg().Name == "ceous" && r.Name() == "Embedded"
 }
 
-func NewModel(s *myasthurts.Struct) (*Model, error) {
+func NewModel(ctx *Ctx, s *myasthurts.Struct) (*Model, error) {
 	m := &Model{
 		_s:           s,
 		Name:         s.Name(),
@@ -170,6 +204,7 @@ func NewModel(s *myasthurts.Struct) (*Model, error) {
 		SchemaFields: make([]*ModelField, 0),
 		Columns:      make([]*ModelColumn, 0),
 		Fields:       make([]*ModelField, 0),
+		ColumnsMap:   make(map[string]int, 0),
 	}
 	for _, field := range s.Fields {
 		if isModel(field.RefType) {
@@ -181,7 +216,7 @@ func NewModel(s *myasthurts.Struct) (*Model, error) {
 		if field.Name == "" {
 			continue
 		}
-		err := m.ParseField(field)
+		err := m.ParseField(ctx, field)
 		if err == SkipField {
 			continue
 		} else if err != nil {
@@ -205,4 +240,20 @@ func (m *Model) QueryName() string {
 
 func (m *Model) StoreName() string {
 	return helpers.CamelCase(m.Name) + "Store"
+}
+
+func (t *ModelType) String() string {
+	ctxPkg := t.ctx.AddRefType(t.RefType)
+	var r string
+	if ctxPkg.Alias != "." && ctxPkg.Alias != "-" {
+		r = ctxPkg.Alias + "."
+	}
+	return r + t.RefType.Name()
+}
+
+func (c *ModelConditionCondition) StringField() string {
+	if c.Field == "" {
+		return ""
+	}
+	return "." + c.Field
 }

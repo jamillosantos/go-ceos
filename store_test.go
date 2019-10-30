@@ -104,7 +104,7 @@ var _ = Describe("Store", func() {
 				Expect(rs.Next()).To(BeFalse())
 			})
 
-			FIt("should insert a model with a composite PK", func() {
+			It("should insert a model with a composite PK", func() {
 				db := ceous.WithDB(tests.DB)
 
 				userGroup := tests.UserGroup{

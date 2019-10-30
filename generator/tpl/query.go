@@ -63,14 +63,21 @@ func RenderQuery(_buffer io.StringWriter, pkg *myasthurts.Package, model *models
 		_buffer.WriteString(gorazor.HTMLEscape(model.QueryName()))
 		_buffer.WriteString(") By")
 		_buffer.WriteString(gorazor.HTMLEscape(field.NameForMethod))
-		_buffer.WriteString("(value interface{}) ")
+		_buffer.WriteString("(value ")
+		_buffer.WriteString(gorazor.HTMLEscape(field.Type))
+		_buffer.WriteString(") ")
 		_buffer.WriteString(("*"))
 		_buffer.WriteString(gorazor.HTMLEscape(model.QueryName()))
-		_buffer.WriteString(" {\n\tq.BaseQuery.Where(ceous.Eq(Schema.")
-		_buffer.WriteString(gorazor.HTMLEscape(model.Name))
-		_buffer.WriteString(".")
-		_buffer.WriteString(gorazor.HTMLEscape(field.Field))
-		_buffer.WriteString(", value))\n\treturn q\n}")
+		_buffer.WriteString(" {\n\t")
+		for _, condition := range field.Conditions {
+
+			_buffer.WriteString("\tq.BaseQuery.Where(ceous.Eq(Schema.")
+			_buffer.WriteString(gorazor.HTMLEscape(condition.SchemaField))
+			_buffer.WriteString(", value")
+			_buffer.WriteString(gorazor.HTMLEscape(condition.StringField()))
+			_buffer.WriteString("))\n\t")
+		}
+		_buffer.WriteString("\n\treturn q\n}")
 	}
 	_buffer.WriteString("\n\n// Select defines what fields should be selected from the database.\nfunc (q ")
 	_buffer.WriteString(("*"))
