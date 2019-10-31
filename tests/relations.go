@@ -2,21 +2,7 @@ package tests
 
 import "github.com/jamillosantos/go-ceous"
 
-type (
-	UserGroupModelUserRelation struct {
-		keys    []interface{}
-		records map[int][]*UserGroup
-	}
-)
-
-func NewUserGroupModelUserRelation() *UserGroupModelUserRelation {
-	return &UserGroupModelUserRelation{
-		keys:    make([]interface{}, 0),
-		records: make(map[int][]*UserGroup),
-	}
-}
-
-func (relation *UserGroupModelUserRelation) Aggregate(record ceous.Record) error {
+func (relation *UserGroupModelUserRelation) Aggregate2(record ceous.Record) error {
 	ugRecord, ok := record.(*UserGroup)
 	if !ok {
 		return ceous.ErrInvalidRecordType
@@ -31,7 +17,7 @@ func (relation *UserGroupModelUserRelation) Aggregate(record ceous.Record) error
 	return nil
 }
 
-func (relation *UserGroupModelUserRelation) Realize() error {
+func (relation *UserGroupModelUserRelation) Realize2() error {
 	records, err := NewUserQuery(ceous.WithDB(DB)).Where(ceous.Eq(Schema.User.ID, relation.keys)).All()
 	if err != nil {
 		return err // TODO(jota): Shall this be wrapped into a custom error?

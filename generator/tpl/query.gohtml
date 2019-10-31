@@ -80,14 +80,34 @@ func (q @raw("*")@model.QueryName()) One() (m @model.Name@:, err error) {
 
 	if rs.Next() {
 		err = rs.ToModel(&m)
+		if err != nil {
+			return
+		}
+
+		for _, rel := range q.BaseQuery.Relations {
+			err = rel.Aggregate(&m)
+			if err != nil {
+				return @model.Name@:{}, err // TODO(jota): Shall this error be wrapped? At first, yes.
+			}
+		}
 	} else {
 		err = ceous.ErrNotFound
 	}
+
+	if err == nil {
+		for _, rel := range q.BaseQuery.Relations {
+			err = rel.Realize()
+			if err != nil {
+				return @model.Name@:{}, err // TODO(jota): Shall this error be wrapped? At first, yes.
+			}
+		}
+	}
+
 	return
 }
 
 // All return all records that match the query.
-func (q @raw("*")@model.QueryName()) All() ([]@model.Name@:, error) {
+func (q @raw("*")@model.QueryName()) All() ([]@raw("*")@model.Name@:, error) {
 	query, err := q.RawQuery()
 	if err != nil {
 		return nil, err
@@ -96,14 +116,39 @@ func (q @raw("*")@model.QueryName()) All() ([]@model.Name@:, error) {
 	rs := New@model.Name@:ResultSet(query, nil)
 	defer rs.Close()
 
-	ms := make([]@model.Name, 0)
+	ms := make([]@raw("*")@model.Name@:, 0)
 	for rs.Next() {
-		var m @model.Name
-		err = rs.ToModel(&m)
+		m := &@model.Name@:{}
+		err = rs.ToModel(m)
 		if err != nil {
 			return nil, err
 		}
+
+		for _, rel := range q.BaseQuery.Relations {
+			err = rel.Aggregate(m)
+			if err != nil {
+				return nil, err // TODO(jota): Shall this error be wrapped? At first, yes.
+			}
+		}
 		ms = append(ms, m)
 	}
+
+	for _, rel := range q.BaseQuery.Relations {
+		err = rel.Realize()
+		if err != nil {
+			return nil, err // TODO(jota): Shall this error be wrapped? At first, yes.
+		}
+	}
+
 	return ms, nil
+}
+
+func (q @raw("*")@model.QueryName()) OrderBy(fields ...interface{}) @raw("*")@model.QueryName() {
+	q.BaseQuery.OrderBy(fields...)
+	return q
+}
+
+
+@for _, relation := range model.Relations {
+	RenderRelation(_buffer, relation)
 }
