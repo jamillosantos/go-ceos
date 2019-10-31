@@ -26,6 +26,7 @@ type (
 
 	ModelColumn struct {
 		Column    string
+		Type      *ModelType
 		FullField string
 		Modifiers []ModelFieldModifier
 	}
@@ -48,8 +49,17 @@ type (
 		RefType myasthurts.RefType
 	}
 
+	ModelRelation struct {
+		FromModel      *Model
+		FromField      string
+		FromColumnType *ModelType
+		ToModel        *Model
+		ToColumn       string
+	}
+
 	Model struct {
 		_s           *myasthurts.Struct
+		_explored    bool
 		PK           *ModelField
 		Name         string
 		TableName    string
@@ -58,6 +68,7 @@ type (
 		Fields       []*ModelField
 		ColumnsMap   map[string]int
 		Conditions   []*ModelCondition
+		Relations    []*ModelRelation
 	}
 )
 
@@ -97,11 +108,7 @@ func isStructEmbedded(s *myasthurts.Struct) bool {
 	return false
 }
 
-func (m *Model) ParseField(ctx *Ctx, field *myasthurts.Field) error {
-	t := field.Tag.TagParamByName("ceous")
-	if t == nil {
-		return SkipField
-	}
+func (m *Model) parseField(ctx *Ctx, t *myasthurts.TagParam, field *myasthurts.Field) error {
 	if t.Value == "-" {
 		return SkipField
 	}
@@ -148,6 +155,7 @@ func (m *Model) ParseField(ctx *Ctx, field *myasthurts.Field) error {
 			}
 			column := &ModelColumn{
 				Column:    ceousTag.Value,
+				Type:      NewModelType(ctx, embeddedField.RefType),
 				FullField: field.Name + "." + embeddedField.Name,
 				Modifiers: f.Modifiers,
 			}
@@ -164,6 +172,7 @@ func (m *Model) ParseField(ctx *Ctx, field *myasthurts.Field) error {
 		f.SchemaType = field.RefType.Name()
 	}
 
+	ctx.Reporter.Linef(" + %s: %s", field.Name, field.RefType.Name())
 	m.Fields = append(m.Fields, f)
 	m.SchemaFields = append(m.SchemaFields, f)
 
@@ -188,6 +197,35 @@ func (m *Model) ParseField(ctx *Ctx, field *myasthurts.Field) error {
 	return nil
 }
 
+func (m *Model) parseFK(ctx *Ctx, t *myasthurts.TagParam, field *myasthurts.Field) error {
+	model := ctx.EnsureModel(field.RefType.Name())
+	relation := &ModelRelation{
+		FromModel:      m,
+		FromField:      field.Name,
+		FromColumnType: NewModelType(ctx, field.RefType),
+		ToModel:        model,
+		ToColumn:       t.Value,
+	}
+	m.Relations = append(m.Relations, relation)
+	ctx.Reporter.Linef("   FK: %s(%s): %s", field.Name, relation.ToColumn, relation.FromColumnType.String())
+	return nil
+}
+
+func (m *Model) ParseField(ctx *Ctx, field *myasthurts.Field) error {
+	for _, t := range field.Tag.Params {
+		switch t.Name {
+		case "ceous":
+			return m.parseField(ctx, &t, field)
+		case "fk":
+			return m.parseFK(ctx, &t, field)
+		default:
+			// If there is nothing is detected. No problem, just continue.
+		}
+	}
+	// If nothing is found, just skip the field.
+	return SkipField
+}
+
 func isModel(r myasthurts.RefType) bool {
 	return r.Pkg().Name == "ceous" && r.Name() == "Model"
 }
@@ -196,22 +234,33 @@ func isEmbedded(r myasthurts.RefType) bool {
 	return r.Pkg().Name == "ceous" && r.Name() == "Embedded"
 }
 
-func NewModel(ctx *Ctx, s *myasthurts.Struct) (*Model, error) {
-	m := &Model{
-		_s:           s,
-		Name:         s.Name(),
-		TableName:    s.Name(), // TODO(jota): Set the table name convention.
+func NewModel(name string) *Model {
+	return &Model{
+		_explored:    true,
+		Name:         name,
+		TableName:    name, // TODO(jota): Set the table name convention.
 		SchemaFields: make([]*ModelField, 0),
 		Columns:      make([]*ModelColumn, 0),
 		Fields:       make([]*ModelField, 0),
 		ColumnsMap:   make(map[string]int, 0),
 	}
+}
+
+func ParseModel(ctx *Ctx, s *myasthurts.Struct) (*Model, error) {
+	m, ok := ctx.Models[s.Name()]
+	if ok && m._explored {
+		return m, nil
+	}
+
+	m = NewModel(s.Name())
+	m._s = s
 	for _, field := range s.Fields {
 		if isModel(field.RefType) {
 			tableNameTag := field.Tag.TagParamByName("tableName")
 			if tableNameTag != nil {
 				m.TableName = tableNameTag.Value
 			}
+			ctx.Reporter.Line("   TableName:", m.TableName)
 		}
 		if field.Name == "" {
 			continue
@@ -256,4 +305,26 @@ func (c *ModelConditionCondition) StringField() string {
 		return ""
 	}
 	return "." + c.Field
+}
+
+func (r *ModelRelation) RelationName() string {
+	return r.FromModel.Name + "Model" + r.FromField + "Relation"
+}
+
+func (r *ModelRelation) PkType() *ModelType {
+	for _, c := range r.FromModel.Columns {
+		if c.Column == r.ToColumn {
+			return c.Type
+		}
+	}
+	return nil
+}
+
+func (r *ModelRelation) Column() *ModelColumn {
+	for _, c := range r.FromModel.Columns {
+		if c.Column == r.ToColumn {
+			return c
+		}
+	}
+	return nil
 }

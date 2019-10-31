@@ -322,6 +322,7 @@ var _ = Describe("Query", func() {
 			userGroups, err := tests.NewUserGroupQuery(ceous.WithDB(tests.DB)).WithUser().OrderBy(tests.Schema.UserGroup.ID.UserID, tests.Schema.UserGroup.ID.GroupID).All()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(userGroups).To(HaveLen(4))
+			Expect(userGroups[0].User).ToNot(BeNil())
 			Expect(userGroups[0].User.ID).To(Equal(1))
 			Expect(userGroups[0].User.Name).To(Equal("Snake Eyes"))
 			Expect(userGroups[1].User.ID).To(Equal(1))

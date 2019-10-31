@@ -4,6 +4,7 @@ import (
 	"os"
 
 	generatorModels "github.com/jamillosantos/go-ceous/generator/models"
+	"github.com/jamillosantos/go-ceous/generator/reporters"
 	"github.com/jamillosantos/go-ceous/generator/tpl"
 	myasthurts "github.com/lab259/go-my-ast-hurts"
 	"github.com/pkg/errors"
@@ -13,6 +14,7 @@ import (
 var (
 	recursive     bool
 	excludedFiles []string
+	verbose       bool
 )
 
 func isModel(refType myasthurts.RefType) bool {
@@ -46,23 +48,35 @@ to quickly create a Cobra application.`,
 			panic(errors.Wrap(err, "could not parse the package")) // TODO(jota): Decide how critical errors will be reported.
 		}
 
+		var reporter reporters.Reporter
+
+		if verbose {
+			reporter = &reporters.Verbose{}
+		} else {
+			reporter = &reporters.Quiet{}
+		}
+
 		// Models will be a list of the structs that implement Model
 
 		models := make([]*generatorModels.Model, 0)
 		embeddeds := make([]*generatorModels.Model, 0)
 
-		ctx := generatorModels.NewCtx(pkg, env.BuiltIn)
+		ctx := generatorModels.NewCtx(reporter, pkg, env.BuiltIn)
 
 		for _, s := range pkg.Structs {
+			reporter.Line("Analysing", s.Name())
 			for _, f := range s.Fields {
+				if f.RefType.Pkg() == nil {
+					continue
+				}
 				if isModel(f.RefType) {
-					model, err := generatorModels.NewModel(ctx, s)
+					model, err := generatorModels.ParseModel(ctx, s)
 					if err != nil {
 						panic(errors.Wrapf(err, "error parsing model %s", s.Name())) // TODO(jota): Decide how critical errors will be reported.
 					}
 					models = append(models, model)
 				} else if isEmbedded(f.RefType) {
-					model, err := generatorModels.NewModel(ctx, s)
+					model, err := generatorModels.ParseModel(ctx, s)
 					if err != nil {
 						panic(errors.Wrapf(err, "error parsing embedded %s", s.Name())) // TODO(jota): Decide how critical errors will be reported.
 					}
@@ -84,7 +98,7 @@ to quickly create a Cobra application.`,
 func init() {
 	rootCmd.AddCommand(genCmd)
 
-	genCmd.PersistentFlags().StringArrayVarP(&excludedFiles, "recursive", "r", []string{}, "exclude files")
 	genCmd.PersistentFlags().StringArrayVarP(&excludedFiles, "exclude-files", "e", []string{}, "exclude files")
+	genCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose mode")
 	//
 }
