@@ -22,10 +22,10 @@ type (
 	}
 
 	BaseQuery struct {
-		_modified *sq.SelectBuilder
-		Schema    Schema
-		db        *sql.DB
-		runner    sq.DBProxy
+		_modified  *sq.SelectBuilder
+		Schema     Schema
+		connection Connection
+		runner     sq.DBProxy
 
 		where          []interface{}
 		selectedFields []SchemaField
@@ -52,10 +52,9 @@ func NewBaseQuery(options ...CeousOption) *BaseQuery {
 		option(q)
 	}
 	if q.disableCache {
-		// q.runner = q.db // TODO(jota): implement this
-		panic("not implemented")
+		q.runner = q.connection.DB()
 	} else {
-		q.runner = sq.NewStmtCacheProxy(q.db)
+		q.runner = sq.NewStmtCacher(q.connection.DB())
 	}
 	return q
 }
@@ -67,16 +66,16 @@ func DisableDefaultScenario(q *BaseQuery) {
 	q.IsDefaultScenarioDisabled = true
 }
 
-// WithDB returns a query option for creating .
-func WithDB(db *sql.DB) CeousOption {
+// WithConn returns a query option for creating .
+func WithConn(conn Connection) CeousOption {
 	return func(obj interface{}) {
 		switch q := obj.(type) {
 		case *BaseQuery:
-			q.db = db
+			q.connection = conn
 		case *BaseStore:
-			q.db = db
+			q.connection = conn
 		default:
-			panic(errors.New(fmt.Sprintf("invalid obj: %T", obj)))
+			panic(errors.New(fmt.Sprintf("invalid obj: %T", obj))) // TODO(jota): To formalize this error
 		}
 	}
 }
@@ -90,7 +89,7 @@ func WithCache(useCache bool) CeousOption {
 		case *BaseStore:
 			q.disableCache = useCache
 		default:
-			panic(errors.New(fmt.Sprintf("invalid obj: %T", obj)))
+			panic(errors.New(fmt.Sprintf("invalid obj: %T", obj))) // TODO(jota): To formalize this error
 		}
 	}
 }
