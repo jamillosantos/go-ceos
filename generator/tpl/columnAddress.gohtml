@@ -4,12 +4,12 @@
 	var model *models.Model
 }
 
+// ColumnAddress returns the pointer address of a field given its column name.
 func (model @raw("*")@model.Name@:) ColumnAddress(name string) (interface{}, error) {
 	switch name {
-@for _, field := range model.Columns {
-	@raw("\n")
-@	case "@field.Column":
-@		return &model.@field.FullField@:, nil
+@for _, field := range model.Columns {@
+	case "@field.Column":
+		return &model.@field.FullField@:, nil
 }
 	default:
 		return nil, errors.Wrapf(ceous.ErrFieldNotFound, "field %s not found", name)

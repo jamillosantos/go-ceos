@@ -1,15 +1,16 @@
 @{
 	import "github.com/jamillosantos/go-ceous/generator/models"
+	import . "github.com/jamillosantos/go-ceous/generator/helpers"
 
 	var model *models.Model
 }
 
-func (model @raw("*")@model.Name) Value(name string) (interface{}, error) {
+// Value returns the value from a field given its column name.
+func (model @Pointer@model.Name) Value(name string) (interface{}, error) {
 	switch name {
-@for _, field := range model.Columns {
-	@raw("\n")
-@	case "@field.Column":
-@		return model.@field.FullField@:, nil
+@for _, field := range model.Columns {@
+	case "@field.Column":
+		return model.@field.FullField@:, nil
 }
 	default:
 		return nil, errors.Wrapf(ceous.ErrFieldNotFound, "field %s not found", name)

@@ -40,7 +40,8 @@ func NewStore(schema Schema, options ...CeousOption) *BaseStore {
 		option(store)
 	}
 	if store.disableCache {
-		store.runner = store.connection.DB()
+		panic("disabling cache is not implemented")
+		// store.runner = store.connection.DB()
 	} else {
 		store.runner = sq.NewStmtCacher(store.connection.DB())
 	}

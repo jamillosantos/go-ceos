@@ -24,7 +24,7 @@ type (
 	BaseQuery struct {
 		_modified  *sq.SelectBuilder
 		Schema     Schema
-		connection Connection
+		Connection Connection
 		runner     sq.DBProxy
 
 		where          []interface{}
@@ -52,9 +52,10 @@ func NewBaseQuery(options ...CeousOption) *BaseQuery {
 		option(q)
 	}
 	if q.disableCache {
-		q.runner = q.connection.DB()
+		panic("disabling cache is not implemented")
+		// q.runner = q.connection.DB()
 	} else {
-		q.runner = sq.NewStmtCacher(q.connection.DB())
+		q.runner = sq.NewStmtCacher(q.Connection.DB())
 	}
 	return q
 }
@@ -71,7 +72,7 @@ func WithConn(conn Connection) CeousOption {
 	return func(obj interface{}) {
 		switch q := obj.(type) {
 		case *BaseQuery:
-			q.connection = conn
+			q.Connection = conn
 		case *BaseStore:
 			q.connection = conn
 		default:

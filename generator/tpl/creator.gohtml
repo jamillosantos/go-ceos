@@ -1,0 +1,13 @@
+@{
+	import generatorModels "github.com/jamillosantos/go-ceous/generator/models"
+	import . "github.com/jamillosantos/go-ceous/generator/helpers"
+
+	var models []*generatorModels.Model
+}
+
+type Creator struct {
+@for _, model := range models {@
+	@model.Name@:Query(options ...ceous.CeousOption) @Pointer@model.QueryName()
+	@model.Name@:Store(options ...ceous.CeousOption) @Pointer@model.QueryName()
+}
+}

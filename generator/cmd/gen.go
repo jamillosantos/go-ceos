@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"bytes"
+	"io"
 	"os"
 
 	generatorModels "github.com/jamillosantos/go-ceous/generator/models"
@@ -60,8 +62,14 @@ to quickly create a Cobra application.`,
 
 		models := make([]*generatorModels.Model, 0)
 		embeddeds := make([]*generatorModels.Model, 0)
+		connections := make([]*generatorModels.Connection, 0)
+		connectionsMap := make(map[string]*generatorModels.Connection, 0)
 
 		ctx := generatorModels.NewCtx(reporter, pkg, env.BuiltIn)
+
+		var (
+			model *generatorModels.Model
+		)
 
 		for _, s := range pkg.Structs {
 			reporter.Line("Analysing", s.Name())
@@ -70,28 +78,46 @@ to quickly create a Cobra application.`,
 					continue
 				}
 				if isModel(f.RefType) {
-					model, err := generatorModels.ParseModel(ctx, s)
+					model, err = generatorModels.ParseModel(ctx, s)
 					if err != nil {
 						panic(errors.Wrapf(err, "error parsing model %s", s.Name())) // TODO(jota): Decide how critical errors will be reported.
 					}
 					models = append(models, model)
 				} else if isEmbedded(f.RefType) {
-					model, err := generatorModels.ParseModel(ctx, s)
+					model, err = generatorModels.ParseModel(ctx, s)
 					if err != nil {
 						panic(errors.Wrapf(err, "error parsing embedded %s", s.Name())) // TODO(jota): Decide how critical errors will be reported.
 					}
 					embeddeds = append(embeddeds, model)
+				} else {
+					continue
+				}
+
+				if _, ok := connectionsMap[model.Connection]; !ok {
+					conn := generatorModels.NewConnection(model.Connection)
+					connectionsMap[model.Connection] = conn
+					connections = append(connections, conn)
 				}
 			}
 		}
 
+		buff := bytes.NewBuffer(nil)
+
+		reporter.Line("Generating code ...")
+		tpl.RenderCeous(buff, ctx, models, embeddeds, connections)
+
 		f, err := os.OpenFile("ceous.go", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0755)
 		if err != nil {
-			panic(errors.Wrapf(err, "error generating ceous.go")) // TODO(jota): Decide how critical errors will be reported.
+			panic(errors.Wrapf(err, "error opening ceous.go")) // TODO(jota): Decide how critical errors will be reported.
 		}
 		defer f.Close()
 
-		tpl.RenderSchema(f, ctx, models, embeddeds)
+		reporter.Line("Generating file ...")
+		_, err = io.Copy(f, buff)
+		if err != nil {
+			panic(errors.Wrapf(err, "error copying buffer to ceous.go")) // TODO(jota): Decide how critical errors will be reported.
+		}
+		reporter.Line("Done ...")
 	},
 }
 

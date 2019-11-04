@@ -5,6 +5,7 @@
 package tpl
 
 import (
+	. "github.com/jamillosantos/go-ceous/generator/helpers"
 	"github.com/jamillosantos/go-ceous/generator/models"
 	"github.com/sipin/gorazor/gorazor"
 	"io"
@@ -20,15 +21,12 @@ func ColumnValue(model *models.Model) string {
 
 // RenderColumnValue render tpl/columnValue.gohtml
 func RenderColumnValue(_buffer io.StringWriter, model *models.Model) {
-	_buffer.WriteString("\n\nfunc (model ")
-	_buffer.WriteString(("*"))
+	_buffer.WriteString("\n\n// Value returns the value from a field given its column name.\nfunc (model ")
+	_buffer.WriteString(gorazor.HTMLEscape(Pointer))
 	_buffer.WriteString(gorazor.HTMLEscape(model.Name))
 	_buffer.WriteString(") Value(name string) (interface{}, error) {\n\tswitch name {")
 	for _, field := range model.Columns {
-
-		_buffer.WriteString(("\n"))
-
-		_buffer.WriteString("\tcase \"")
+		_buffer.WriteString("\n\tcase \"")
 		_buffer.WriteString(gorazor.HTMLEscape(field.Column))
 		_buffer.WriteString("\":\n\t\treturn model.")
 		_buffer.WriteString(gorazor.HTMLEscape(field.FullField))

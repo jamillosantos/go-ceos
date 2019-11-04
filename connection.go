@@ -31,8 +31,8 @@ type (
 		sq.ExecerContext
 		sq.Queryer
 		sq.QueryerContext
-		sq.QueryRower
-		sq.QueryRowerContext
+		QueryRow(string, ...interface{}) *sql.Row
+		QueryRowContext(context.Context, string, ...interface{}) *sql.Row
 		sq.Preparer
 		io.Closer
 		Statisticer
@@ -44,12 +44,11 @@ type (
 	}
 
 	BaseConnection struct {
-		name string
-		_db  DBProxy
+		_db DBProxy
 	}
 )
 
-func NewConnection(name string, db DBProxy) Connection {
+func NewConnection(db DBProxy) *BaseConnection {
 	return &BaseConnection{
 		_db: db,
 	}

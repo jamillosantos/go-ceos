@@ -1,5 +1,6 @@
 @{
 	import "github.com/jamillosantos/go-ceous/generator/models"
+	import . "github.com/jamillosantos/go-ceous/generator/helpers"
 
 	import myasthurts "github.com/lab259/go-my-ast-hurts"
 
@@ -9,11 +10,8 @@
 
 var @model.BaseSchemaName() = ceous.NewBaseSchema(
 	"@model.TableName",
-	"",
-@for _, field := range model.Columns {
-	@raw("\n")
-	@:	ceous.NewSchemaField("@field.Column"
-	@if len(field.Modifiers) > 0 {
+	"",@for _, field := range model.Columns {@
+	ceous.NewSchemaField("@field.Column"@if len(field.Modifiers) > 0 {
 		@for _, m := range field.Modifiers {
 			@raw(", ")@raw(m())
 		}
@@ -21,11 +19,12 @@ var @model.BaseSchemaName() = ceous.NewBaseSchema(
 }
 )
 
-@if model.PK != nil {
-@
-@:func (model @raw("*")@model.Name@:) GetID() interface{} {
-@		return model.@model.PK.Name
-@	}
+@if model.PK != nil {@
+@:
+// GetID returns the primary key for model `@model.Name@:`.
+func (model @Pointer@model.Name@:) GetID() interface{} {
+	return model.@model.PK.Name
+}
 }
 
 @{RenderColumnAddress(_buffer, model)}
@@ -33,12 +32,12 @@ var @model.BaseSchemaName() = ceous.NewBaseSchema(
 
 type @model.SchemaName()@: struct {
 	*ceous.BaseSchema
-	@raw("\n")
-@for _, field := range model.SchemaFields {
-@	@field.Name@if field.SchemaType == "" {
-		@	ceous.SchemaField
+
+@for _, field := range model.SchemaFields {@
+	@field.Name @if field.SchemaType == "" {
+		@:ceous.SchemaField
 	} else {
-		@	schema@field.SchemaType@:
+		@:schema@field.SchemaType
 	}
 }
 }

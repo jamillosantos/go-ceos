@@ -5,6 +5,7 @@
 package tpl
 
 import (
+	. "github.com/jamillosantos/go-ceous/generator/helpers"
 	"github.com/jamillosantos/go-ceous/generator/models"
 	myasthurts "github.com/lab259/go-my-ast-hurts"
 	"github.com/sipin/gorazor/gorazor"
@@ -27,13 +28,9 @@ func RenderModel(_buffer io.StringWriter, pkg *myasthurts.Package, model *models
 	_buffer.WriteString(gorazor.HTMLEscape(model.TableName))
 	_buffer.WriteString("\",\n\t\"\",")
 	for _, field := range model.Columns {
-
-		_buffer.WriteString(("\n"))
-
-		_buffer.WriteString("\tceous.NewSchemaField(\"")
+		_buffer.WriteString("\n\tceous.NewSchemaField(\"")
 		_buffer.WriteString(gorazor.HTMLEscape(field.Column))
 		_buffer.WriteString("\"")
-
 		if len(field.Modifiers) > 0 {
 			for _, m := range field.Modifiers {
 
@@ -46,32 +43,33 @@ func RenderModel(_buffer io.StringWriter, pkg *myasthurts.Package, model *models
 	}
 	_buffer.WriteString("\n)")
 	if model.PK != nil {
-
-		_buffer.WriteString("\nfunc (model ")
-		_buffer.WriteString(("*"))
+		_buffer.WriteString("\n\n// GetID returns the primary key for model `")
 		_buffer.WriteString(gorazor.HTMLEscape(model.Name))
-		_buffer.WriteString(") GetID() interface{} {\n\t\treturn model.")
+		_buffer.WriteString("`.\nfunc (model ")
+		_buffer.WriteString(gorazor.HTMLEscape(Pointer))
+		_buffer.WriteString(gorazor.HTMLEscape(model.Name))
+		_buffer.WriteString(") GetID() interface{} {\n\treturn model.")
 		_buffer.WriteString(gorazor.HTMLEscape(model.PK.Name))
-		_buffer.WriteString("\n\t}")
+		_buffer.WriteString("\n}")
 	}
 	RenderColumnAddress(_buffer, model)
 	RenderColumnValue(_buffer, model)
 	_buffer.WriteString("\n\ntype ")
 	_buffer.WriteString(gorazor.HTMLEscape(model.SchemaName()))
-	_buffer.WriteString(" struct {\n\t*ceous.BaseSchema\n\t")
-	_buffer.WriteString(("\n"))
+	_buffer.WriteString(" struct {\n\t*ceous.BaseSchema")
 	for _, field := range model.SchemaFields {
-
-		_buffer.WriteString("\t")
+		_buffer.WriteString("\n\t")
 		_buffer.WriteString(gorazor.HTMLEscape(field.Name))
+		_buffer.WriteString(" ")
 		if field.SchemaType == "" {
 
-			_buffer.WriteString("\tceous.SchemaField\n\t")
+			_buffer.WriteString("ceous.SchemaField")
+
 		} else {
 
-			_buffer.WriteString("\tschema")
+			_buffer.WriteString("schema")
 			_buffer.WriteString(gorazor.HTMLEscape(field.SchemaType))
-			_buffer.WriteString("\n\t")
+
 		}
 	}
 	_buffer.WriteString("\n}")
