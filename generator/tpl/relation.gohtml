@@ -1,0 +1,54 @@
+@{
+	import "github.com/jamillosantos/go-ceous/generator/models"
+
+	var relation *models.ModelRelation
+}
+
+type @relation.RelationName()@: struct {
+	keys []interface{}
+	records map[@relation.PkType()][]@raw("*")@relation.FromModel.Name
+}
+
+func New@relation.RelationName()@:() @raw("*")@relation.RelationName()@: {
+	return @raw("&")@relation.RelationName()@:{
+		keys:    make([]interface{}, 0),
+		records: make(map[@relation.PkType()][]@raw("*")@relation.FromModel.Name@:),
+	}
+}
+
+func (relation @raw("*")@relation.RelationName()@:) Aggregate(record ceous.Record) error {
+	ugRecord, ok := record.(@raw("*")@relation.FromModel.Name)
+	if !ok {
+		return ceous.ErrInvalidRecordType
+	}
+	if rs, ok := relation.records[ugRecord.@relation.Column().FullField@:]; ok {
+		relation.records[ugRecord.@relation.Column().FullField@:] = append(rs, ugRecord)
+		// No need to add the key here, since its will be already in the `keys`.
+	} else {
+		relation.records[ugRecord.@relation.Column().FullField@:] = append(rs, ugRecord)
+		relation.keys = append(relation.keys, ugRecord.@relation.Column().FullField@:)
+	}
+	return nil
+}
+
+func (relation @raw("*")@relation.RelationName()@:) Realize() error {
+	records, err := NewUserQuery(ceous.WithDB(DB)).Where(ceous.Eq(Schema.@relation.ToModel.Name@:.ID, relation.keys)).All()
+	if err != nil {
+		return err // TODO(jota): Shall this be wrapped into a custom error?
+	}
+	for _, record := range records {
+		masterRecords, ok := relation.records[record.ID]
+		if !ok {
+			return ceous.ErrInconsistentRelationResult
+		}
+		for _, r := range masterRecords {
+			r.@relation.FromField@: = record
+		}
+	}
+	return nil
+}
+
+func (q @raw("*")@relation.FromModel.QueryName()@:) With@relation.FromField@:() @raw("*")@relation.FromModel.QueryName()@: {
+	q.BaseQuery.Relations = append(q.BaseQuery.Relations, New@relation.RelationName()@:())
+	return q
+}

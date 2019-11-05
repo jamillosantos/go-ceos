@@ -377,14 +377,34 @@ func (q *userQuery) One() (m User, err error) {
 
 	if rs.Next() {
 		err = rs.ToModel(&m)
+		if err != nil {
+			return
+		}
+
+		for _, rel := range q.BaseQuery.Relations {
+			err = rel.Aggregate(&m)
+			if err != nil {
+				return User{}, err // TODO(jota): Shall this error be wrapped? At first, yes.
+			}
+		}
 	} else {
 		err = ceous.ErrNotFound
 	}
+
+	if err == nil {
+		for _, rel := range q.BaseQuery.Relations {
+			err = rel.Realize()
+			if err != nil {
+				return User{}, err // TODO(jota): Shall this error be wrapped? At first, yes.
+			}
+		}
+	}
+
 	return
 }
 
 // All return all records that match the query.
-func (q *userQuery) All() ([]User, error) {
+func (q *userQuery) All() ([]*User, error) {
 	query, err := q.RawQuery()
 	if err != nil {
 		return nil, err
@@ -393,16 +413,36 @@ func (q *userQuery) All() ([]User, error) {
 	rs := NewUserResultSet(query, nil)
 	defer rs.Close()
 
-	ms := make([]User, 0)
+	ms := make([]*User, 0)
 	for rs.Next() {
-		var m User
-		err = rs.ToModel(&m)
+		m := &User{}
+		err = rs.ToModel(m)
 		if err != nil {
 			return nil, err
 		}
+
+		for _, rel := range q.BaseQuery.Relations {
+			err = rel.Aggregate(m)
+			if err != nil {
+				return nil, err // TODO(jota): Shall this error be wrapped? At first, yes.
+			}
+		}
 		ms = append(ms, m)
 	}
+
+	for _, rel := range q.BaseQuery.Relations {
+		err = rel.Realize()
+		if err != nil {
+			return nil, err // TODO(jota): Shall this error be wrapped? At first, yes.
+		}
+	}
+
 	return ms, nil
+}
+
+func (q *userQuery) OrderBy(fields ...interface{}) *userQuery {
+	q.BaseQuery.OrderBy(fields...)
+	return q
 }
 
 
@@ -481,14 +521,34 @@ func (q *groupQuery) One() (m Group, err error) {
 
 	if rs.Next() {
 		err = rs.ToModel(&m)
+		if err != nil {
+			return
+		}
+
+		for _, rel := range q.BaseQuery.Relations {
+			err = rel.Aggregate(&m)
+			if err != nil {
+				return Group{}, err // TODO(jota): Shall this error be wrapped? At first, yes.
+			}
+		}
 	} else {
 		err = ceous.ErrNotFound
 	}
+
+	if err == nil {
+		for _, rel := range q.BaseQuery.Relations {
+			err = rel.Realize()
+			if err != nil {
+				return Group{}, err // TODO(jota): Shall this error be wrapped? At first, yes.
+			}
+		}
+	}
+
 	return
 }
 
 // All return all records that match the query.
-func (q *groupQuery) All() ([]Group, error) {
+func (q *groupQuery) All() ([]*Group, error) {
 	query, err := q.RawQuery()
 	if err != nil {
 		return nil, err
@@ -497,16 +557,36 @@ func (q *groupQuery) All() ([]Group, error) {
 	rs := NewGroupResultSet(query, nil)
 	defer rs.Close()
 
-	ms := make([]Group, 0)
+	ms := make([]*Group, 0)
 	for rs.Next() {
-		var m Group
-		err = rs.ToModel(&m)
+		m := &Group{}
+		err = rs.ToModel(m)
 		if err != nil {
 			return nil, err
 		}
+
+		for _, rel := range q.BaseQuery.Relations {
+			err = rel.Aggregate(m)
+			if err != nil {
+				return nil, err // TODO(jota): Shall this error be wrapped? At first, yes.
+			}
+		}
 		ms = append(ms, m)
 	}
+
+	for _, rel := range q.BaseQuery.Relations {
+		err = rel.Realize()
+		if err != nil {
+			return nil, err // TODO(jota): Shall this error be wrapped? At first, yes.
+		}
+	}
+
 	return ms, nil
+}
+
+func (q *groupQuery) OrderBy(fields ...interface{}) *groupQuery {
+	q.BaseQuery.OrderBy(fields...)
+	return q
 }
 
 
@@ -586,14 +666,34 @@ func (q *userGroupQuery) One() (m UserGroup, err error) {
 
 	if rs.Next() {
 		err = rs.ToModel(&m)
+		if err != nil {
+			return
+		}
+
+		for _, rel := range q.BaseQuery.Relations {
+			err = rel.Aggregate(&m)
+			if err != nil {
+				return UserGroup{}, err // TODO(jota): Shall this error be wrapped? At first, yes.
+			}
+		}
 	} else {
 		err = ceous.ErrNotFound
 	}
+
+	if err == nil {
+		for _, rel := range q.BaseQuery.Relations {
+			err = rel.Realize()
+			if err != nil {
+				return UserGroup{}, err // TODO(jota): Shall this error be wrapped? At first, yes.
+			}
+		}
+	}
+
 	return
 }
 
 // All return all records that match the query.
-func (q *userGroupQuery) All() ([]UserGroup, error) {
+func (q *userGroupQuery) All() ([]*UserGroup, error) {
 	query, err := q.RawQuery()
 	if err != nil {
 		return nil, err
@@ -602,16 +702,85 @@ func (q *userGroupQuery) All() ([]UserGroup, error) {
 	rs := NewUserGroupResultSet(query, nil)
 	defer rs.Close()
 
-	ms := make([]UserGroup, 0)
+	ms := make([]*UserGroup, 0)
 	for rs.Next() {
-		var m UserGroup
-		err = rs.ToModel(&m)
+		m := &UserGroup{}
+		err = rs.ToModel(m)
 		if err != nil {
 			return nil, err
 		}
+
+		for _, rel := range q.BaseQuery.Relations {
+			err = rel.Aggregate(m)
+			if err != nil {
+				return nil, err // TODO(jota): Shall this error be wrapped? At first, yes.
+			}
+		}
 		ms = append(ms, m)
 	}
+
+	for _, rel := range q.BaseQuery.Relations {
+		err = rel.Realize()
+		if err != nil {
+			return nil, err // TODO(jota): Shall this error be wrapped? At first, yes.
+		}
+	}
+
 	return ms, nil
+}
+
+func (q *userGroupQuery) OrderBy(fields ...interface{}) *userGroupQuery {
+	q.BaseQuery.OrderBy(fields...)
+	return q
+}
+
+type UserGroupModelUserRelation struct {
+	keys []interface{}
+	records map[int][]*UserGroup
+}
+
+func NewUserGroupModelUserRelation() *UserGroupModelUserRelation {
+	return &UserGroupModelUserRelation{
+		keys:    make([]interface{}, 0),
+		records: make(map[int][]*UserGroup),
+	}
+}
+
+func (relation *UserGroupModelUserRelation) Aggregate(record ceous.Record) error {
+	ugRecord, ok := record.(*UserGroup)
+	if !ok {
+		return ceous.ErrInvalidRecordType
+	}
+	if rs, ok := relation.records[ugRecord.ID.UserID]; ok {
+		relation.records[ugRecord.ID.UserID] = append(rs, ugRecord)
+		// No need to add the key here, since its will be already in the `keys`.
+	} else {
+		relation.records[ugRecord.ID.UserID] = append(rs, ugRecord)
+		relation.keys = append(relation.keys, ugRecord.ID.UserID)
+	}
+	return nil
+}
+
+func (relation *UserGroupModelUserRelation) Realize() error {
+	records, err := NewUserQuery(ceous.WithDB(DB)).Where(ceous.Eq(Schema.User.ID, relation.keys)).All()
+	if err != nil {
+		return err // TODO(jota): Shall this be wrapped into a custom error?
+	}
+	for _, record := range records {
+		masterRecords, ok := relation.records[record.ID]
+		if !ok {
+			return ceous.ErrInconsistentRelationResult
+		}
+		for _, r := range masterRecords {
+			r.User = record
+		}
+	}
+	return nil
+}
+
+func (q *userGroupQuery) WithUser() *userGroupQuery {
+	q.BaseQuery.Relations = append(q.BaseQuery.Relations, NewUserGroupModelUserRelation())
+	return q
 }
 
 

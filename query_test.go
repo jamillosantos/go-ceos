@@ -282,6 +282,8 @@ var _ = Describe("Query", func() {
 			tests.DBStart()
 			tests.DBUsersCreate()
 			tests.DBUsersInsertJoes()
+			tests.DBUserGroupsCreate()
+			tests.DBUserGroupsInsert()
 		})
 
 		AfterEach(func() {
@@ -293,6 +295,42 @@ var _ = Describe("Query", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(user.ID).To(Equal(1))
 			Expect(user.Name).To(Equal("Snake Eyes"))
+		})
+
+		It("should retrieve a model with relation", func() {
+			userGroup, err := tests.NewUserGroupQuery(ceous.WithDB(tests.DB)).ByID(tests.UserGroupPK{
+				UserID:  1,
+				GroupID: 2,
+			}).WithUser().One()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(userGroup.User.ID).To(Equal(1))
+			Expect(userGroup.User.Name).To(Equal("Snake Eyes"))
+		})
+
+		It("should retrieve a model with relation", func() {
+			userGroup, err := tests.NewUserGroupQuery(ceous.WithDB(tests.DB)).WithUser().ByID(tests.UserGroupPK{
+				UserID:  1,
+				GroupID: 2,
+			}).One()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(userGroup.User).ToNot(BeNil())
+			Expect(userGroup.User.ID).To(Equal(1))
+			Expect(userGroup.User.Name).To(Equal("Snake Eyes"))
+		})
+
+		It("should retrieve models with relation", func() {
+			userGroups, err := tests.NewUserGroupQuery(ceous.WithDB(tests.DB)).WithUser().OrderBy(tests.Schema.UserGroup.ID.UserID, tests.Schema.UserGroup.ID.GroupID).All()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(userGroups).To(HaveLen(4))
+			Expect(userGroups[0].User).ToNot(BeNil())
+			Expect(userGroups[0].User.ID).To(Equal(1))
+			Expect(userGroups[0].User.Name).To(Equal("Snake Eyes"))
+			Expect(userGroups[1].User.ID).To(Equal(1))
+			Expect(userGroups[1].User.Name).To(Equal("Snake Eyes"))
+			Expect(userGroups[2].User.ID).To(Equal(2))
+			Expect(userGroups[2].User.Name).To(Equal("Scarlet"))
+			Expect(userGroups[3].User.ID).To(Equal(4))
+			Expect(userGroups[3].User.Name).To(Equal("Duke"))
 		})
 	})
 })

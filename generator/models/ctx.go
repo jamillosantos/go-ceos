@@ -3,6 +3,7 @@ package models
 import (
 	"strconv"
 
+	"github.com/jamillosantos/go-ceous/generator/reporters"
 	myasthurts "github.com/lab259/go-my-ast-hurts"
 )
 
@@ -14,15 +15,19 @@ type (
 
 	Ctx struct {
 		Pkg          *myasthurts.Package
+		Reporter     reporters.Reporter
+		Models       map[string]*Model
 		Imports      map[string]*CtxPkg
 		importsAlias map[string]string
 		count        int
 	}
 )
 
-func NewCtx(pkgs ...*myasthurts.Package) *Ctx {
+func NewCtx(reporter reporters.Reporter, pkgs ...*myasthurts.Package) *Ctx {
 	ctx := &Ctx{
+		Reporter:     reporter,
 		Pkg:          pkgs[0],
+		Models:       make(map[string]*Model, 0),
 		Imports:      make(map[string]*CtxPkg),
 		importsAlias: make(map[string]string),
 	}
@@ -64,4 +69,14 @@ func (ctx *Ctx) AddRefType(refType myasthurts.RefType) *CtxPkg {
 		return ctx.addImportPkg(pkg)
 	}
 	return ctxPkg
+}
+
+func (ctx *Ctx) EnsureModel(name string) *Model {
+	m, ok := ctx.Models[name]
+	if ok {
+		return m
+	}
+	m = NewModel(name)
+	ctx.Models[name] = m
+	return m
 }
