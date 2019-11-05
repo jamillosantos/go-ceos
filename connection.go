@@ -26,14 +26,16 @@ type (
 		Stats() sql.DBStats
 	}
 
-	DBProxy interface {
+	DBRunner interface {
 		sq.Execer
 		sq.ExecerContext
 		sq.Queryer
 		sq.QueryerContext
-		QueryRow(string, ...interface{}) *sql.Row
-		QueryRowContext(context.Context, string, ...interface{}) *sql.Row
 		sq.Preparer
+	}
+
+	DBProxy interface {
+		DBRunner
 		io.Closer
 		Statisticer
 		Transactioner
@@ -48,6 +50,7 @@ type (
 	}
 )
 
+// NewConnection will create a new instance of the `*BaseConnection`.
 func NewConnection(db DBProxy) *BaseConnection {
 	return &BaseConnection{
 		_db: db,
@@ -57,4 +60,22 @@ func NewConnection(db DBProxy) *BaseConnection {
 // DB returns the real connection object for the database connection.
 func (conn *BaseConnection) DB() DBProxy {
 	return conn._db
+}
+
+// Begin starts a transaction.
+func (conn *BaseConnection) Begin() (*BaseTxRunner, error) {
+	tx, err := conn._db.Begin()
+	if err != nil {
+		return nil, err
+	}
+	return NewTx(tx), nil
+}
+
+// BeginTx starts a transaction with more options.
+func (conn *BaseConnection) BeginTx(ctx context.Context, opts *sql.TxOptions) (*BaseTxRunner, error) {
+	tx, err := conn._db.BeginTx(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return NewTx(tx), nil
 }

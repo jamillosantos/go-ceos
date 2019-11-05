@@ -22,10 +22,10 @@ type (
 	}
 
 	BaseQuery struct {
-		_modified  *sq.SelectBuilder
-		Schema     Schema
-		Connection Connection
-		runner     sq.DBProxy
+		_modified *sq.SelectBuilder
+		Schema    Schema
+		Runner    DBRunner
+		runner    DBRunner
 
 		where          []interface{}
 		selectedFields []SchemaField
@@ -52,10 +52,9 @@ func NewBaseQuery(options ...CeousOption) *BaseQuery {
 		option(q)
 	}
 	if q.disableCache {
-		panic("disabling cache is not implemented")
-		// q.runner = q.connection.DB()
+		q.runner = q.Runner
 	} else {
-		q.runner = sq.NewStmtCacher(q.Connection.DB())
+		q.runner = sq.NewStmtCacher(q.Runner)
 	}
 	return q
 }
@@ -72,9 +71,23 @@ func WithConn(conn Connection) CeousOption {
 	return func(obj interface{}) {
 		switch q := obj.(type) {
 		case *BaseQuery:
-			q.Connection = conn
+			q.Runner = conn.DB()
 		case *BaseStore:
-			q.connection = conn
+			q._runner = conn.DB()
+		default:
+			panic(errors.New(fmt.Sprintf("invalid obj: %T", obj))) // TODO(jota): To formalize this error
+		}
+	}
+}
+
+// WithRunner returns a query option for setting the runner for a transaction.
+func WithRunner(runner DBRunner) CeousOption {
+	return func(obj interface{}) {
+		switch q := obj.(type) {
+		case *BaseQuery:
+			q.Runner = runner
+		case *BaseStore:
+			q._runner = runner
 		default:
 			panic(errors.New(fmt.Sprintf("invalid obj: %T", obj))) // TODO(jota): To formalize this error
 		}

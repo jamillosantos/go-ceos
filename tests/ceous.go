@@ -3,6 +3,7 @@ package tests
 import (
 	"github.com/jamillosantos/go-ceous"
 	"github.com/pkg/errors"
+	"context"
 	"database/sql"
 	time "time"
 )
@@ -264,15 +265,71 @@ func (c *DefaultConnection) UserGroupStore(options ...ceous.CeousOption) *userGr
 }
 	
 
+// Begin creates a new transaction with Default set.
+func (c *DefaultConnection) Begin() (*Transaction, error) {
+	tx, err := c.BaseConnection.Begin()
+	if err != nil {
+		return nil, err
+	}
+	return NewTransaction(tx), nil
+}
+
+// BeginTx creates a new transaction with extended config params with the
+// connection Default set.
+func (c *DefaultConnection) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Transaction, error) {
+	tx, err := c.BaseConnection.BeginTx(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return NewTransaction(tx), nil
+}
+
 var (
 	// Default is a database connection reference.
-	Default Connection
+	Default *DefaultConnection
 )
 // InitDefault initializes the connection `Default:`.
 func InitDefault(db *sql.DB) {
 	Default = &DefaultConnection{
 		BaseConnection: ceous.NewConnection(db),
 	}
+}
+
+type Transaction struct {
+	*ceous.BaseTxRunner
+}
+
+func NewTransaction(tx *ceous.BaseTxRunner) *Transaction {
+	return &Transaction{
+		BaseTxRunner: tx,
+	}
+}
+// UserQuery creates a new query from a transaction.
+func (c *Transaction) UserQuery(options ...ceous.CeousOption) *userQuery {
+	return NewUserQuery(append(options, ceous.WithRunner(c))...)
+}
+
+// UserStore creates a new store from a transaction.
+func (c *Transaction) UserStore(options ...ceous.CeousOption) *userStore {
+	return NewUserStore(append(options, ceous.WithRunner(c))...)
+}
+// GroupQuery creates a new query from a transaction.
+func (c *Transaction) GroupQuery(options ...ceous.CeousOption) *groupQuery {
+	return NewGroupQuery(append(options, ceous.WithRunner(c))...)
+}
+
+// GroupStore creates a new store from a transaction.
+func (c *Transaction) GroupStore(options ...ceous.CeousOption) *groupStore {
+	return NewGroupStore(append(options, ceous.WithRunner(c))...)
+}
+// UserGroupQuery creates a new query from a transaction.
+func (c *Transaction) UserGroupQuery(options ...ceous.CeousOption) *userGroupQuery {
+	return NewUserGroupQuery(append(options, ceous.WithRunner(c))...)
+}
+
+// UserGroupStore creates a new store from a transaction.
+func (c *Transaction) UserGroupStore(options ...ceous.CeousOption) *userGroupStore {
+	return NewUserGroupStore(append(options, ceous.WithRunner(c))...)
 }
 
 type schema struct {
@@ -859,14 +916,14 @@ func (q *userGroupQuery) OrderBy(fields ...interface{}) *userGroupQuery {
 }
 
 type UserGroupModelUserRelation struct {
-	conn ceous.Connection
+	_runner ceous.DBRunner
 	keys []interface{}
 	records map[int][]*UserGroup
 }
 
-func NewUserGroupModelUserRelation(conn ceous.Connection) *UserGroupModelUserRelation {
+func NewUserGroupModelUserRelation(runner ceous.DBRunner) *UserGroupModelUserRelation {
 	return &UserGroupModelUserRelation{
-		conn:    conn,
+		_runner: runner,
 		keys:    make([]interface{}, 0),
 		records: make(map[int][]*UserGroup),
 	}
@@ -888,7 +945,7 @@ func (relation *UserGroupModelUserRelation) Aggregate(record ceous.Record) error
 }
 
 func (relation *UserGroupModelUserRelation) Realize() error {
-	records, err := NewUserQuery(ceous.WithConn(relation.conn)).Where(ceous.Eq(Schema.User.ID, relation.keys)).All()
+	records, err := NewUserQuery(ceous.WithRunner(relation._runner)).Where(ceous.Eq(Schema.User.ID, relation.keys)).All()
 	if err != nil {
 		return err // TODO(jota): Shall this be wrapped into a custom error?
 	}
@@ -905,7 +962,7 @@ func (relation *UserGroupModelUserRelation) Realize() error {
 }
 
 func (q *userGroupQuery) WithUser() *userGroupQuery {
-	q.BaseQuery.Relations = append(q.BaseQuery.Relations, NewUserGroupModelUserRelation(q.BaseQuery.Connection))
+	q.BaseQuery.Relations = append(q.BaseQuery.Relations, NewUserGroupModelUserRelation(q.BaseQuery.Runner))
 	return q
 }
 	
