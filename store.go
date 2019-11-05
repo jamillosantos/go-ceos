@@ -2,7 +2,6 @@ package ceous
 
 import (
 	"bytes"
-	"database/sql"
 	"fmt"
 
 	sq "github.com/elgris/sqrl"
@@ -23,7 +22,7 @@ type (
 	// TODO(jota): To document it...
 	BaseStore struct {
 		schema       Schema
-		db           *sql.DB
+		connection   Connection
 		runner       sq.DBProxy
 		disableCache bool
 	}
@@ -41,9 +40,10 @@ func NewStore(schema Schema, options ...CeousOption) *BaseStore {
 		option(store)
 	}
 	if store.disableCache {
-		panic("not implemented")
+		panic("disabling cache is not implemented")
+		// store.runner = store.connection.DB()
 	} else {
-		store.runner = sq.NewStmtCacheProxy(store.db)
+		store.runner = sq.NewStmtCacher(store.connection.DB())
 	}
 	return store
 }

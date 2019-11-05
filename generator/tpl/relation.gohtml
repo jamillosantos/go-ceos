@@ -5,12 +5,14 @@
 }
 
 type @relation.RelationName()@: struct {
+	conn ceous.Connection
 	keys []interface{}
 	records map[@relation.PkType()][]@raw("*")@relation.FromModel.Name
 }
 
-func New@relation.RelationName()@:() @raw("*")@relation.RelationName()@: {
+func New@relation.RelationName()@:(conn ceous.Connection) @raw("*")@relation.RelationName()@: {
 	return @raw("&")@relation.RelationName()@:{
+		conn:    conn,
 		keys:    make([]interface{}, 0),
 		records: make(map[@relation.PkType()][]@raw("*")@relation.FromModel.Name@:),
 	}
@@ -32,7 +34,7 @@ func (relation @raw("*")@relation.RelationName()@:) Aggregate(record ceous.Recor
 }
 
 func (relation @raw("*")@relation.RelationName()@:) Realize() error {
-	records, err := NewUserQuery(ceous.WithDB(DB)).Where(ceous.Eq(Schema.@relation.ToModel.Name@:.ID, relation.keys)).All()
+	records, err := NewUserQuery(ceous.WithConn(relation.conn)).Where(ceous.Eq(Schema.@relation.ToModel.Name@:.ID, relation.keys)).All()
 	if err != nil {
 		return err // TODO(jota): Shall this be wrapped into a custom error?
 	}
@@ -49,6 +51,6 @@ func (relation @raw("*")@relation.RelationName()@:) Realize() error {
 }
 
 func (q @raw("*")@relation.FromModel.QueryName()@:) With@relation.FromField@:() @raw("*")@relation.FromModel.QueryName()@: {
-	q.BaseQuery.Relations = append(q.BaseQuery.Relations, New@relation.RelationName()@:())
+	q.BaseQuery.Relations = append(q.BaseQuery.Relations, New@relation.RelationName()@:(q.BaseQuery.Connection))
 	return q
 }

@@ -10,10 +10,18 @@ import (
 
 var _ = Describe("Query", func() {
 	Describe("BaseQuery", func() {
+		BeforeEach(func() {
+			tests.DBStart()
+		})
+
+		AfterEach(func() {
+			tests.DBStop()
+		})
+
 		Context("SQL Generation", func() {
 			Context("Select Fields", func() {
 				It("should select all fields", func() {
-					q := tests.NewUserQuery()
+					q := tests.Default.UserQuery()
 					builder, err := q.BaseQuery.Builder()
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
@@ -23,7 +31,7 @@ var _ = Describe("Query", func() {
 				})
 
 				It("should not change the select fields when not providing fields", func() {
-					q := tests.NewUserQuery().Select( /* no fields specified. */ )
+					q := tests.Default.UserQuery().Select( /* no fields specified. */ )
 					builder, err := q.BaseQuery.Builder()
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
@@ -33,7 +41,7 @@ var _ = Describe("Query", func() {
 				})
 
 				It("should select specified fields", func() {
-					q := tests.NewUserQuery(ceous.WithDB(tests.DB)).Select(tests.Schema.User.Name, tests.Schema.User.CreatedAt)
+					q := tests.Default.UserQuery().Select(tests.Schema.User.Name, tests.Schema.User.CreatedAt)
 					builder, err := q.BaseQuery.Builder()
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
@@ -43,7 +51,7 @@ var _ = Describe("Query", func() {
 				})
 
 				It("should select specified fields calling Select multiple times", func() {
-					q := tests.NewUserQuery().Select(tests.Schema.User.ID).Select(tests.Schema.User.Name).Select(tests.Schema.User.CreatedAt)
+					q := tests.Default.UserQuery().Select(tests.Schema.User.ID).Select(tests.Schema.User.Name).Select(tests.Schema.User.CreatedAt)
 					builder, err := q.BaseQuery.Builder()
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
@@ -53,7 +61,7 @@ var _ = Describe("Query", func() {
 				})
 
 				It("should not select excluded fields", func() {
-					q := tests.NewUserQuery().ExcludeFields(tests.Schema.User.Name, tests.Schema.User.CreatedAt)
+					q := tests.Default.UserQuery().ExcludeFields(tests.Schema.User.Name, tests.Schema.User.CreatedAt)
 					builder, err := q.BaseQuery.Builder()
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
@@ -63,7 +71,7 @@ var _ = Describe("Query", func() {
 				})
 
 				It("should not select excluded fields calling ExcludeFields muiltiple times", func() {
-					q := tests.NewUserQuery().ExcludeFields(tests.Schema.User.Name).ExcludeFields(tests.Schema.User.CreatedAt)
+					q := tests.Default.UserQuery().ExcludeFields(tests.Schema.User.Name).ExcludeFields(tests.Schema.User.CreatedAt)
 					builder, err := q.BaseQuery.Builder()
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
@@ -73,7 +81,7 @@ var _ = Describe("Query", func() {
 				})
 
 				It("should not change select when calling ExcludeFields with no fields defined", func() {
-					q := tests.NewUserQuery().ExcludeFields()
+					q := tests.Default.UserQuery().ExcludeFields()
 					builder, err := q.BaseQuery.Builder()
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
@@ -83,7 +91,7 @@ var _ = Describe("Query", func() {
 				})
 
 				It("should select specific fields excluding others", func() {
-					q := tests.NewUserQuery().
+					q := tests.Default.UserQuery().
 						Select(tests.Schema.User.ID, tests.Schema.User.Name, tests.Schema.User.Password).
 						ExcludeFields(tests.Schema.User.Password)
 					builder, err := q.BaseQuery.Builder()
@@ -99,7 +107,7 @@ var _ = Describe("Query", func() {
 				It("should select a field with a different alias", func() {
 					userAlias := tests.Schema.User.As("usr")
 					u := ceous.FieldAlias(userAlias)
-					q := tests.NewUserQuery().Select(u(tests.Schema.User.ID), tests.Schema.User.Name)
+					q := tests.Default.UserQuery().Select(u(tests.Schema.User.ID), tests.Schema.User.Name)
 					builder, err := q.BaseQuery.Builder()
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
@@ -111,7 +119,7 @@ var _ = Describe("Query", func() {
 				It("should select a field with a different alias", func() {
 					userAlias := tests.Schema.User.As("usr")
 					u := ceous.FieldAlias(userAlias)
-					q := tests.NewUserQuery().Select(u(tests.Schema.User.ID), tests.Schema.User.Name)
+					q := tests.Default.UserQuery().Select(u(tests.Schema.User.ID), tests.Schema.User.Name)
 					builder, err := q.BaseQuery.Builder()
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
@@ -123,7 +131,7 @@ var _ = Describe("Query", func() {
 
 			Context("Limit + Offset", func() {
 				It("should limit a query", func() {
-					q := tests.NewUserQuery().Limit(1)
+					q := tests.Default.UserQuery().Limit(1)
 					builder, err := q.BaseQuery.Builder()
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
@@ -133,7 +141,7 @@ var _ = Describe("Query", func() {
 				})
 
 				It("should offset a query", func() {
-					q := tests.NewUserQuery().Offset(2)
+					q := tests.Default.UserQuery().Offset(2)
 					builder, err := q.BaseQuery.Builder()
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
@@ -143,7 +151,7 @@ var _ = Describe("Query", func() {
 				})
 
 				It("should limit and offset a query", func() {
-					q := tests.NewUserQuery().Limit(1).Offset(2)
+					q := tests.Default.UserQuery().Limit(1).Offset(2)
 					builder, err := q.BaseQuery.Builder()
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
@@ -153,7 +161,7 @@ var _ = Describe("Query", func() {
 				})
 
 				It("should change limit and offset after building", func() {
-					q := tests.NewUserQuery().Limit(1).Offset(2)
+					q := tests.Default.UserQuery().Limit(1).Offset(2)
 					builder, err := q.BaseQuery.Builder()
 					Expect(err).ToNot(HaveOccurred())
 
@@ -169,7 +177,7 @@ var _ = Describe("Query", func() {
 
 			Context("Where", func() {
 				It("should generate a where one condition", func() {
-					q := tests.NewUserQuery().Select(tests.Schema.User.ID).ByID(1)
+					q := tests.Default.UserQuery().Select(tests.Schema.User.ID).ByID(1)
 					builder, err := q.BaseQuery.Builder()
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
@@ -179,7 +187,7 @@ var _ = Describe("Query", func() {
 				})
 
 				It("should generate a where with multiple conditions", func() {
-					q := tests.NewUserQuery().Select(tests.Schema.User.ID).ByID(1).ByName("Snake Eyes")
+					q := tests.Default.UserQuery().Select(tests.Schema.User.ID).ByID(1).ByName("Snake Eyes")
 					builder, err := q.BaseQuery.Builder()
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
@@ -189,7 +197,7 @@ var _ = Describe("Query", func() {
 				})
 
 				It("should generate a where with string conditions", func() {
-					q := tests.NewUserQuery().Select(tests.Schema.User.ID).Where("LENGTH(password) < 6")
+					q := tests.Default.UserQuery().Select(tests.Schema.User.ID).Where("LENGTH(password) < 6")
 					builder, err := q.BaseQuery.Builder()
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
@@ -199,7 +207,7 @@ var _ = Describe("Query", func() {
 				})
 
 				It("should generate a where with string conditions with args", func() {
-					q := tests.NewUserQuery().Select(tests.Schema.User.ID).Where("LENGTH(password) < ?", 6)
+					q := tests.Default.UserQuery().Select(tests.Schema.User.ID).Where("LENGTH(password) < ?", 6)
 					builder, err := q.BaseQuery.Builder()
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
@@ -210,7 +218,7 @@ var _ = Describe("Query", func() {
 
 				It("should generate a where with string pointer conditions with args", func() {
 					str := "LENGTH(password) < ?"
-					q := tests.NewUserQuery().Select(tests.Schema.User.ID).Where(&str, 6)
+					q := tests.Default.UserQuery().Select(tests.Schema.User.ID).Where(&str, 6)
 					builder, err := q.BaseQuery.Builder()
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
@@ -220,7 +228,7 @@ var _ = Describe("Query", func() {
 				})
 
 				It("should generate a where with Sqlizer conditions", func() {
-					q := tests.NewUserQuery().Select(tests.Schema.User.ID).Where(sq.And{
+					q := tests.Default.UserQuery().Select(tests.Schema.User.ID).Where(sq.And{
 						sq.Eq{"id": 1},
 						ceous.OpNot(sq.Eq{"password": "12345"}),
 					})
@@ -247,31 +255,31 @@ var _ = Describe("Query", func() {
 		})
 
 		It("should count using one condition", func() {
-			n, err := tests.NewUserQuery(ceous.WithDB(tests.DB)).ByID(1).Count()
+			n, err := tests.Default.UserQuery().ByID(1).Count()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(n).To(BeEquivalentTo(1))
 		})
 
 		It("should count using a where", func() {
-			n, err := tests.NewUserQuery(ceous.WithDB(tests.DB)).Where(ceous.Ne(tests.Schema.User.ID, 1)).Count()
+			n, err := tests.Default.UserQuery().Where(ceous.Ne(tests.Schema.User.ID, 1)).Count()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(n).To(BeEquivalentTo(3))
 		})
 
 		It("should count not matching anything", func() {
-			n, err := tests.NewUserQuery(ceous.WithDB(tests.DB)).ByID(50).Count()
+			n, err := tests.Default.UserQuery().ByID(50).Count()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(n).To(BeEquivalentTo(0))
 		})
 
 		It("should not take limit into consideration", func() {
-			n, err := tests.NewUserQuery(ceous.WithDB(tests.DB)).Limit(3).Count()
+			n, err := tests.Default.UserQuery().Limit(3).Count()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(n).To(BeEquivalentTo(4))
 		})
 
 		It("should count using alias", func() {
-			n, err := tests.NewUserQuery(ceous.WithDB(tests.DB), ceous.WithSchema(tests.Schema.User.As("u"))).Count()
+			n, err := tests.Default.UserQuery(ceous.WithSchema(tests.Schema.User.As("u"))).Count()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(n).To(BeEquivalentTo(4))
 		})
@@ -291,14 +299,14 @@ var _ = Describe("Query", func() {
 		})
 
 		It("should retrieve a user", func() {
-			user, err := tests.NewUserQuery(ceous.WithDB(tests.DB)).ByID(1).One()
+			user, err := tests.Default.UserQuery().ByID(1).One()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(user.ID).To(Equal(1))
 			Expect(user.Name).To(Equal("Snake Eyes"))
 		})
 
 		It("should retrieve a model with relation", func() {
-			userGroup, err := tests.NewUserGroupQuery(ceous.WithDB(tests.DB)).ByID(tests.UserGroupPK{
+			userGroup, err := tests.Default.UserGroupQuery().ByID(tests.UserGroupPK{
 				UserID:  1,
 				GroupID: 2,
 			}).WithUser().One()
@@ -308,7 +316,7 @@ var _ = Describe("Query", func() {
 		})
 
 		It("should retrieve a model with relation", func() {
-			userGroup, err := tests.NewUserGroupQuery(ceous.WithDB(tests.DB)).WithUser().ByID(tests.UserGroupPK{
+			userGroup, err := tests.Default.UserGroupQuery().WithUser().ByID(tests.UserGroupPK{
 				UserID:  1,
 				GroupID: 2,
 			}).One()
@@ -319,7 +327,7 @@ var _ = Describe("Query", func() {
 		})
 
 		It("should retrieve models with relation", func() {
-			userGroups, err := tests.NewUserGroupQuery(ceous.WithDB(tests.DB)).WithUser().OrderBy(tests.Schema.UserGroup.ID.UserID, tests.Schema.UserGroup.ID.GroupID).All()
+			userGroups, err := tests.Default.UserGroupQuery().WithUser().OrderBy(tests.Schema.UserGroup.ID.UserID, tests.Schema.UserGroup.ID.GroupID).All()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(userGroups).To(HaveLen(4))
 			Expect(userGroups[0].User).ToNot(BeNil())

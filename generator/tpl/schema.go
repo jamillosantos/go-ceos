@@ -12,58 +12,17 @@ import (
 )
 
 // Schema generates tpl/schema.gohtml
-func Schema(ctxPkg *generatorModels.Ctx, models []*generatorModels.Model, embeddeds []*generatorModels.Model) string {
+func Schema(ctxPkg *generatorModels.Ctx, models []*generatorModels.Model) string {
 	var _b strings.Builder
-	RenderSchema(&_b, ctxPkg, models, embeddeds)
+	RenderSchema(&_b, ctxPkg, models)
 	return _b.String()
 }
 
 // RenderSchema render tpl/schema.gohtml
-func RenderSchema(_buffer io.StringWriter, ctxPkg *generatorModels.Ctx, models []*generatorModels.Model, embeddeds []*generatorModels.Model) {
-	_buffer.WriteString("package ")
-	_buffer.WriteString(gorazor.HTMLEscape(ctxPkg.Pkg.Name))
-	_buffer.WriteString("\n\nimport (\n\t\"github.com/jamillosantos/go-ceous\"\n\t\"github.com/pkg/errors\"")
-	for _, pkg := range ctxPkg.Imports {
-		if pkg.Alias == "-" {
-			continue
-		}
-
-		_buffer.WriteString(("\n"))
-
-		_buffer.WriteString("\t")
-		_buffer.WriteString(gorazor.HTMLEscape(pkg.Alias))
-		_buffer.WriteString(" \"")
-		_buffer.WriteString(gorazor.HTMLEscape(pkg.Pkg.ImportPath))
-		_buffer.WriteString("\"")
-	}
-	_buffer.WriteString("\n)")
-	for _, m := range models {
-
-		_buffer.WriteString(("\n\n"))
-
-		_buffer.WriteString("/** ")
-		_buffer.WriteString(("\n"))
-
-		_buffer.WriteString(" * Declare ")
-		_buffer.WriteString(gorazor.HTMLEscape(m.Name))
-		_buffer.WriteString(("\n"))
-
-		_buffer.WriteString(" */")
-
-		RenderModel(_buffer, ctxPkg.Pkg, m)
-	}
-	for _, m := range embeddeds {
-
-		_buffer.WriteString(("\n\n"))
-
-		RenderEmbedded(_buffer, m)
-	}
+func RenderSchema(_buffer io.StringWriter, ctxPkg *generatorModels.Ctx, models []*generatorModels.Model) {
 	_buffer.WriteString("\n\ntype schema struct {")
 	for _, m := range models {
-
-		_buffer.WriteString(("\n"))
-
-		_buffer.WriteString("\t")
+		_buffer.WriteString("\n\t")
 		_buffer.WriteString(gorazor.HTMLEscape(m.Name))
 		_buffer.WriteString(" ")
 		_buffer.WriteString(("*"))
@@ -73,20 +32,16 @@ func RenderSchema(_buffer io.StringWriter, ctxPkg *generatorModels.Ctx, models [
 	_buffer.WriteString(gorazor.HTMLEscape(ctxPkg.Pkg.Name))
 	_buffer.WriteString("\".\nvar Schema = schema{")
 	for _, m := range models {
-
-		_buffer.WriteString(("\n"))
-
-		_buffer.WriteString("\t")
+		_buffer.WriteString("\n\t")
 		_buffer.WriteString(gorazor.HTMLEscape(m.Name))
 		_buffer.WriteString(": ")
 		_buffer.WriteString(("&"))
 		_buffer.WriteString(gorazor.HTMLEscape(m.SchemaName()))
-		_buffer.WriteString(" {\n\t\tBaseSchema: ")
+		_buffer.WriteString(" {\n\tBaseSchema: ")
 		_buffer.WriteString(gorazor.HTMLEscape(m.BaseSchemaName()))
-		_buffer.WriteString(",\n\t")
+		_buffer.WriteString(",\n\n\t")
 		for _, field := range m.Fields {
-
-			_buffer.WriteString("\t")
+			_buffer.WriteString("\n\t\t")
 			_buffer.WriteString(gorazor.HTMLEscape(field.Name))
 			_buffer.WriteString(": ")
 			if field.SchemaType == "" {
@@ -110,23 +65,5 @@ func RenderSchema(_buffer io.StringWriter, ctxPkg *generatorModels.Ctx, models [
 		_buffer.WriteString("\n\t},")
 	}
 	_buffer.WriteString("\n}")
-	for _, m := range models {
-
-		_buffer.WriteString(("\n\n"))
-
-		RenderResultset(_buffer, m)
-	}
-	for _, m := range models {
-
-		_buffer.WriteString(("\n\n"))
-
-		RenderQuery(_buffer, ctxPkg.Pkg, m)
-	}
-	for _, m := range models {
-
-		_buffer.WriteString(("\n\n"))
-
-		RenderStore(_buffer, m)
-	}
 
 }

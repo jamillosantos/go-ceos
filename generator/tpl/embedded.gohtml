@@ -8,15 +8,13 @@
 @{RenderColumnValue(_buffer, model)}
 
 type schema@model.Name struct {
-@for _, f := range model.Fields {
-	@raw("\n")
-@	@f.Name  ceous.SchemaField
+@for _, f := range model.Fields {@
+	@f.Name  ceous.SchemaField
 }
 }
 
 var @model.Name@:Schema = schema@model.Name {
-@for _, f := range model.Fields {
-	@raw("\n")
-@	@f.Name: ceous.NewSchemaField("@f.FieldName@:"),
+@for _, f := range model.Fields {@
+	@f.Name: ceous.NewSchemaField("@f.FieldName@:"),
 }
 }

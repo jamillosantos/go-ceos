@@ -1,0 +1,46 @@
+@{
+	import generatorModels "github.com/jamillosantos/go-ceous/generator/models"
+
+	var ctxPkg *generatorModels.Ctx
+	var models []*generatorModels.Model
+	var embeddeds []*generatorModels.Model
+	var connections []*generatorModels.Connection
+-}@:package @ctxPkg.Pkg.Name
+
+import (
+	"github.com/jamillosantos/go-ceous"
+	"github.com/pkg/errors"
+	"database/sql"
+@for _, pkg := range ctxPkg.Imports {
+	if pkg.Alias == "-" {
+		continue
+	}
+	@raw("\n")
+@	@pkg.Alias "@pkg.Pkg.ImportPath@:"
+}
+)
+
+@for _, m := range models {@
+
+/**
+ * Declare @m.Name
+ */
+	@{RenderModel(_buffer, ctxPkg.Pkg, m)}
+}
+
+@for _, m := range embeddeds {
+	@raw("\n\n")
+	@{RenderEmbedded(_buffer, m)}
+}
+
+@if len(connections) > 0 {
+	RenderConnections(_buffer, connections, models)
+}
+
+@{RenderSchema(_buffer, ctxPkg, models)}
+
+@for _, m := range models {@
+	@{RenderResultset(_buffer, m)}
+	@{RenderQuery(_buffer, ctxPkg.Pkg, m)}
+	@{RenderStore(_buffer, m)}
+}

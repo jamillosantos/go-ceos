@@ -43,6 +43,7 @@ func DBStart() {
 			return err
 		}
 		DB = db
+		InitDefault(DB)
 		return nil
 	})).To(Succeed())
 }
@@ -70,4 +71,5 @@ func DBUserGroupsInsert() {
 func DBStop() {
 	Expect(DB.Close()).To(Succeed())
 	ExpectWithOffset(1, dockerPool.Purge(dockerResource)).To(Succeed())
+	Default = nil
 }

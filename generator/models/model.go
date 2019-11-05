@@ -60,6 +60,7 @@ type (
 	Model struct {
 		_s           *myasthurts.Struct
 		_explored    bool
+		Connection   string
 		PK           *ModelField
 		Name         string
 		TableName    string
@@ -239,6 +240,7 @@ func NewModel(name string) *Model {
 		_explored:    true,
 		Name:         name,
 		TableName:    name, // TODO(jota): Set the table name convention.
+		Connection:   "Default",
 		SchemaFields: make([]*ModelField, 0),
 		Columns:      make([]*ModelColumn, 0),
 		Fields:       make([]*ModelField, 0),
@@ -261,6 +263,13 @@ func ParseModel(ctx *Ctx, s *myasthurts.Struct) (*Model, error) {
 				m.TableName = tableNameTag.Value
 			}
 			ctx.Reporter.Line("   TableName:", m.TableName)
+
+			// Finds the tag name
+			connectionTag := field.Tag.TagParamByName("conn")
+			if connectionTag != nil {
+				m.Connection = connectionTag.Value
+			}
+			ctx.Reporter.Line("   Connection:", m.Connection)
 		}
 		if field.Name == "" {
 			continue

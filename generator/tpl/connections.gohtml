@@ -1,0 +1,51 @@
+@{
+	import generatorModels "github.com/jamillosantos/go-ceous/generator/models"
+	import . "github.com/jamillosantos/go-ceous/generator/helpers"
+
+	var connections []*generatorModels.Connection
+	var models []*generatorModels.Model
+}
+
+type Connection interface {
+	ceous.Connection
+@for _, model := range models {@
+	// @model.Name@:Query creates a new query related with the connection set.
+	@model.Name@:Query(options ...ceous.CeousOption) @Pointer@model.QueryName()
+	// @model.Name@:Store creates a new store related with the connection set.
+	@model.Name@:Store(options ...ceous.CeousOption) @Pointer@model.StoreName()
+}
+}
+
+@for _, conn := range connections {@
+type @conn.ConnectionName()  struct {
+	@Pointer@:ceous.BaseConnection
+}
+
+	@for _, model := range models {@
+// @model.Name@:Query creates a new query related with the connection @conn.Name@: set.
+func (c @Pointer@conn.ConnectionName()) @model.Name@:Query(options ...ceous.CeousOption) @Pointer@model.QueryName() {
+	return New@model.Name@:Query(append(options, ceous.WithConn(c))...)
+}
+
+// @model.Name@:Store creates a new store related with the connection @conn.Name@: set.
+func (c @Pointer@conn.ConnectionName()) @model.Name@:Store(options ...ceous.CeousOption) @Pointer@model.StoreName() {
+	return New@model.Name@:Store(append(options, ceous.WithConn(c))...)
+}
+	}
+}
+
+var (
+@for _, conn := range connections {@
+	// @conn.Name@ is a database connection reference.
+	@(conn.Name) Connection
+}
+)
+
+@for _, conn := range connections {@
+// Init@PascalCase(conn.Name)@: initializes the connection `@PascalCase(conn.Name):@`.
+func Init@PascalCase(conn.Name)@:(db *sql.DB) {
+	@conn.Name = @raw("&")@conn.ConnectionName()@:{
+		BaseConnection: ceous.NewConnection(db),
+	}
+}
+}

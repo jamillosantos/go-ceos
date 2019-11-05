@@ -20,15 +20,12 @@ func ColumnAddress(model *models.Model) string {
 
 // RenderColumnAddress render tpl/columnAddress.gohtml
 func RenderColumnAddress(_buffer io.StringWriter, model *models.Model) {
-	_buffer.WriteString("\n\nfunc (model ")
+	_buffer.WriteString("\n\n// ColumnAddress returns the pointer address of a field given its column name.\nfunc (model ")
 	_buffer.WriteString(("*"))
 	_buffer.WriteString(gorazor.HTMLEscape(model.Name))
 	_buffer.WriteString(") ColumnAddress(name string) (interface{}, error) {\n\tswitch name {")
 	for _, field := range model.Columns {
-
-		_buffer.WriteString(("\n"))
-
-		_buffer.WriteString("\tcase \"")
+		_buffer.WriteString("\n\tcase \"")
 		_buffer.WriteString(gorazor.HTMLEscape(field.Column))
 		_buffer.WriteString("\":\n\t\treturn &model.")
 		_buffer.WriteString(gorazor.HTMLEscape(field.FullField))

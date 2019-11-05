@@ -1,6 +1,7 @@
 @{
 	import "github.com/jamillosantos/go-ceous/generator/models"
-
+	import . "github.com/jamillosantos/go-ceous/generator/helpers"
+	
 	import myasthurts "github.com/lab259/go-my-ast-hurts"
 
 	var pkg *myasthurts.Package
@@ -10,64 +11,62 @@
 // @model.QueryName() is the query for the model `@model.Name`.
 type @model.QueryName()@: struct {
 	*ceous.BaseQuery
-@for _, field := range model.Fields {
-	@raw("\n")
-@	@field.Name	ceous.SchemaField
+@for _, field := range model.Fields {@
+	@field.Name	ceous.SchemaField
 }
 }
 
 // New@model.Name@:Query creates a new query for model `@model.Name`.
-func New@model.Name@:Query(options ...ceous.CeousOption) @raw("*")@model.QueryName()@: {
+func New@model.Name@:Query(options ...ceous.CeousOption) @Pointer@model.QueryName()@: {
 	bq := ceous.NewBaseQuery(options...)
 	if bq.Schema == nil {
 		bq.Schema = Schema.@model.Name@:.BaseSchema
 	}
-@	return &@model.QueryName()@:{
+	return @raw("&")@model.QueryName()@:{
 		BaseQuery: bq,
 	}
 }
 
-@for _, field := range model.Conditions {
-	@raw("\n\n")
-	@// By@field.NameForMethod@: add a filter by `@field.Field@:`.
-@:func (q @raw("*")@model.QueryName()) By@field.NameForMethod@:(value @field.Type@:) @raw("*")@model.QueryName()@: {
-	@for _, condition := range field.Conditions {
-@	q.BaseQuery.Where(ceous.Eq(Schema.@condition.SchemaField@:, value@condition.StringField()@:))
+@for _, field := range model.Conditions {@
+// By@field.NameForMethod@: add a filter by `@field.Field@:`.
+func (q @Pointer@model.QueryName()) By@field.NameForMethod@:(value @field.Type@:) @Pointer@model.QueryName()@: {
+	@for _, condition := range field.Conditions {@
+	q.BaseQuery.Where(ceous.Eq(Schema.@condition.SchemaField@:, value@condition.StringField()@:))
 	}
 	return q
 }
 }
 
 // Select defines what fields should be selected from the database.
-func (q @raw("*")@model.QueryName()) Select(fields ...ceous.SchemaField) @raw("*")@model.QueryName() {
+func (q @Pointer@model.QueryName()) Select(fields ...ceous.SchemaField) @Pointer@model.QueryName() {
 	q.BaseQuery.Select(fields...)
 	return q
 }
 
 // ExcludeFields defines what fields should not be selected from the database.
-func (q @raw("*")@model.QueryName()) ExcludeFields(fields ...ceous.SchemaField) @raw("*")@model.QueryName() {
+func (q @Pointer@model.QueryName()) ExcludeFields(fields ...ceous.SchemaField) @Pointer@model.QueryName() {
 	q.BaseQuery.ExcludeFields(fields...)
 	return q
 }
 
 // Where defines the conditions for 
-func (q @raw("*")@model.QueryName()) Where(pred interface{}, args ...interface{}) @raw("*")@model.QueryName() {
+func (q @Pointer@model.QueryName()) Where(pred interface{}, args ...interface{}) @Pointer@model.QueryName() {
 	q.BaseQuery.Where(pred, args...)
 	return q
 }
 
-func (q @raw("*")@model.QueryName()) Limit(limit uint64) @raw("*")@model.QueryName() {
+func (q @Pointer@model.QueryName()) Limit(limit uint64) @Pointer@model.QueryName() {
 	q.BaseQuery.Limit(limit)
 	return q
 }
 
-func (q @raw("*")@model.QueryName()) Offset(offset uint64) @raw("*")@model.QueryName() {
+func (q @Pointer@model.QueryName()) Offset(offset uint64) @Pointer@model.QueryName() {
 	q.BaseQuery.Offset(offset)
 	return q
 }
 
 // One results only one record matching the query.
-func (q @raw("*")@model.QueryName()) One() (m @model.Name@:, err error) {
+func (q @Pointer@model.QueryName()) One() (m @model.Name@:, err error) {
 	q.Limit(1).Offset(0)
 
 	query, err := q.RawQuery()
@@ -107,7 +106,7 @@ func (q @raw("*")@model.QueryName()) One() (m @model.Name@:, err error) {
 }
 
 // All return all records that match the query.
-func (q @raw("*")@model.QueryName()) All() ([]@raw("*")@model.Name@:, error) {
+func (q @Pointer@model.QueryName()) All() ([]@Pointer@model.Name@:, error) {
 	query, err := q.RawQuery()
 	if err != nil {
 		return nil, err
@@ -116,7 +115,7 @@ func (q @raw("*")@model.QueryName()) All() ([]@raw("*")@model.Name@:, error) {
 	rs := New@model.Name@:ResultSet(query, nil)
 	defer rs.Close()
 
-	ms := make([]@raw("*")@model.Name@:, 0)
+	ms := make([]@Pointer@model.Name@:, 0)
 	for rs.Next() {
 		m := &@model.Name@:{}
 		err = rs.ToModel(m)
@@ -143,7 +142,7 @@ func (q @raw("*")@model.QueryName()) All() ([]@raw("*")@model.Name@:, error) {
 	return ms, nil
 }
 
-func (q @raw("*")@model.QueryName()) OrderBy(fields ...interface{}) @raw("*")@model.QueryName() {
+func (q @Pointer@model.QueryName()) OrderBy(fields ...interface{}) @Pointer@model.QueryName() {
 	q.BaseQuery.OrderBy(fields...)
 	return q
 }
