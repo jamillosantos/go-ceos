@@ -11,14 +11,15 @@ require (
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/elgris/sqrl v0.0.0-20190909141434-5a439265eeec
+	github.com/fatih/structtag v1.1.0 // indirect
 	github.com/gotestyourself/gotestyourself v2.2.0+incompatible // indirect
 	github.com/jamillosantos/macchiato v0.0.0-20171220130318-3be045cc5033
-	github.com/lab259/go-my-ast-hurts v0.0.0-20191029192755-70e0dd09e3eb
+	github.com/lab259/go-my-ast-hurts v0.0.3
 	github.com/lib/pq v1.2.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/novln/macchiato v1.0.0
-	github.com/onsi/ginkgo v1.10.2
-	github.com/onsi/gomega v1.7.0
+	github.com/onsi/ginkgo v1.10.3
+	github.com/onsi/gomega v1.7.1
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/opencontainers/runc v0.1.1 // indirect
@@ -28,5 +29,8 @@ require (
 	github.com/sirupsen/logrus v1.4.2 // indirect
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.4.0
+	golang.org/x/net v0.0.0-20191101175033-0deb6923b6d9 // indirect
+	golang.org/x/sys v0.0.0-20191104094858-e8c54fb511f6 // indirect
+	gopkg.in/yaml.v2 v2.2.5 // indirect
 	gotest.tools v2.2.0+incompatible // indirect
 )
