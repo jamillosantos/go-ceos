@@ -32,12 +32,31 @@ func (c @Pointer@conn.ConnectionName()) @model.Name@:Store(options ...ceous.Ceou
 	return New@model.Name@:Store(append(options, ceous.WithConn(c))...)
 }
 	}
+
+// Begin creates a new transaction with @conn.Name@: set.
+func (c @Pointer@conn.ConnectionName()) Begin() (*Transaction, error) {
+	tx, err := c.BaseConnection.Begin()
+	if err != nil {
+		return nil, err
+	}
+	return NewTransaction(tx), nil
+}
+
+// BeginTx creates a new transaction with extended config params with the
+// connection @conn.Name@: set.
+func (c @Pointer@conn.ConnectionName()) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Transaction, error) {
+	tx, err := c.BaseConnection.BeginTx(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return NewTransaction(tx), nil
+}
 }
 
 var (
 @for _, conn := range connections {@
 	// @conn.Name@ is a database connection reference.
-	@(conn.Name) Connection
+	@(conn.Name) @Pointer@conn.ConnectionName()
 }
 )
 

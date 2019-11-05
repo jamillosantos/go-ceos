@@ -22,8 +22,8 @@ type (
 	// TODO(jota): To document it...
 	BaseStore struct {
 		schema       Schema
-		connection   Connection
-		runner       sq.DBProxy
+		_runner      DBRunner
+		runner       DBRunner
 		disableCache bool
 	}
 )
@@ -39,11 +39,10 @@ func NewStore(schema Schema, options ...CeousOption) *BaseStore {
 	for _, option := range options {
 		option(store)
 	}
-	if store.disableCache {
-		panic("disabling cache is not implemented")
-		// store.runner = store.connection.DB()
+	if !store.disableCache {
+		store.runner = store._runner
 	} else {
-		store.runner = sq.NewStmtCacher(store.connection.DB())
+		store.runner = sq.NewStmtCacher(store._runner)
 	}
 	return store
 }
