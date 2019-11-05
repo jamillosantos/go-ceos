@@ -1,0 +1,25 @@
+@{
+	import "github.com/jamillosantos/go-ceous/generator/models"
+
+	var model *models.Model
+}
+
+// @model.StoreName() is the query for the model `@model.Name`.
+type @model.StoreName()@: struct {
+	*ceous.BaseStore
+}
+
+// New@model.Name@:Store creates a new query for model `@model.Name`.
+func New@model.Name@:Store(options ...ceous.CeousOption) @raw("*")@model.StoreName()@: {
+	return @raw("&")@model.StoreName()@:{
+		BaseStore: ceous.NewStore(@model.BaseSchemaName()@:, options...),
+	}
+}
+
+func (store @raw("*")@model.StoreName()@:) Insert(record @raw("*")@model.Name@:, fields ...ceous.SchemaField) error {
+	return store.BaseStore.Insert(record, fields...)
+}
+
+func (store @raw("*")@model.StoreName()@:) Update(record @raw("*")@model.Name@:, fields ...ceous.SchemaField) (int64, error) {
+	return store.BaseStore.Update(record, fields...)
+}

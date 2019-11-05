@@ -119,8 +119,6 @@ func NewBaseSchema(tableName, alias string, columns ...SchemaField) *BaseSchema 
 
 // FieldAlias creates a function that will create a SchemaField that will be
 // bound to the schema passed.
-//
-// Example:
 func FieldAlias(schema Schema) func(SchemaField) AliasedSchemaField {
 	return func(field SchemaField) AliasedSchemaField {
 		return NewAliasSchemaField(schema, field)
