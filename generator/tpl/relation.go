@@ -5,6 +5,7 @@
 package tpl
 
 import (
+	. "github.com/jamillosantos/go-ceous/generator/helpers"
 	"github.com/jamillosantos/go-ceous/generator/models"
 	"github.com/sipin/gorazor/gorazor"
 	"io"
@@ -65,7 +66,7 @@ func RenderRelation(_buffer io.StringWriter, relation *models.ModelRelation) {
 	_buffer.WriteString(("*"))
 	_buffer.WriteString(gorazor.HTMLEscape(relation.FromModel.QueryName()))
 	_buffer.WriteString(") With")
-	_buffer.WriteString(gorazor.HTMLEscape(relation.FromField))
+	_buffer.WriteString(gorazor.HTMLEscape(PascalCase(relation.FromField)))
 	_buffer.WriteString("() ")
 	_buffer.WriteString(("*"))
 	_buffer.WriteString(gorazor.HTMLEscape(relation.FromModel.QueryName()))

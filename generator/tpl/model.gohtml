@@ -27,6 +27,30 @@ func (model @Pointer@model.Name@:) GetID() interface{} {
 }
 }
 
+@for _, relation := range model.Relations {@
+// @PascalCase(relation.FromField) returns the @relation.FromField@: from @model.Name@:.
+func (model @Pointer@model.Name@:) @PascalCase(relation.FromField)@:() @Pointer@relation.ToModel.Name {
+	return model.@relation.FromField
+}
+@:
+// Set@PascalCase(relation.FromField) updates the value for the @relation.FromField@:,
+// updating the @relation.FromField@:.
+func (model @Pointer@model.Name@:) Set@PascalCase(relation.FromField)@:(value @Pointer@relation.FromColumnType) error {
+	c, err := model.ColumnAddress("@relation.ToColumn")
+	if err != nil {
+		return err
+	}
+
+	v, ok := c.(@Pointer@relation.ToModel.PK.Type)
+	if !ok {
+		return errors.New("invalid key value") // TODO(jota): To formalize this error.
+	}
+	*v = value.@relation.ToModel.PK.Name
+	model.@relation.FromField = value
+	return nil
+}
+}
+
 @{RenderColumnAddress(_buffer, model)}
 @{RenderColumnValue(_buffer, model)}
 

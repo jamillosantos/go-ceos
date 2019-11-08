@@ -33,7 +33,7 @@ type (
 	UserGroup struct {
 		ceous.Model `tableName:"user_groups"`
 		ID          UserGroupPK `ceous:",pk"`
-		User        *User       `fk:"user_id"`
+		user        *User       `fk:"user_id"`
 		Admin       bool        `ceous:"admin"`
 	}
 )
