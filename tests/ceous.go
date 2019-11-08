@@ -1,17 +1,17 @@
 package tests
 
 import (
-	"github.com/jamillosantos/go-ceous"
-	"github.com/pkg/errors"
 	"context"
 	"database/sql"
 	time "time"
+
+	"github.com/jamillosantos/go-ceous"
+	"github.com/pkg/errors"
 )
 
 /**
  * Declare User
  */
-	
 
 var baseSchemaUser = ceous.NewBaseSchema(
 	"users",
@@ -71,10 +71,10 @@ func (model *User) Value(name string) (interface{}, error) {
 
 type schemaUser struct {
 	*ceous.BaseSchema
-	ID ceous.SchemaField
-	Name ceous.SchemaField
-	Password ceous.SchemaField
-	Role ceous.SchemaField
+	ID        ceous.SchemaField
+	Name      ceous.SchemaField
+	Password  ceous.SchemaField
+	Role      ceous.SchemaField
 	CreatedAt ceous.SchemaField
 	UpdatedAt ceous.SchemaField
 }
@@ -82,7 +82,6 @@ type schemaUser struct {
 /**
  * Declare Group
  */
-	
 
 var baseSchemaGroup = ceous.NewBaseSchema(
 	"groups",
@@ -122,14 +121,13 @@ func (model *Group) Value(name string) (interface{}, error) {
 
 type schemaGroup struct {
 	*ceous.BaseSchema
-	ID ceous.SchemaField
+	ID   ceous.SchemaField
 	Name ceous.SchemaField
 }
 
 /**
  * Declare UserGroup
  */
-	
 
 var baseSchemaUserGroup = ceous.NewBaseSchema(
 	"user_groups",
@@ -142,6 +140,28 @@ var baseSchemaUserGroup = ceous.NewBaseSchema(
 // GetID returns the primary key for model `UserGroup`.
 func (model *UserGroup) GetID() interface{} {
 	return model.ID
+}
+
+// User returns the user from UserGroup.
+func (model *UserGroup) User() *User {
+	return model.user
+}
+
+// SetUser updates the value for the user,
+// updating the user.
+func (model *UserGroup) SetUser(value *User) error {
+	c, err := model.ColumnAddress("user_id")
+	if err != nil {
+		return err
+	}
+
+	v, ok := c.(*int)
+	if !ok {
+		return errors.New("invalid key value") // TODO(jota): To formalize this error.
+	}
+	*v = value.ID
+	model.user = value
+	return nil
 }
 
 // ColumnAddress returns the pointer address of a field given its column name.
@@ -174,11 +194,9 @@ func (model *UserGroup) Value(name string) (interface{}, error) {
 
 type schemaUserGroup struct {
 	*ceous.BaseSchema
-	ID schemaUserGroupPK
+	ID    schemaUserGroupPK
 	Admin ceous.SchemaField
 }
-
-
 
 // ColumnAddress returns the pointer address of a field given its column name.
 func (model *UserGroupPK) ColumnAddress(name string) (interface{}, error) {
@@ -206,11 +224,11 @@ func (model *UserGroupPK) Value(name string) (interface{}, error) {
 
 type schemaUserGroupPK struct {
 	UserID  ceous.SchemaField
-	GroupID  ceous.SchemaField
+	GroupID ceous.SchemaField
 }
 
-var UserGroupPKSchema = schemaUserGroupPK {
-	UserID: ceous.NewSchemaField("user_id"),
+var UserGroupPKSchema = schemaUserGroupPK{
+	UserID:  ceous.NewSchemaField("user_id"),
 	GroupID: ceous.NewSchemaField("group_id"),
 }
 
@@ -229,11 +247,10 @@ type Connection interface {
 	// UserGroupStore creates a new store related with the connection set.
 	UserGroupStore(options ...ceous.CeousOption) *userGroupStore
 }
-type DefaultConnection  struct {
+type DefaultConnection struct {
 	*ceous.BaseConnection
 }
 
-	
 // UserQuery creates a new query related with the connection Default set.
 func (c *DefaultConnection) UserQuery(options ...ceous.CeousOption) *userQuery {
 	return NewUserQuery(append(options, ceous.WithConn(c))...)
@@ -243,7 +260,7 @@ func (c *DefaultConnection) UserQuery(options ...ceous.CeousOption) *userQuery {
 func (c *DefaultConnection) UserStore(options ...ceous.CeousOption) *userStore {
 	return NewUserStore(append(options, ceous.WithConn(c))...)
 }
-	
+
 // GroupQuery creates a new query related with the connection Default set.
 func (c *DefaultConnection) GroupQuery(options ...ceous.CeousOption) *groupQuery {
 	return NewGroupQuery(append(options, ceous.WithConn(c))...)
@@ -253,7 +270,7 @@ func (c *DefaultConnection) GroupQuery(options ...ceous.CeousOption) *groupQuery
 func (c *DefaultConnection) GroupStore(options ...ceous.CeousOption) *groupStore {
 	return NewGroupStore(append(options, ceous.WithConn(c))...)
 }
-	
+
 // UserGroupQuery creates a new query related with the connection Default set.
 func (c *DefaultConnection) UserGroupQuery(options ...ceous.CeousOption) *userGroupQuery {
 	return NewUserGroupQuery(append(options, ceous.WithConn(c))...)
@@ -263,7 +280,6 @@ func (c *DefaultConnection) UserGroupQuery(options ...ceous.CeousOption) *userGr
 func (c *DefaultConnection) UserGroupStore(options ...ceous.CeousOption) *userGroupStore {
 	return NewUserGroupStore(append(options, ceous.WithConn(c))...)
 }
-	
 
 // Begin creates a new transaction with Default set.
 func (c *DefaultConnection) Begin() (*Transaction, error) {
@@ -288,6 +304,7 @@ var (
 	// Default is a database connection reference.
 	Default *DefaultConnection
 )
+
 // InitDefault initializes the connection `Default:`.
 func InitDefault(db *sql.DB) {
 	Default = &DefaultConnection{
@@ -304,6 +321,7 @@ func NewTransaction(tx *ceous.BaseTxRunner) *Transaction {
 		BaseTxRunner: tx,
 	}
 }
+
 // UserQuery creates a new query from a transaction.
 func (c *Transaction) UserQuery(options ...ceous.CeousOption) *userQuery {
 	return NewUserQuery(append(options, ceous.WithRunner(c))...)
@@ -313,6 +331,7 @@ func (c *Transaction) UserQuery(options ...ceous.CeousOption) *userQuery {
 func (c *Transaction) UserStore(options ...ceous.CeousOption) *userStore {
 	return NewUserStore(append(options, ceous.WithRunner(c))...)
 }
+
 // GroupQuery creates a new query from a transaction.
 func (c *Transaction) GroupQuery(options ...ceous.CeousOption) *groupQuery {
 	return NewGroupQuery(append(options, ceous.WithRunner(c))...)
@@ -322,6 +341,7 @@ func (c *Transaction) GroupQuery(options ...ceous.CeousOption) *groupQuery {
 func (c *Transaction) GroupStore(options ...ceous.CeousOption) *groupStore {
 	return NewGroupStore(append(options, ceous.WithRunner(c))...)
 }
+
 // UserGroupQuery creates a new query from a transaction.
 func (c *Transaction) UserGroupQuery(options ...ceous.CeousOption) *userGroupQuery {
 	return NewUserGroupQuery(append(options, ceous.WithRunner(c))...)
@@ -333,50 +353,43 @@ func (c *Transaction) UserGroupStore(options ...ceous.CeousOption) *userGroupSto
 }
 
 type schema struct {
-	User *schemaUser
-	Group *schemaGroup
+	User      *schemaUser
+	Group     *schemaGroup
 	UserGroup *schemaUserGroup
 }
 
 // Schema represents the schema of the package "tests".
 var Schema = schema{
-	User: &schemaUser {
-	BaseSchema: baseSchemaUser,
+	User: &schemaUser{
+		BaseSchema: baseSchemaUser,
 
-	
 		ID: baseSchemaUser.ColumnsArr[0],
-	
+
 		Name: baseSchemaUser.ColumnsArr[1],
-	
+
 		Password: baseSchemaUser.ColumnsArr[2],
-	
+
 		Role: baseSchemaUser.ColumnsArr[3],
-	
+
 		CreatedAt: baseSchemaUser.ColumnsArr[4],
-	
+
 		UpdatedAt: baseSchemaUser.ColumnsArr[5],
-	
 	},
-	Group: &schemaGroup {
-	BaseSchema: baseSchemaGroup,
+	Group: &schemaGroup{
+		BaseSchema: baseSchemaGroup,
 
-	
 		ID: baseSchemaGroup.ColumnsArr[0],
-	
-		Name: baseSchemaGroup.ColumnsArr[1],
-	
-	},
-	UserGroup: &schemaUserGroup {
-	BaseSchema: baseSchemaUserGroup,
 
-	
+		Name: baseSchemaGroup.ColumnsArr[1],
+	},
+	UserGroup: &schemaUserGroup{
+		BaseSchema: baseSchemaUserGroup,
+
 		ID: UserGroupPKSchema,
-	
+
 		Admin: baseSchemaUserGroup.ColumnsArr[2],
-	
 	},
 }
-	
 
 type userResultSet struct {
 	*ceous.RecordResultSet
@@ -387,17 +400,16 @@ func NewUserResultSet(rs ceous.ResultSet, err error) *userResultSet {
 		RecordResultSet: ceous.NewRecordResultSet(rs, err),
 	}
 }
-	
 
 // userQuery is the query for the model `User`.
 type userQuery struct {
 	*ceous.BaseQuery
-	ID	ceous.SchemaField
-	Name	ceous.SchemaField
-	Password	ceous.SchemaField
-	Role	ceous.SchemaField
-	CreatedAt	ceous.SchemaField
-	UpdatedAt	ceous.SchemaField
+	ID        ceous.SchemaField
+	Name      ceous.SchemaField
+	Password  ceous.SchemaField
+	Role      ceous.SchemaField
+	CreatedAt ceous.SchemaField
+	UpdatedAt ceous.SchemaField
 }
 
 // NewUserQuery creates a new query for model `User`.
@@ -410,46 +422,52 @@ func NewUserQuery(options ...ceous.CeousOption) *userQuery {
 		BaseQuery: bq,
 	}
 }
+
 // ByID add a filter by `ID`.
 func (q *userQuery) ByID(value int) *userQuery {
-	
+
 	q.BaseQuery.Where(ceous.Eq(Schema.User.ID, value))
-	
+
 	return q
 }
+
 // ByName add a filter by `Name`.
 func (q *userQuery) ByName(value string) *userQuery {
-	
+
 	q.BaseQuery.Where(ceous.Eq(Schema.User.Name, value))
-	
+
 	return q
 }
+
 // ByPassword add a filter by `Password`.
 func (q *userQuery) ByPassword(value string) *userQuery {
-	
+
 	q.BaseQuery.Where(ceous.Eq(Schema.User.Password, value))
-	
+
 	return q
 }
+
 // ByRole add a filter by `Role`.
 func (q *userQuery) ByRole(value string) *userQuery {
-	
+
 	q.BaseQuery.Where(ceous.Eq(Schema.User.Role, value))
-	
+
 	return q
 }
+
 // ByCreatedAt add a filter by `CreatedAt`.
 func (q *userQuery) ByCreatedAt(value time.Time) *userQuery {
-	
+
 	q.BaseQuery.Where(ceous.Eq(Schema.User.CreatedAt, value))
-	
+
 	return q
 }
+
 // ByUpdatedAt add a filter by `UpdatedAt`.
 func (q *userQuery) ByUpdatedAt(value time.Time) *userQuery {
-	
+
 	q.BaseQuery.Where(ceous.Eq(Schema.User.UpdatedAt, value))
-	
+
 	return q
 }
 
@@ -465,7 +483,7 @@ func (q *userQuery) ExcludeFields(fields ...ceous.SchemaField) *userQuery {
 	return q
 }
 
-// Where defines the conditions for 
+// Where defines the conditions for
 func (q *userQuery) Where(pred interface{}, args ...interface{}) *userQuery {
 	q.BaseQuery.Where(pred, args...)
 	return q
@@ -562,7 +580,6 @@ func (q *userQuery) OrderBy(fields ...interface{}) *userQuery {
 	q.BaseQuery.OrderBy(fields...)
 	return q
 }
-	
 
 // userStore is the query for the model `User`.
 type userStore struct {
@@ -583,7 +600,6 @@ func (store *userStore) Insert(record *User, fields ...ceous.SchemaField) error 
 func (store *userStore) Update(record *User, fields ...ceous.SchemaField) (int64, error) {
 	return store.BaseStore.Update(record, fields...)
 }
-	
 
 type groupResultSet struct {
 	*ceous.RecordResultSet
@@ -594,13 +610,12 @@ func NewGroupResultSet(rs ceous.ResultSet, err error) *groupResultSet {
 		RecordResultSet: ceous.NewRecordResultSet(rs, err),
 	}
 }
-	
 
 // groupQuery is the query for the model `Group`.
 type groupQuery struct {
 	*ceous.BaseQuery
-	ID	ceous.SchemaField
-	Name	ceous.SchemaField
+	ID   ceous.SchemaField
+	Name ceous.SchemaField
 }
 
 // NewGroupQuery creates a new query for model `Group`.
@@ -613,18 +628,20 @@ func NewGroupQuery(options ...ceous.CeousOption) *groupQuery {
 		BaseQuery: bq,
 	}
 }
+
 // ByID add a filter by `ID`.
 func (q *groupQuery) ByID(value int) *groupQuery {
-	
+
 	q.BaseQuery.Where(ceous.Eq(Schema.Group.ID, value))
-	
+
 	return q
 }
+
 // ByName add a filter by `Name`.
 func (q *groupQuery) ByName(value string) *groupQuery {
-	
+
 	q.BaseQuery.Where(ceous.Eq(Schema.Group.Name, value))
-	
+
 	return q
 }
 
@@ -640,7 +657,7 @@ func (q *groupQuery) ExcludeFields(fields ...ceous.SchemaField) *groupQuery {
 	return q
 }
 
-// Where defines the conditions for 
+// Where defines the conditions for
 func (q *groupQuery) Where(pred interface{}, args ...interface{}) *groupQuery {
 	q.BaseQuery.Where(pred, args...)
 	return q
@@ -737,7 +754,6 @@ func (q *groupQuery) OrderBy(fields ...interface{}) *groupQuery {
 	q.BaseQuery.OrderBy(fields...)
 	return q
 }
-	
 
 // groupStore is the query for the model `Group`.
 type groupStore struct {
@@ -758,7 +774,6 @@ func (store *groupStore) Insert(record *Group, fields ...ceous.SchemaField) erro
 func (store *groupStore) Update(record *Group, fields ...ceous.SchemaField) (int64, error) {
 	return store.BaseStore.Update(record, fields...)
 }
-	
 
 type userGroupResultSet struct {
 	*ceous.RecordResultSet
@@ -769,13 +784,12 @@ func NewUserGroupResultSet(rs ceous.ResultSet, err error) *userGroupResultSet {
 		RecordResultSet: ceous.NewRecordResultSet(rs, err),
 	}
 }
-	
 
 // userGroupQuery is the query for the model `UserGroup`.
 type userGroupQuery struct {
 	*ceous.BaseQuery
-	ID	ceous.SchemaField
-	Admin	ceous.SchemaField
+	ID    ceous.SchemaField
+	Admin ceous.SchemaField
 }
 
 // NewUserGroupQuery creates a new query for model `UserGroup`.
@@ -788,20 +802,22 @@ func NewUserGroupQuery(options ...ceous.CeousOption) *userGroupQuery {
 		BaseQuery: bq,
 	}
 }
+
 // ByID add a filter by `ID`.
 func (q *userGroupQuery) ByID(value UserGroupPK) *userGroupQuery {
-	
+
 	q.BaseQuery.Where(ceous.Eq(Schema.UserGroup.ID.UserID, value.UserID))
-	
+
 	q.BaseQuery.Where(ceous.Eq(Schema.UserGroup.ID.GroupID, value.GroupID))
-	
+
 	return q
 }
+
 // ByAdmin add a filter by `Admin`.
 func (q *userGroupQuery) ByAdmin(value bool) *userGroupQuery {
-	
+
 	q.BaseQuery.Where(ceous.Eq(Schema.UserGroup.Admin, value))
-	
+
 	return q
 }
 
@@ -817,7 +833,7 @@ func (q *userGroupQuery) ExcludeFields(fields ...ceous.SchemaField) *userGroupQu
 	return q
 }
 
-// Where defines the conditions for 
+// Where defines the conditions for
 func (q *userGroupQuery) Where(pred interface{}, args ...interface{}) *userGroupQuery {
 	q.BaseQuery.Where(pred, args...)
 	return q
@@ -915,21 +931,21 @@ func (q *userGroupQuery) OrderBy(fields ...interface{}) *userGroupQuery {
 	return q
 }
 
-type UserGroupModelUserRelation struct {
+type UserGroupModeluserRelation struct {
 	_runner ceous.DBRunner
-	keys []interface{}
+	keys    []interface{}
 	records map[int][]*UserGroup
 }
 
-func NewUserGroupModelUserRelation(runner ceous.DBRunner) *UserGroupModelUserRelation {
-	return &UserGroupModelUserRelation{
+func NewUserGroupModeluserRelation(runner ceous.DBRunner) *UserGroupModeluserRelation {
+	return &UserGroupModeluserRelation{
 		_runner: runner,
 		keys:    make([]interface{}, 0),
 		records: make(map[int][]*UserGroup),
 	}
 }
 
-func (relation *UserGroupModelUserRelation) Aggregate(record ceous.Record) error {
+func (relation *UserGroupModeluserRelation) Aggregate(record ceous.Record) error {
 	ugRecord, ok := record.(*UserGroup)
 	if !ok {
 		return ceous.ErrInvalidRecordType
@@ -944,7 +960,7 @@ func (relation *UserGroupModelUserRelation) Aggregate(record ceous.Record) error
 	return nil
 }
 
-func (relation *UserGroupModelUserRelation) Realize() error {
+func (relation *UserGroupModeluserRelation) Realize() error {
 	records, err := NewUserQuery(ceous.WithRunner(relation._runner)).Where(ceous.Eq(Schema.User.ID, relation.keys)).All()
 	if err != nil {
 		return err // TODO(jota): Shall this be wrapped into a custom error?
@@ -955,17 +971,16 @@ func (relation *UserGroupModelUserRelation) Realize() error {
 			return ceous.ErrInconsistentRelationResult
 		}
 		for _, r := range masterRecords {
-			r.User = record
+			r.user = record
 		}
 	}
 	return nil
 }
 
 func (q *userGroupQuery) WithUser() *userGroupQuery {
-	q.BaseQuery.Relations = append(q.BaseQuery.Relations, NewUserGroupModelUserRelation(q.BaseQuery.Runner))
+	q.BaseQuery.Relations = append(q.BaseQuery.Relations, NewUserGroupModeluserRelation(q.BaseQuery.Runner))
 	return q
 }
-	
 
 // userGroupStore is the query for the model `UserGroup`.
 type userGroupStore struct {

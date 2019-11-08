@@ -1,5 +1,6 @@
 @{
 	import "github.com/jamillosantos/go-ceous/generator/models"
+	import . "github.com/jamillosantos/go-ceous/generator/helpers"
 
 	var relation *models.ModelRelation
 }
@@ -50,7 +51,7 @@ func (relation @raw("*")@relation.RelationName()@:) Realize() error {
 	return nil
 }
 
-func (q @raw("*")@relation.FromModel.QueryName()@:) With@relation.FromField@:() @raw("*")@relation.FromModel.QueryName()@: {
+func (q @raw("*")@relation.FromModel.QueryName()@:) With@PascalCase(relation.FromField)@:() @raw("*")@relation.FromModel.QueryName()@: {
 	q.BaseQuery.Relations = append(q.BaseQuery.Relations, New@relation.RelationName()@:(q.BaseQuery.Runner))
 	return q
 }

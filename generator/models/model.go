@@ -137,6 +137,7 @@ func (m *Model) parseField(ctx *Ctx, t *myasthurts.TagParam, field *myasthurts.F
 			}
 			f.Modifiers = append(f.Modifiers, fieldPK)
 			m.PK = f
+			ctx.Reporter.Linef(" * PK: %s", f.Name)
 		case "autoincr":
 			f.Modifiers = append(f.Modifiers, fieldAutoInc)
 		}
@@ -245,6 +246,7 @@ func NewModel(name string) *Model {
 		Columns:      make([]*ModelColumn, 0),
 		Fields:       make([]*ModelField, 0),
 		ColumnsMap:   make(map[string]int, 0),
+		Relations:    make([]*ModelRelation, 0),
 	}
 }
 
@@ -281,6 +283,7 @@ func ParseModel(ctx *Ctx, s *myasthurts.Struct) (*Model, error) {
 			return nil, err
 		}
 	}
+	ctx.Models[m.Name] = m
 	return m, nil
 }
 
