@@ -40,6 +40,7 @@ var _ = Describe("Connection", func() {
 			t, err := tests.Default.Begin()
 			Expect(err).ToNot(HaveOccurred())
 			_, err = t.Exec("delete from users")
+			Expect(err).ToNot(HaveOccurred())
 			count, err := t.UserQuery().Count()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(count).To(Equal(int64(0)))
