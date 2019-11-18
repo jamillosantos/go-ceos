@@ -14,7 +14,7 @@ require (
 	github.com/fatih/structtag v1.1.0 // indirect
 	github.com/gotestyourself/gotestyourself v2.2.0+incompatible // indirect
 	github.com/jamillosantos/macchiato v0.0.0-20171220130318-3be045cc5033
-	github.com/lab259/go-my-ast-hurts v0.0.3
+	github.com/lab259/go-my-ast-hurts v0.0.4-0.20191118190035-f4a5b84f0413
 	github.com/lib/pq v1.2.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/novln/macchiato v1.0.0
@@ -29,8 +29,8 @@ require (
 	github.com/sirupsen/logrus v1.4.2 // indirect
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.4.0
-	golang.org/x/net v0.0.0-20191101175033-0deb6923b6d9 // indirect
-	golang.org/x/sys v0.0.0-20191104094858-e8c54fb511f6 // indirect
+	golang.org/x/net v0.0.0-20191118183410-d06c31c94cae // indirect
+	golang.org/x/sys v0.0.0-20191118133127-cf1e2d577169 // indirect
 	gopkg.in/yaml.v2 v2.2.5 // indirect
 	gotest.tools v2.2.0+incompatible // indirect
 )

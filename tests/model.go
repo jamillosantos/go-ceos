@@ -14,6 +14,8 @@ type (
 		Name        string    `ceous:"name"`
 		Password    string    `ceous:"password"`
 		Role        string    `ceous:"role"`
+		Address     Address   `ceous:""`
+		Work        Address   `ceous:"work"`
 		CreatedAt   time.Time `ceous:"created_at"`
 		UpdatedAt   time.Time `ceous:"updated_at"`
 	}
@@ -35,6 +37,14 @@ type (
 		ID          UserGroupPK `ceous:",pk"`
 		user        *User       `fk:"user_id"`
 		Admin       bool        `ceous:"admin"`
+	}
+
+	Address struct {
+		ceous.Embedded
+		Street string `ceous:"street"`
+		Number string `ceous:"number"`
+		City   string `ceous:"city"`
+		State  string `ceous:"state"`
 	}
 )
 

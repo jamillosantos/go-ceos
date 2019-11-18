@@ -12,7 +12,7 @@ import (
 	"github.com/pkg/errors"
 	"context"
 	"database/sql"
-@for _, pkg := range ctxPkg.Imports {
+@for _, pkg := range ctxPkg.Imports.Imports {
 	if pkg.Alias == "-" {
 		continue
 	}
@@ -20,14 +20,6 @@ import (
 @	@pkg.Alias "@pkg.Pkg.ImportPath@:"
 }
 )
-
-@for _, m := range models {@
-
-/**
- * Declare @m.Name
- */
-	@{RenderModel(_buffer, ctxPkg.Pkg, m)}
-}
 
 @for _, m := range embeddeds {
 	@raw("\n\n")

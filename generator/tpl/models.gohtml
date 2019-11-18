@@ -1,0 +1,24 @@
+@{
+	import generatorModels "github.com/jamillosantos/go-ceous/generator/models"
+
+	var ctxPkg *generatorModels.Ctx
+	var models []*generatorModels.Model
+	var embeddeds []*generatorModels.Model
+	var connections []*generatorModels.Connection
+-}@:package @ctxPkg.Pkg.Name
+
+import (
+	"github.com/jamillosantos/go-ceous"
+	"github.com/pkg/errors"
+@for _, pkg := range ctxPkg.ModelsImports.Imports {
+	if pkg.Alias == "-" || pkg.Pkg.ImportPath == "." {
+		continue
+	}
+	@raw("\n")
+@	@pkg.Alias "@pkg.Pkg.ImportPath@:"
+}
+)
+
+@for _, m := range models {
+	RenderModel(_buffer, ctxPkg.Pkg, m)
+}

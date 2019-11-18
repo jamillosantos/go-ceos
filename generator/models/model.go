@@ -116,6 +116,8 @@ func (m *Model) parseField(ctx *Ctx, t *myasthurts.TagParam, field *myasthurts.F
 
 	isStructE := false
 
+	fieldColumnName := ""
+
 	f := &ModelField{
 		Name:      field.Name,
 		FieldName: field.Name, // TODO(jota): Let the developer to choose its default naming convention...
@@ -123,10 +125,11 @@ func (m *Model) parseField(ctx *Ctx, t *myasthurts.TagParam, field *myasthurts.F
 		Modifiers: make([]ModelFieldModifier, 0), // TODO(jota): To check this..
 	}
 
-	ctx.AddRefType(field.RefType)
+	ctx.Imports.AddRefType(field.RefType)
 
 	if t.Value != "" {
 		f.FieldName = t.Value
+		fieldColumnName = t.Value
 	}
 	// To support multiple options...
 	for _, o := range t.Options {
@@ -155,8 +158,11 @@ func (m *Model) parseField(ctx *Ctx, t *myasthurts.TagParam, field *myasthurts.F
 			if columnName == "" {
 				columnName = embeddedField.Name // TODO(jota): Apply the default naming convention here.
 			}
+			if fieldColumnName != "" {
+				columnName = fieldColumnName + "_" + columnName
+			}
 			column := &ModelColumn{
-				Column:    ceousTag.Value,
+				Column:    columnName,
 				Type:      NewModelType(ctx, embeddedField.RefType),
 				FullField: field.Name + "." + embeddedField.Name,
 				Modifiers: f.Modifiers,
@@ -209,6 +215,7 @@ func (m *Model) parseFK(ctx *Ctx, t *myasthurts.TagParam, field *myasthurts.Fiel
 		ToColumn:       t.Value,
 	}
 	m.Relations = append(m.Relations, relation)
+	ctx.ModelsImports.AddRefType(field.RefType)
 	ctx.Reporter.Linef("   FK: %s(%s): %s", field.Name, relation.ToColumn, relation.FromColumnType.String())
 	return nil
 }
@@ -304,7 +311,7 @@ func (m *Model) StoreName() string {
 }
 
 func (t *ModelType) String() string {
-	ctxPkg := t.ctx.AddRefType(t.RefType)
+	ctxPkg := t.ctx.Imports.AddRefType(t.RefType)
 	var r string
 	if ctxPkg.Alias != "." && ctxPkg.Alias != "-" {
 		r = ctxPkg.Alias + "."
