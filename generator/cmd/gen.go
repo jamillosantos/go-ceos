@@ -2,8 +2,10 @@ package cmd
 
 import (
 	"bytes"
-	"io"
+	"fmt"
+	"go/format"
 	"os"
+	"path"
 
 	generatorModels "github.com/jamillosantos/go-ceous/generator/models"
 	"github.com/jamillosantos/go-ceous/generator/reporters"
@@ -14,10 +16,28 @@ import (
 )
 
 var (
-	recursive     bool
-	excludedFiles []string
-	verbose       bool
+	recursive      bool
+	excludedFiles  []string
+	verbose        bool
+	modelsFileName string
+	outputFileName string
+	reporter       reporters.Reporter
 )
+
+type fileIgnorer struct{}
+
+// BeforeFile will ignore all files defined by the command line.
+func (*fileIgnorer) BeforeFile(_ *myasthurts.ParsePackageContext, filePath string) error {
+	for _, f := range excludedFiles {
+		if f == filePath || filePath == outputFileName || filePath == modelsFileName {
+			if verbose {
+				reporter.Linef("Ignoring file %s", filePath)
+			}
+			return myasthurts.Skip
+		}
+	}
+	return nil
+}
 
 func isModel(refType myasthurts.RefType) bool {
 	return refType.Pkg().Name == "ceous" && refType.Name() == "Model"
@@ -40,7 +60,13 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Args: cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		env, err := myasthurts.NewEnvironment()
+		if verbose {
+			reporter = &reporters.Verbose{}
+		} else {
+			reporter = &reporters.Quiet{}
+		}
+
+		env, err := myasthurts.NewEnvironmentWithListener(&fileIgnorer{})
 		if err != nil {
 			panic(err) // TODO(jota): Decide how critical errors will be reported.
 		}
@@ -48,14 +74,6 @@ to quickly create a Cobra application.`,
 		pkg, err := env.Parse(".")
 		if err != nil {
 			panic(errors.Wrap(err, "could not parse the package")) // TODO(jota): Decide how critical errors will be reported.
-		}
-
-		var reporter reporters.Reporter
-
-		if verbose {
-			reporter = &reporters.Verbose{}
-		} else {
-			reporter = &reporters.Quiet{}
 		}
 
 		// Models will be a list of the structs that implement Model
@@ -101,21 +119,47 @@ to quickly create a Cobra application.`,
 			}
 		}
 
-		buff := bytes.NewBuffer(nil)
+		buffCeous := bytes.NewBuffer(nil)
+		buffModels := bytes.NewBuffer(nil)
 
 		reporter.Line("Generating code ...")
-		tpl.RenderCeous(buff, ctx, models, embeddeds, connections)
+		tpl.RenderCeous(buffCeous, ctx, models, embeddeds, connections)
+		tpl.RenderModels(buffModels, ctx, models, embeddeds, connections)
 
-		f, err := os.OpenFile("ceous.go", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0755)
+		ceousFile, err := os.OpenFile(outputFileName, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0755)
 		if err != nil {
-			panic(errors.Wrapf(err, "error opening ceous.go")) // TODO(jota): Decide how critical errors will be reported.
+			panic(errors.Wrapf(err, "error opening %s", outputFileName)) // TODO(jota): Decide how critical errors will be reported.
 		}
-		defer f.Close()
+		defer ceousFile.Close()
+
+		fmt.Println(modelsFileName)
+		fmt.Println(path.Join(pkg.RealPath, modelsFileName))
+
+		modelsFile, err := os.OpenFile(path.Join(pkg.RealPath, modelsFileName), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0755)
+		if err != nil {
+			panic(errors.Wrapf(err, "error opening %s", modelsFileName)) // TODO(jota): Decide how critical errors will be reported.
+		}
+		defer modelsFile.Close()
 
 		reporter.Line("Generating file ...")
-		_, err = io.Copy(f, buff)
+
+		formattedCeousCode, err := format.Source(buffCeous.Bytes())
 		if err != nil {
-			panic(errors.Wrapf(err, "error copying buffer to ceous.go")) // TODO(jota): Decide how critical errors will be reported.
+			panic(errors.Wrapf(err, "could not format the ceous code"))
+		}
+		formattedModelsCode, err := format.Source(buffModels.Bytes())
+		if err != nil {
+			panic(errors.Wrapf(err, "could not format the models code"))
+		}
+
+		_, err = ceousFile.Write(formattedCeousCode)
+		if err != nil {
+			panic(errors.Wrapf(err, "error writing %s", outputFileName)) // TODO(jota): Decide how critical errors will be reported.
+		}
+
+		_, err = modelsFile.Write(formattedModelsCode)
+		if err != nil {
+			panic(errors.Wrapf(err, "error writing %s", modelsFileName)) // TODO(jota): Decide how critical errors will be reported.
 		}
 		reporter.Line("Done ...")
 	},
@@ -124,7 +168,8 @@ to quickly create a Cobra application.`,
 func init() {
 	rootCmd.AddCommand(genCmd)
 
+	genCmd.PersistentFlags().StringVarP(&outputFileName, "output", "o", "ceous.go", "name of the file")
+	genCmd.PersistentFlags().StringVarP(&modelsFileName, "model", "m", "ceous_models.go", "name of the models file")
 	genCmd.PersistentFlags().StringArrayVarP(&excludedFiles, "exclude-files", "e", []string{}, "exclude files")
 	genCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose mode")
-	//
 }

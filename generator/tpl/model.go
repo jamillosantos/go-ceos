@@ -22,26 +22,6 @@ func Model(pkg *myasthurts.Package, model *models.Model) string {
 
 // RenderModel render tpl/model.gohtml
 func RenderModel(_buffer io.StringWriter, pkg *myasthurts.Package, model *models.Model) {
-	_buffer.WriteString("\n\nvar ")
-	_buffer.WriteString(gorazor.HTMLEscape(model.BaseSchemaName()))
-	_buffer.WriteString(" = ceous.NewBaseSchema(\n\t\"")
-	_buffer.WriteString(gorazor.HTMLEscape(model.TableName))
-	_buffer.WriteString("\",\n\t\"\",")
-	for _, field := range model.Columns {
-		_buffer.WriteString("\n\tceous.NewSchemaField(\"")
-		_buffer.WriteString(gorazor.HTMLEscape(field.Column))
-		_buffer.WriteString("\"")
-		if len(field.Modifiers) > 0 {
-			for _, m := range field.Modifiers {
-
-				_buffer.WriteString((", "))
-				_buffer.WriteString((m()))
-
-			}
-		}
-		_buffer.WriteString("),")
-	}
-	_buffer.WriteString("\n)")
 	if model.PK != nil {
 		_buffer.WriteString("\n\n// GetID returns the primary key for model `")
 		_buffer.WriteString(gorazor.HTMLEscape(model.Name))
@@ -96,24 +76,5 @@ func RenderModel(_buffer io.StringWriter, pkg *myasthurts.Package, model *models
 	}
 	RenderColumnAddress(_buffer, model)
 	RenderColumnValue(_buffer, model)
-	_buffer.WriteString("\n\ntype ")
-	_buffer.WriteString(gorazor.HTMLEscape(model.SchemaName()))
-	_buffer.WriteString(" struct {\n\t*ceous.BaseSchema")
-	for _, field := range model.SchemaFields {
-		_buffer.WriteString("\n\t")
-		_buffer.WriteString(gorazor.HTMLEscape(field.Name))
-		_buffer.WriteString(" ")
-		if field.SchemaType == "" {
-
-			_buffer.WriteString("ceous.SchemaField")
-
-		} else {
-
-			_buffer.WriteString("schema")
-			_buffer.WriteString(gorazor.HTMLEscape(field.SchemaType))
-
-		}
-	}
-	_buffer.WriteString("\n}")
 
 }

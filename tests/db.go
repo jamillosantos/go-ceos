@@ -49,7 +49,23 @@ func DBStart() {
 }
 
 func DBUsersCreate() {
-	_, err := DB.Exec("CREATE TABLE users (id SERIAL PRIMARY KEY, name varchar(100), password varchar(32) not null default '', role varchar(30) not null default '', created_at timestamptz default now(), updated_at timestamptz default now())")
+	_, err := DB.Exec(`CREATE TABLE users (
+		id SERIAL PRIMARY KEY,
+		name varchar(100),
+		password varchar(32) not null default '',
+		role varchar(30) not null default '',
+		street varchar(60) not null default '',
+		number varchar(60) not null default '',
+		city varchar(60) not null default '',
+		state varchar(60) not null default '',
+		work_street varchar(60) not null default '',
+		work_number varchar(60) not null default '',
+		work_city varchar(60) not null default '',
+		work_state varchar(60) not null default '',
+		created_at timestamptz default now(),
+		updated_at timestamptz default now()
+	)`)
+
 	ExpectWithOffset(1, err).ToNot(HaveOccurred())
 }
 

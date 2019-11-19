@@ -3,200 +3,10 @@ package tests
 import (
 	"context"
 	"database/sql"
-	time "time"
-
 	"github.com/jamillosantos/go-ceous"
 	"github.com/pkg/errors"
+	time "time"
 )
-
-/**
- * Declare User
- */
-
-var baseSchemaUser = ceous.NewBaseSchema(
-	"users",
-	"",
-	ceous.NewSchemaField("id", ceous.FieldPK, ceous.FieldAutoIncrement),
-	ceous.NewSchemaField("name"),
-	ceous.NewSchemaField("password"),
-	ceous.NewSchemaField("role"),
-	ceous.NewSchemaField("created_at"),
-	ceous.NewSchemaField("updated_at"),
-)
-
-// GetID returns the primary key for model `User`.
-func (model *User) GetID() interface{} {
-	return model.ID
-}
-
-// ColumnAddress returns the pointer address of a field given its column name.
-func (model *User) ColumnAddress(name string) (interface{}, error) {
-	switch name {
-	case "id":
-		return &model.ID, nil
-	case "name":
-		return &model.Name, nil
-	case "password":
-		return &model.Password, nil
-	case "role":
-		return &model.Role, nil
-	case "created_at":
-		return &model.CreatedAt, nil
-	case "updated_at":
-		return &model.UpdatedAt, nil
-	default:
-		return nil, errors.Wrapf(ceous.ErrFieldNotFound, "field %s not found", name)
-	}
-}
-
-// Value returns the value from a field given its column name.
-func (model *User) Value(name string) (interface{}, error) {
-	switch name {
-	case "id":
-		return model.ID, nil
-	case "name":
-		return model.Name, nil
-	case "password":
-		return model.Password, nil
-	case "role":
-		return model.Role, nil
-	case "created_at":
-		return model.CreatedAt, nil
-	case "updated_at":
-		return model.UpdatedAt, nil
-	default:
-		return nil, errors.Wrapf(ceous.ErrFieldNotFound, "field %s not found", name)
-	}
-}
-
-type schemaUser struct {
-	*ceous.BaseSchema
-	ID        ceous.SchemaField
-	Name      ceous.SchemaField
-	Password  ceous.SchemaField
-	Role      ceous.SchemaField
-	CreatedAt ceous.SchemaField
-	UpdatedAt ceous.SchemaField
-}
-
-/**
- * Declare Group
- */
-
-var baseSchemaGroup = ceous.NewBaseSchema(
-	"groups",
-	"",
-	ceous.NewSchemaField("id", ceous.FieldPK, ceous.FieldAutoIncrement),
-	ceous.NewSchemaField("name"),
-)
-
-// GetID returns the primary key for model `Group`.
-func (model *Group) GetID() interface{} {
-	return model.ID
-}
-
-// ColumnAddress returns the pointer address of a field given its column name.
-func (model *Group) ColumnAddress(name string) (interface{}, error) {
-	switch name {
-	case "id":
-		return &model.ID, nil
-	case "name":
-		return &model.Name, nil
-	default:
-		return nil, errors.Wrapf(ceous.ErrFieldNotFound, "field %s not found", name)
-	}
-}
-
-// Value returns the value from a field given its column name.
-func (model *Group) Value(name string) (interface{}, error) {
-	switch name {
-	case "id":
-		return model.ID, nil
-	case "name":
-		return model.Name, nil
-	default:
-		return nil, errors.Wrapf(ceous.ErrFieldNotFound, "field %s not found", name)
-	}
-}
-
-type schemaGroup struct {
-	*ceous.BaseSchema
-	ID   ceous.SchemaField
-	Name ceous.SchemaField
-}
-
-/**
- * Declare UserGroup
- */
-
-var baseSchemaUserGroup = ceous.NewBaseSchema(
-	"user_groups",
-	"",
-	ceous.NewSchemaField("user_id", ceous.FieldPK),
-	ceous.NewSchemaField("group_id", ceous.FieldPK),
-	ceous.NewSchemaField("admin"),
-)
-
-// GetID returns the primary key for model `UserGroup`.
-func (model *UserGroup) GetID() interface{} {
-	return model.ID
-}
-
-// User returns the user from UserGroup.
-func (model *UserGroup) User() *User {
-	return model.user
-}
-
-// SetUser updates the value for the user,
-// updating the user.
-func (model *UserGroup) SetUser(value *User) error {
-	c, err := model.ColumnAddress("user_id")
-	if err != nil {
-		return err
-	}
-
-	v, ok := c.(*int)
-	if !ok {
-		return errors.New("invalid key value") // TODO(jota): To formalize this error.
-	}
-	*v = value.ID
-	model.user = value
-	return nil
-}
-
-// ColumnAddress returns the pointer address of a field given its column name.
-func (model *UserGroup) ColumnAddress(name string) (interface{}, error) {
-	switch name {
-	case "user_id":
-		return &model.ID.UserID, nil
-	case "group_id":
-		return &model.ID.GroupID, nil
-	case "admin":
-		return &model.Admin, nil
-	default:
-		return nil, errors.Wrapf(ceous.ErrFieldNotFound, "field %s not found", name)
-	}
-}
-
-// Value returns the value from a field given its column name.
-func (model *UserGroup) Value(name string) (interface{}, error) {
-	switch name {
-	case "user_id":
-		return model.ID.UserID, nil
-	case "group_id":
-		return model.ID.GroupID, nil
-	case "admin":
-		return model.Admin, nil
-	default:
-		return nil, errors.Wrapf(ceous.ErrFieldNotFound, "field %s not found", name)
-	}
-}
-
-type schemaUserGroup struct {
-	*ceous.BaseSchema
-	ID    schemaUserGroupPK
-	Admin ceous.SchemaField
-}
 
 // ColumnAddress returns the pointer address of a field given its column name.
 func (model *UserGroupPK) ColumnAddress(name string) (interface{}, error) {
@@ -230,6 +40,52 @@ type schemaUserGroupPK struct {
 var UserGroupPKSchema = schemaUserGroupPK{
 	UserID:  ceous.NewSchemaField("user_id"),
 	GroupID: ceous.NewSchemaField("group_id"),
+}
+
+// ColumnAddress returns the pointer address of a field given its column name.
+func (model *Address) ColumnAddress(name string) (interface{}, error) {
+	switch name {
+	case "street":
+		return &model.Street, nil
+	case "number":
+		return &model.Number, nil
+	case "city":
+		return &model.City, nil
+	case "state":
+		return &model.State, nil
+	default:
+		return nil, errors.Wrapf(ceous.ErrFieldNotFound, "field %s not found", name)
+	}
+}
+
+// Value returns the value from a field given its column name.
+func (model *Address) Value(name string) (interface{}, error) {
+	switch name {
+	case "street":
+		return model.Street, nil
+	case "number":
+		return model.Number, nil
+	case "city":
+		return model.City, nil
+	case "state":
+		return model.State, nil
+	default:
+		return nil, errors.Wrapf(ceous.ErrFieldNotFound, "field %s not found", name)
+	}
+}
+
+type schemaAddress struct {
+	Street ceous.SchemaField
+	Number ceous.SchemaField
+	City   ceous.SchemaField
+	State  ceous.SchemaField
+}
+
+var AddressSchema = schemaAddress{
+	Street: ceous.NewSchemaField("street"),
+	Number: ceous.NewSchemaField("number"),
+	City:   ceous.NewSchemaField("city"),
+	State:  ceous.NewSchemaField("state"),
 }
 
 type Connection interface {
@@ -371,9 +227,13 @@ var Schema = schema{
 
 		Role: baseSchemaUser.ColumnsArr[3],
 
-		CreatedAt: baseSchemaUser.ColumnsArr[4],
+		Address: AddressSchema,
 
-		UpdatedAt: baseSchemaUser.ColumnsArr[5],
+		Work: AddressSchema,
+
+		CreatedAt: baseSchemaUser.ColumnsArr[12],
+
+		UpdatedAt: baseSchemaUser.ColumnsArr[13],
 	},
 	Group: &schemaGroup{
 		BaseSchema: baseSchemaGroup,
@@ -389,6 +249,63 @@ var Schema = schema{
 
 		Admin: baseSchemaUserGroup.ColumnsArr[2],
 	},
+}
+var baseSchemaUser = ceous.NewBaseSchema(
+	"users",
+	"",
+	ceous.NewSchemaField("id", ceous.FieldPK, ceous.FieldAutoIncrement),
+	ceous.NewSchemaField("name"),
+	ceous.NewSchemaField("password"),
+	ceous.NewSchemaField("role"),
+	ceous.NewSchemaField("street"),
+	ceous.NewSchemaField("number"),
+	ceous.NewSchemaField("city"),
+	ceous.NewSchemaField("state"),
+	ceous.NewSchemaField("work_street"),
+	ceous.NewSchemaField("work_number"),
+	ceous.NewSchemaField("work_city"),
+	ceous.NewSchemaField("work_state"),
+	ceous.NewSchemaField("created_at"),
+	ceous.NewSchemaField("updated_at"),
+)
+
+type schemaUser struct {
+	*ceous.BaseSchema
+	ID        ceous.SchemaField
+	Name      ceous.SchemaField
+	Password  ceous.SchemaField
+	Role      ceous.SchemaField
+	Address   schemaAddress
+	Work      schemaAddress
+	CreatedAt ceous.SchemaField
+	UpdatedAt ceous.SchemaField
+}
+
+var baseSchemaGroup = ceous.NewBaseSchema(
+	"groups",
+	"",
+	ceous.NewSchemaField("id", ceous.FieldPK, ceous.FieldAutoIncrement),
+	ceous.NewSchemaField("name"),
+)
+
+type schemaGroup struct {
+	*ceous.BaseSchema
+	ID   ceous.SchemaField
+	Name ceous.SchemaField
+}
+
+var baseSchemaUserGroup = ceous.NewBaseSchema(
+	"user_groups",
+	"",
+	ceous.NewSchemaField("user_id", ceous.FieldPK),
+	ceous.NewSchemaField("group_id", ceous.FieldPK),
+	ceous.NewSchemaField("admin"),
+)
+
+type schemaUserGroup struct {
+	*ceous.BaseSchema
+	ID    schemaUserGroupPK
+	Admin ceous.SchemaField
 }
 
 type userResultSet struct {
@@ -408,6 +325,8 @@ type userQuery struct {
 	Name      ceous.SchemaField
 	Password  ceous.SchemaField
 	Role      ceous.SchemaField
+	Address   ceous.SchemaField
+	Work      ceous.SchemaField
 	CreatedAt ceous.SchemaField
 	UpdatedAt ceous.SchemaField
 }
@@ -451,6 +370,34 @@ func (q *userQuery) ByPassword(value string) *userQuery {
 func (q *userQuery) ByRole(value string) *userQuery {
 
 	q.BaseQuery.Where(ceous.Eq(Schema.User.Role, value))
+
+	return q
+}
+
+// ByAddress add a filter by `Address`.
+func (q *userQuery) ByAddress(value Address) *userQuery {
+
+	q.BaseQuery.Where(ceous.Eq(Schema.User.Address.Street, value.Street))
+
+	q.BaseQuery.Where(ceous.Eq(Schema.User.Address.Number, value.Number))
+
+	q.BaseQuery.Where(ceous.Eq(Schema.User.Address.City, value.City))
+
+	q.BaseQuery.Where(ceous.Eq(Schema.User.Address.State, value.State))
+
+	return q
+}
+
+// ByWork add a filter by `Work`.
+func (q *userQuery) ByWork(value Address) *userQuery {
+
+	q.BaseQuery.Where(ceous.Eq(Schema.User.Work.Street, value.Street))
+
+	q.BaseQuery.Where(ceous.Eq(Schema.User.Work.Number, value.Number))
+
+	q.BaseQuery.Where(ceous.Eq(Schema.User.Work.City, value.City))
+
+	q.BaseQuery.Where(ceous.Eq(Schema.User.Work.State, value.State))
 
 	return q
 }

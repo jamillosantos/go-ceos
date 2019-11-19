@@ -23,7 +23,7 @@ func RenderCeous(_buffer io.StringWriter, ctxPkg *generatorModels.Ctx, models []
 	_buffer.WriteString("package ")
 	_buffer.WriteString(gorazor.HTMLEscape(ctxPkg.Pkg.Name))
 	_buffer.WriteString("\n\nimport (\n\t\"github.com/jamillosantos/go-ceous\"\n\t\"github.com/pkg/errors\"\n\t\"context\"\n\t\"database/sql\"")
-	for _, pkg := range ctxPkg.Imports {
+	for _, pkg := range ctxPkg.Imports.Imports {
 		if pkg.Alias == "-" {
 			continue
 		}
@@ -37,12 +37,6 @@ func RenderCeous(_buffer io.StringWriter, ctxPkg *generatorModels.Ctx, models []
 		_buffer.WriteString("\"")
 	}
 	_buffer.WriteString("\n)")
-	for _, m := range models {
-		_buffer.WriteString("\n\n/**\n * Declare ")
-		_buffer.WriteString(gorazor.HTMLEscape(m.Name))
-		_buffer.WriteString("\n */\n\t")
-		RenderModel(_buffer, ctxPkg.Pkg, m)
-	}
 	for _, m := range embeddeds {
 
 		_buffer.WriteString(("\n\n"))

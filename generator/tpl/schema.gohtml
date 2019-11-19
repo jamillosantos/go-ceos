@@ -28,3 +28,28 @@ var Schema = schema{
 	},
 }
 }
+
+@for _, model := range models {@
+var @model.BaseSchemaName() = ceous.NewBaseSchema(
+	"@model.TableName",
+	"",@for _, field := range model.Columns {@
+	ceous.NewSchemaField("@field.Column"@if len(field.Modifiers) > 0 {
+		@for _, m := range field.Modifiers {
+			@raw(", ")@raw(m())
+		}
+	}@),
+}
+)
+
+type @model.SchemaName()@: struct {
+	*ceous.BaseSchema
+
+@for _, field := range model.SchemaFields {@
+	@field.Name @if field.SchemaType == "" {
+		@:ceous.SchemaField
+	} else {
+		@:schema@field.SchemaType
+	}
+}
+}
+}

@@ -65,5 +65,45 @@ func RenderSchema(_buffer io.StringWriter, ctxPkg *generatorModels.Ctx, models [
 		_buffer.WriteString("\n\t},")
 	}
 	_buffer.WriteString("\n}")
+	for _, model := range models {
+		_buffer.WriteString("\nvar ")
+		_buffer.WriteString(gorazor.HTMLEscape(model.BaseSchemaName()))
+		_buffer.WriteString(" = ceous.NewBaseSchema(\n\t\"")
+		_buffer.WriteString(gorazor.HTMLEscape(model.TableName))
+		_buffer.WriteString("\",\n\t\"\",")
+		for _, field := range model.Columns {
+			_buffer.WriteString("\n\tceous.NewSchemaField(\"")
+			_buffer.WriteString(gorazor.HTMLEscape(field.Column))
+			_buffer.WriteString("\"")
+			if len(field.Modifiers) > 0 {
+				for _, m := range field.Modifiers {
+
+					_buffer.WriteString((", "))
+					_buffer.WriteString((m()))
+
+				}
+			}
+			_buffer.WriteString("),")
+		}
+		_buffer.WriteString("\n)\n\ntype ")
+		_buffer.WriteString(gorazor.HTMLEscape(model.SchemaName()))
+		_buffer.WriteString(" struct {\n\t*ceous.BaseSchema")
+		for _, field := range model.SchemaFields {
+			_buffer.WriteString("\n\t")
+			_buffer.WriteString(gorazor.HTMLEscape(field.Name))
+			_buffer.WriteString(" ")
+			if field.SchemaType == "" {
+
+				_buffer.WriteString("ceous.SchemaField")
+
+			} else {
+
+				_buffer.WriteString("schema")
+				_buffer.WriteString(gorazor.HTMLEscape(field.SchemaType))
+
+			}
+		}
+		_buffer.WriteString("\n}")
+	}
 
 }

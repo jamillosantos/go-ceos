@@ -13,31 +13,29 @@ type (
 		Alias string
 	}
 
-	Ctx struct {
-		Pkg          *myasthurts.Package
-		Reporter     reporters.Reporter
-		Models       map[string]*Model
+	CtxImports struct {
 		Imports      map[string]*CtxPkg
 		importsAlias map[string]string
-		count        int
+	}
+
+	Ctx struct {
+		Pkg           *myasthurts.Package
+		Reporter      reporters.Reporter
+		Models        map[string]*Model
+		Imports       CtxImports
+		ModelsImports CtxImports
+		count         int
 	}
 )
 
-func NewCtx(reporter reporters.Reporter, pkgs ...*myasthurts.Package) *Ctx {
-	ctx := &Ctx{
-		Reporter:     reporter,
-		Pkg:          pkgs[0],
-		Models:       make(map[string]*Model, 0),
+func newCtxImports() CtxImports {
+	return CtxImports{
 		Imports:      make(map[string]*CtxPkg),
 		importsAlias: make(map[string]string),
 	}
-	for _, pkg := range pkgs {
-		ctx.addImportPkg(pkg).Alias = "-"
-	}
-	return ctx
 }
 
-func (ctx *Ctx) addImportPkg(pkg *myasthurts.Package) *CtxPkg {
+func (ctx *CtxImports) addImportPkg(pkg *myasthurts.Package) *CtxPkg {
 	i := 0
 	pkgName := pkg.Name
 	for {
@@ -62,13 +60,27 @@ func (ctx *Ctx) addImportPkg(pkg *myasthurts.Package) *CtxPkg {
 	return ctxPkg
 }
 
-func (ctx *Ctx) AddRefType(refType myasthurts.RefType) *CtxPkg {
+func (ctx *CtxImports) AddRefType(refType myasthurts.RefType) *CtxPkg {
 	pkg := refType.Pkg()
 	ctxPkg, ok := ctx.Imports[pkg.ImportPath]
 	if !ok {
 		return ctx.addImportPkg(pkg)
 	}
 	return ctxPkg
+}
+
+func NewCtx(reporter reporters.Reporter, pkgs ...*myasthurts.Package) *Ctx {
+	ctx := &Ctx{
+		Reporter:      reporter,
+		Pkg:           pkgs[0],
+		Models:        make(map[string]*Model, 0),
+		Imports:       newCtxImports(),
+		ModelsImports: newCtxImports(),
+	}
+	for _, pkg := range pkgs {
+		ctx.Imports.addImportPkg(pkg).Alias = "-"
+	}
+	return ctx
 }
 
 func (ctx *Ctx) EnsureModel(name string) *Model {
