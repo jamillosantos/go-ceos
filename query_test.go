@@ -26,7 +26,7 @@ var _ = Describe("Query", func() {
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(sql).To(Equal("SELECT id, name, password, role, created_at, updated_at FROM users"))
+					Expect(sql).To(Equal("SELECT id, name, password, role, street, number, city, state, work_street, work_number, work_city, work_state, created_at, updated_at FROM users"))
 					Expect(args).To(BeEmpty())
 				})
 
@@ -36,7 +36,7 @@ var _ = Describe("Query", func() {
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(sql).To(Equal("SELECT id, name, password, role, created_at, updated_at FROM users"))
+					Expect(sql).To(Equal("SELECT id, name, password, role, street, number, city, state, work_street, work_number, work_city, work_state, created_at, updated_at FROM users"))
 					Expect(args).To(BeEmpty())
 				})
 
@@ -66,7 +66,7 @@ var _ = Describe("Query", func() {
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(sql).To(Equal("SELECT id, password, role, updated_at FROM users"))
+					Expect(sql).To(Equal("SELECT id, password, role, street, number, city, state, work_street, work_number, work_city, work_state, updated_at FROM users"))
 					Expect(args).To(BeEmpty())
 				})
 
@@ -76,7 +76,7 @@ var _ = Describe("Query", func() {
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(sql).To(Equal("SELECT id, password, role, updated_at FROM users"))
+					Expect(sql).To(Equal("SELECT id, password, role, street, number, city, state, work_street, work_number, work_city, work_state, updated_at FROM users"))
 					Expect(args).To(BeEmpty())
 				})
 
@@ -86,7 +86,7 @@ var _ = Describe("Query", func() {
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(sql).To(Equal("SELECT id, name, password, role, created_at, updated_at FROM users"))
+					Expect(sql).To(Equal("SELECT id, name, password, role, street, number, city, state, work_street, work_number, work_city, work_state, created_at, updated_at FROM users"))
 					Expect(args).To(BeEmpty())
 				})
 
@@ -131,37 +131,37 @@ var _ = Describe("Query", func() {
 
 			Context("Limit + Offset", func() {
 				It("should limit a query", func() {
-					q := tests.Default.UserQuery().Limit(1)
+					q := tests.Default.UserQuery().Select(tests.Schema.User.ID, tests.Schema.User.Name).Limit(1)
 					builder, err := q.BaseQuery.Builder()
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(sql).To(Equal("SELECT id, name, password, role, created_at, updated_at FROM users LIMIT 1"))
+					Expect(sql).To(Equal("SELECT id, name FROM users LIMIT 1"))
 					Expect(args).To(BeEmpty())
 				})
 
 				It("should offset a query", func() {
-					q := tests.Default.UserQuery().Offset(2)
+					q := tests.Default.UserQuery().Select(tests.Schema.User.ID, tests.Schema.User.Name).Offset(2)
 					builder, err := q.BaseQuery.Builder()
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(sql).To(Equal("SELECT id, name, password, role, created_at, updated_at FROM users OFFSET 2"))
+					Expect(sql).To(Equal("SELECT id, name FROM users OFFSET 2"))
 					Expect(args).To(BeEmpty())
 				})
 
 				It("should limit and offset a query", func() {
-					q := tests.Default.UserQuery().Limit(1).Offset(2)
+					q := tests.Default.UserQuery().Select(tests.Schema.User.ID, tests.Schema.User.Name).Limit(1).Offset(2)
 					builder, err := q.BaseQuery.Builder()
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(sql).To(Equal("SELECT id, name, password, role, created_at, updated_at FROM users LIMIT 1 OFFSET 2"))
+					Expect(sql).To(Equal("SELECT id, name FROM users LIMIT 1 OFFSET 2"))
 					Expect(args).To(BeEmpty())
 				})
 
 				It("should change limit and offset after building", func() {
-					q := tests.Default.UserQuery().Limit(1).Offset(2)
+					q := tests.Default.UserQuery().Select(tests.Schema.User.ID, tests.Schema.User.Name).Limit(1).Offset(2)
 					builder, err := q.BaseQuery.Builder()
 					Expect(err).ToNot(HaveOccurred())
 
@@ -170,7 +170,7 @@ var _ = Describe("Query", func() {
 
 					sql, args, err := builder.ToSql()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(sql).To(Equal("SELECT id, name, password, role, created_at, updated_at FROM users LIMIT 3 OFFSET 4"))
+					Expect(sql).To(Equal("SELECT id, name FROM users LIMIT 3 OFFSET 4"))
 					Expect(args).To(BeEmpty())
 				})
 			})
