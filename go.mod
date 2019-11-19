@@ -28,7 +28,7 @@ require (
 	github.com/sipin/gorazor v0.0.0-20190714141151-78e1157c9f7d
 	github.com/sirupsen/logrus v1.4.2 // indirect
 	github.com/spf13/cobra v0.0.5
-	github.com/spf13/viper v1.4.0
+	github.com/spf13/viper v1.5.0
 	golang.org/x/net v0.0.0-20191118183410-d06c31c94cae // indirect
 	golang.org/x/sys v0.0.0-20191118133127-cf1e2d577169 // indirect
 	gopkg.in/yaml.v2 v2.2.5 // indirect
