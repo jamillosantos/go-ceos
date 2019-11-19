@@ -14,7 +14,7 @@ require (
 	github.com/fatih/structtag v1.1.0 // indirect
 	github.com/gotestyourself/gotestyourself v2.2.0+incompatible // indirect
 	github.com/jamillosantos/macchiato v0.0.0-20171220130318-3be045cc5033
-	github.com/lab259/go-my-ast-hurts v0.0.4-0.20191118190035-f4a5b84f0413
+	github.com/lab259/go-my-ast-hurts v0.0.4-0.20191119142458-bc737b98b6a6
 	github.com/lib/pq v1.2.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/novln/macchiato v1.0.0

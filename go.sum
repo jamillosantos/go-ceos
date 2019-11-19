@@ -91,8 +91,8 @@ github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORN
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0 h1:45sCR5RtlFHMR4UwH9sdQ5TC8v0qDQCHnXt+kaKSTVE=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
-github.com/lab259/go-my-ast-hurts v0.0.4-0.20191118190035-f4a5b84f0413 h1:GTtqxCay2tZH+sFzmISxhfDPPhJDp1sE2Dq2BJiw/V4=
-github.com/lab259/go-my-ast-hurts v0.0.4-0.20191118190035-f4a5b84f0413/go.mod h1:jqECPfTU2zYIXGm1eWInR+tTH8jrOxWRy0oGjRMmVSo=
+github.com/lab259/go-my-ast-hurts v0.0.4-0.20191119142458-bc737b98b6a6 h1:owoP4pRHED06N9Flabza2HHP5BkyUaX/jzfa5n7+3XM=
+github.com/lab259/go-my-ast-hurts v0.0.4-0.20191119142458-bc737b98b6a6/go.mod h1:jqECPfTU2zYIXGm1eWInR+tTH8jrOxWRy0oGjRMmVSo=
 github.com/lib/pq v1.2.0 h1:LXpIM/LZ5xGFhOpXAQUIMM1HdyqzVYM13zNdjCEEcA0=
 github.com/lib/pq v1.2.0/go.mod h1:5WUZQaWbwv1U+lTReE5YruASi9Al49XbQIvNi/34Woo=
 github.com/magiconair/properties v1.8.0 h1:LLgXmsheXeRoUOBOjtwPQCWIYqM/LU1ayDtDePerRcY=
