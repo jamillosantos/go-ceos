@@ -313,6 +313,9 @@ func (m *Model) StoreName() string {
 func (t *ModelType) String() string {
 	ctxPkg := t.ctx.Imports.AddRefType(t.RefType)
 	var r string
+	if interfaceRef, ok := t.RefType.Type().(*myasthurts.Interface); ok && interfaceRef.Name() == "" {
+		return interfaceRef.String()
+	}
 	if ctxPkg.Alias != "." && ctxPkg.Alias != "-" {
 		r = ctxPkg.Alias + "."
 	}
