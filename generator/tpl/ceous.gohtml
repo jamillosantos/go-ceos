@@ -9,7 +9,6 @@
 
 import (
 	"github.com/jamillosantos/go-ceous"
-	"github.com/pkg/errors"
 	"context"
 	"database/sql"
 @for _, pkg := range ctxPkg.Imports.Imports {
@@ -20,11 +19,6 @@ import (
 @	@pkg.Alias "@pkg.Pkg.ImportPath@:"
 }
 )
-
-@for _, m := range embeddeds {
-	@raw("\n\n")
-	@{RenderEmbedded(_buffer, m)}
-}
 
 @if len(connections) > 0 {
 	RenderConnections(_buffer, connections, models)

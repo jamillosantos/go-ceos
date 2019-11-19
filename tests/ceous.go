@@ -4,89 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"github.com/jamillosantos/go-ceous"
-	"github.com/pkg/errors"
 	time "time"
 )
-
-// ColumnAddress returns the pointer address of a field given its column name.
-func (model *UserGroupPK) ColumnAddress(name string) (interface{}, error) {
-	switch name {
-	case "user_id":
-		return &model.UserID, nil
-	case "group_id":
-		return &model.GroupID, nil
-	default:
-		return nil, errors.Wrapf(ceous.ErrFieldNotFound, "field %s not found", name)
-	}
-}
-
-// Value returns the value from a field given its column name.
-func (model *UserGroupPK) Value(name string) (interface{}, error) {
-	switch name {
-	case "user_id":
-		return model.UserID, nil
-	case "group_id":
-		return model.GroupID, nil
-	default:
-		return nil, errors.Wrapf(ceous.ErrFieldNotFound, "field %s not found", name)
-	}
-}
-
-type schemaUserGroupPK struct {
-	UserID  ceous.SchemaField
-	GroupID ceous.SchemaField
-}
-
-var UserGroupPKSchema = schemaUserGroupPK{
-	UserID:  ceous.NewSchemaField("user_id"),
-	GroupID: ceous.NewSchemaField("group_id"),
-}
-
-// ColumnAddress returns the pointer address of a field given its column name.
-func (model *Address) ColumnAddress(name string) (interface{}, error) {
-	switch name {
-	case "street":
-		return &model.Street, nil
-	case "number":
-		return &model.Number, nil
-	case "city":
-		return &model.City, nil
-	case "state":
-		return &model.State, nil
-	default:
-		return nil, errors.Wrapf(ceous.ErrFieldNotFound, "field %s not found", name)
-	}
-}
-
-// Value returns the value from a field given its column name.
-func (model *Address) Value(name string) (interface{}, error) {
-	switch name {
-	case "street":
-		return model.Street, nil
-	case "number":
-		return model.Number, nil
-	case "city":
-		return model.City, nil
-	case "state":
-		return model.State, nil
-	default:
-		return nil, errors.Wrapf(ceous.ErrFieldNotFound, "field %s not found", name)
-	}
-}
-
-type schemaAddress struct {
-	Street ceous.SchemaField
-	Number ceous.SchemaField
-	City   ceous.SchemaField
-	State  ceous.SchemaField
-}
-
-var AddressSchema = schemaAddress{
-	Street: ceous.NewSchemaField("street"),
-	Number: ceous.NewSchemaField("number"),
-	City:   ceous.NewSchemaField("city"),
-	State:  ceous.NewSchemaField("state"),
-}
 
 type Connection interface {
 	ceous.Connection
