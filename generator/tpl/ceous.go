@@ -41,7 +41,6 @@ func RenderCeous(_buffer io.StringWriter, ctxPkg *generatorModels.Ctx, models []
 		RenderConnections(_buffer, connections, models)
 	}
 	RenderTransaction(_buffer, models)
-	RenderSchema(_buffer, ctxPkg, models)
 	for _, m := range models {
 		_buffer.WriteString("\n\t")
 		RenderResultset(_buffer, m)

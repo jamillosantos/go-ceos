@@ -21,7 +21,16 @@ import (
 type ULID uuid.UUID
 
 // NewULID returns a new ULID, which is a lexically sortable UUID.
-func NewULID() ULID {
+func NewULID() (ULID, error) {
+	r, err := ulid.New(ulid.Timestamp(time.Now()), rand.Reader)
+	if err != nil {
+		return ULID(uuid.Nil), err
+	}
+	return ULID(r), nil
+}
+
+// MustNewULID returns a new ULID, which is a lexically sortable UUID.
+func MustNewULID(ULID) ULID {
 	return ULID(ulid.MustNew(ulid.Timestamp(time.Now()), rand.Reader))
 }
 
@@ -66,7 +75,7 @@ var (
 // "urn:uuid:6ba7b810-9dad-11d1-80b4-00c04fd430c8"
 // Implements the exact same code as the UUID UnmarshalText removing the
 // version check.
-func (u *ULID) UnmarshalText(text []byte) (err error) {
+func (id *ULID) UnmarshalText(text []byte) (err error) {
 	if len(text) < 32 {
 		err = fmt.Errorf("uuid: UUID string too short: %s", text)
 		return
@@ -82,7 +91,7 @@ func (u *ULID) UnmarshalText(text []byte) (err error) {
 		t = t[1:]
 	}
 
-	b := u[:]
+	b := id[:]
 
 	for i, byteGroup := range byteGroups {
 		if i > 0 && t[0] == '-' {
@@ -116,6 +125,7 @@ func (u *ULID) UnmarshalText(text []byte) (err error) {
 	return
 }
 
+// MarshalText serializes an ULID for JSON.
 func (id ULID) MarshalText() ([]byte, error) {
 	return []byte(id.String()), nil
 }

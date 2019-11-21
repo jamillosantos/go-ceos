@@ -46,5 +46,6 @@ func RenderModels(_buffer io.StringWriter, ctxPkg *generatorModels.Ctx, models [
 
 		RenderEmbedded(_buffer, m)
 	}
+	RenderSchema(_buffer, ctxPkg, models)
 
 }
