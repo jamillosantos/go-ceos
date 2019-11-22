@@ -91,6 +91,11 @@ to quickly create a Cobra application.`,
 
 		reporter.Linef("Output package: %s (%s)", outputPkg.Name, outputPkg.ImportPath)
 
+		ceousPkg := &myasthurts.Package{
+			Name:       "ceous",
+			ImportPath: "github.com/jamillosantos/go-ceous",
+		}
+
 		// Models will be a list of the structs that implement Model
 
 		models := make([]*generatorModels.Model, 0)
@@ -98,7 +103,7 @@ to quickly create a Cobra application.`,
 		connections := make([]*generatorModels.Connection, 0)
 		connectionsMap := make(map[string]*generatorModels.Connection, 0)
 
-		ctx := generatorModels.NewCtx(reporter, inputPkg, outputPkg, env.BuiltIn)
+		ctx := generatorModels.NewCtx(reporter, inputPkg, outputPkg, env.BuiltIn, ceousPkg)
 
 		var (
 			model *generatorModels.Model

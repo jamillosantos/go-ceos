@@ -96,7 +96,7 @@ func (ctx *CtxImports) Ref(refType myasthurts.RefType) string {
 }
 
 func (ctxPkg *CtxPkg) Ref(pkg *myasthurts.Package, typeName string) string {
-	if ctxPkg.Alias == "-" || (pkg != nil && pkg.RealPath == ctxPkg.Pkg.RealPath) {
+	if ctxPkg.Alias == "." || (pkg != nil && pkg.RealPath == ctxPkg.Pkg.RealPath) {
 		return typeName
 	}
 	return ctxPkg.Alias + "." + typeName
