@@ -3,6 +3,7 @@ package ceous_test
 import (
 	"github.com/jamillosantos/go-ceous"
 	"github.com/jamillosantos/go-ceous/tests"
+	"github.com/jamillosantos/go-ceous/tests/db"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -10,17 +11,17 @@ import (
 var _ = Describe("ResultSet", func() {
 	Describe("RecordResultSet", func() {
 		BeforeEach(func() {
-			tests.DBStart()
-			tests.DBUsersCreate()
-			tests.DBUsersInsertJoes()
+			db.DBStart()
+			db.DBUsersCreate()
+			db.DBUsersInsertJoes()
 		})
 
 		AfterEach(func() {
-			tests.DBStop()
+			db.DBStop()
 		})
 
 		It("should retrieve all records from a query", func() {
-			rs, err := tests.DB.Query("SELECT * FROM users")
+			rs, err := db.DB.Query("SELECT * FROM users")
 			Expect(err).ToNot(HaveOccurred())
 			defer rs.Close()
 			resultSet := ceous.NewRecordResultSet(rs, err)

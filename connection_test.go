@@ -1,43 +1,43 @@
 package ceous_test
 
 import (
-	"github.com/jamillosantos/go-ceous/tests"
+	"github.com/jamillosantos/go-ceous/tests/db"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Connection", func() {
 	BeforeEach(func() {
-		tests.DBStart()
-		tests.DBUsersCreate()
-		tests.DBUsersInsertJoes()
+		db.DBStart()
+		db.DBUsersCreate()
+		db.DBUsersInsertJoes()
 	})
 
 	AfterEach(func() {
-		tests.DBStop()
+		db.DBStop()
 	})
 
 	Describe("Begin", func() {
 		It("should start a transaction", func() {
-			t, err := tests.Default.Begin()
+			t, err := db.Default.Begin()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(t).ToNot(BeNil())
 		})
 
 		It("should commit a transaction", func() {
-			t, err := tests.Default.Begin()
+			t, err := db.Default.Begin()
 			Expect(err).ToNot(HaveOccurred())
 			_, err = t.Exec("delete from users")
 			Expect(t.Commit()).To(Succeed())
 			Expect(err).ToNot(HaveOccurred())
 
-			users, err := tests.Default.UserQuery().All()
+			users, err := db.Default.UserQuery().All()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(users).To(HaveLen(0))
 		})
 
 		It("should rollback a transaction", func() {
-			t, err := tests.Default.Begin()
+			t, err := db.Default.Begin()
 			Expect(err).ToNot(HaveOccurred())
 			_, err = t.Exec("delete from users")
 			Expect(err).ToNot(HaveOccurred())
@@ -47,7 +47,7 @@ var _ = Describe("Connection", func() {
 			Expect(t.Rollback()).To(Succeed())
 			Expect(err).ToNot(HaveOccurred())
 
-			users, err := tests.Default.UserQuery().All()
+			users, err := db.Default.UserQuery().All()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(users).To(HaveLen(4))
 		})
