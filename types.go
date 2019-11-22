@@ -30,7 +30,7 @@ func NewULID() (ULID, error) {
 }
 
 // MustNewULID returns a new ULID, which is a lexically sortable UUID.
-func MustNewULID(ULID) ULID {
+func MustNewULID() ULID {
 	return ULID(ulid.MustNew(ulid.Timestamp(time.Now()), rand.Reader))
 }
 

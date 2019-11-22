@@ -91,11 +91,6 @@ to quickly create a Cobra application.`,
 
 		reporter.Linef("Output package: %s (%s)", outputPkg.Name, outputPkg.ImportPath)
 
-		ceousPkg := &myasthurts.Package{
-			Name:       "ceous",
-			ImportPath: "github.com/jamillosantos/go-ceous",
-		}
-
 		// Models will be a list of the structs that implement Model
 
 		models := make([]*generatorModels.Model, 0)
@@ -103,7 +98,7 @@ to quickly create a Cobra application.`,
 		connections := make([]*generatorModels.Connection, 0)
 		connectionsMap := make(map[string]*generatorModels.Connection, 0)
 
-		ctx := generatorModels.NewCtx(reporter, inputPkg, outputPkg, env.BuiltIn, ceousPkg)
+		ctx := generatorModels.NewCtx(reporter, inputPkg, outputPkg, env.BuiltIn)
 
 		var (
 			model *generatorModels.Model
@@ -150,6 +145,15 @@ to quickly create a Cobra application.`,
 
 		formattedCeousCode, err := format.Source(buffCeous.Bytes())
 		if err != nil {
+			/*
+				TODO(jota): In case of error, report the excerpt of the code.
+				if serr, ok := err.(scanner.ErrorList); ok {
+					for _, serri := range serr {
+						// reporter.Line(reflect.TypeOf(serri))
+					}
+				}
+				reporter.Line(buffCeous.String())
+			*/
 			panic(errors.Wrapf(err, "could not format the ceous code"))
 		}
 		formattedModelsCode, err := format.Source(buffModels.Bytes())

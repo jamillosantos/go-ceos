@@ -28,7 +28,7 @@ func (model @Pointer@model.Name@:) Set@PascalCase(relation.FromField)@:(value @P
 		return err
 	}
 
-	v, ok := c.(@Pointer@relation.ToModel.PK.Type)
+	v, ok := c.(@Pointer@ctx.ModelsImports.Ref(relation.ToModel.PK.Type.RefType))
 	if !ok {
 		return errors.New("invalid key value") // TODO(jota): To formalize this error.
 	}

@@ -18,8 +18,6 @@ type @model.QueryName()@: struct {
 func New@model.Name@:Query(options ...ceous.CeousOption) @Pointer@model.QueryName()@: {
 	bq := ceous.NewBaseQuery(options...)
 	if bq.Schema == nil {
-		// @ctx.InputPkgCtx.Pkg.RealPath
-		// @ctx.OutputPkg.RealPath
 		bq.Schema = @ctx.InputPkgCtx.Ref(ctx.OutputPkg, "Schema")@:.@model.Name@:.BaseSchema
 	}
 	return @raw("&")@model.QueryName()@:{

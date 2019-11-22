@@ -14,7 +14,7 @@ import (
 	"database/sql"
 	ceous "github.com/jamillosantos/go-ceous"
 @for _, pkg := range ctxPkg.Imports.Imports {
-	if pkg.Alias == "-" {
+	if pkg.Alias == "-" || pkg.Alias == "ceous" {
 		continue
 	}
 	@raw("\n")

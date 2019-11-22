@@ -181,8 +181,6 @@ type userQuery struct {
 func NewUserQuery(options ...ceous.CeousOption) *userQuery {
 	bq := ceous.NewBaseQuery(options...)
 	if bq.Schema == nil {
-		// /home/jsantos/projects/go-ceous/tests
-		// /home/jsantos/projects/go-ceous/tests/db
 		bq.Schema = tests.Schema.User.BaseSchema
 	}
 	return &userQuery{
@@ -417,8 +415,6 @@ type groupQuery struct {
 func NewGroupQuery(options ...ceous.CeousOption) *groupQuery {
 	bq := ceous.NewBaseQuery(options...)
 	if bq.Schema == nil {
-		// /home/jsantos/projects/go-ceous/tests
-		// /home/jsantos/projects/go-ceous/tests/db
 		bq.Schema = tests.Schema.Group.BaseSchema
 	}
 	return &groupQuery{
@@ -593,8 +589,6 @@ type userGroupQuery struct {
 func NewUserGroupQuery(options ...ceous.CeousOption) *userGroupQuery {
 	bq := ceous.NewBaseQuery(options...)
 	if bq.Schema == nil {
-		// /home/jsantos/projects/go-ceous/tests
-		// /home/jsantos/projects/go-ceous/tests/db
 		bq.Schema = tests.Schema.UserGroup.BaseSchema
 	}
 	return &userGroupQuery{
@@ -826,8 +820,6 @@ type userIgnoredQuery struct {
 func NewUserIgnoredQuery(options ...ceous.CeousOption) *userIgnoredQuery {
 	bq := ceous.NewBaseQuery(options...)
 	if bq.Schema == nil {
-		// /home/jsantos/projects/go-ceous/tests
-		// /home/jsantos/projects/go-ceous/tests/db
 		bq.Schema = tests.Schema.UserIgnored.BaseSchema
 	}
 	return &userIgnoredQuery{

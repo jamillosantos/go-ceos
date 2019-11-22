@@ -13,7 +13,7 @@ import (
 	"github.com/jamillosantos/go-ceous"
 	"github.com/pkg/errors"
 @for _, pkg := range ctxPkg.ModelsImports.Imports {
-	if pkg.Alias == "-" || pkg.Pkg.ImportPath == "." {
+	if pkg.Alias == "-" || pkg.Alias == "ceous" || pkg.Pkg.ImportPath == "." {
 		continue
 	}
 	@raw("\n")

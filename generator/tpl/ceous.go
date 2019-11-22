@@ -24,7 +24,7 @@ func RenderCeous(_buffer io.StringWriter, ctxPkg *generatorModels.Ctx, models []
 	_buffer.WriteString(gorazor.HTMLEscape(ctxPkg.OutputPkg.Name))
 	_buffer.WriteString("\n\nimport (\n\t\"context\"\n\t\"database/sql\"\n\tceous \"github.com/jamillosantos/go-ceous\"")
 	for _, pkg := range ctxPkg.Imports.Imports {
-		if pkg.Alias == "-" {
+		if pkg.Alias == "-" || pkg.Alias == "ceous" {
 			continue
 		}
 

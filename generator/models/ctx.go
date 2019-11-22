@@ -89,7 +89,7 @@ func (ctx *CtxImports) Ref(refType myasthurts.RefType) string {
 	if !ok {
 		return pkg.Name + "." + refType.Name()
 	}
-	if ctxPkg.Alias == "-" || ctxPkg.Alias == "." {
+	if ctxPkg.Alias == "." || ctxPkg.Alias == "-" {
 		return refType.Name()
 	}
 	return ctxPkg.Alias + "." + refType.Name()
@@ -121,6 +121,12 @@ func NewCtx(reporter reporters.Reporter, inputPackage, outputPackage *myasthurts
 		ctx.ModelsImports.addImportPkg(pkg).Alias = "-"
 		ctx.Imports.addImportPkg(pkg).Alias = "-"
 	}
+	ceousPkg := &myasthurts.Package{
+		Name:       "ceous",
+		ImportPath: "github.com/jamillosantos/go-ceous",
+	}
+	ctx.ModelsImports.addImportPkg(ceousPkg)
+	ctx.Imports.addImportPkg(ceousPkg)
 	return ctx
 }
 
