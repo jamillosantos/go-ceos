@@ -2,25 +2,26 @@
 	import "github.com/jamillosantos/go-ceous/generator/models"
 	import . "github.com/jamillosantos/go-ceous/generator/helpers"
 
+	var ctx *models.Ctx
 	var relation *models.ModelRelation
 }
 
 type @relation.RelationName()@: struct {
 	_runner ceous.DBRunner
 	keys []interface{}
-	records map[@relation.PkType()][]@raw("*")@relation.FromModel.Name
+	records map[@relation.PkType()][]@raw("*")@ctx.InputPkgCtx.Ref(ctx.OutputPkg, relation.FromModel.Name)
 }
 
 func New@relation.RelationName()@:(runner ceous.DBRunner) @raw("*")@relation.RelationName()@: {
 	return @raw("&")@relation.RelationName()@:{
 		_runner: runner,
 		keys:    make([]interface{}, 0),
-		records: make(map[@relation.PkType()][]@raw("*")@relation.FromModel.Name@:),
+		records: make(map[@relation.PkType()][]@raw("*")@ctx.InputPkgCtx.Ref(ctx.OutputPkg, relation.FromModel.Name)@:),
 	}
 }
 
 func (relation @raw("*")@relation.RelationName()@:) Aggregate(record ceous.Record) error {
-	ugRecord, ok := record.(@raw("*")@relation.FromModel.Name)
+	ugRecord, ok := record.(@raw("*")@ctx.InputPkgCtx.Ref(ctx.OutputPkg, relation.FromModel.Name))
 	if !ok {
 		return ceous.ErrInvalidRecordType
 	}
@@ -35,7 +36,7 @@ func (relation @raw("*")@relation.RelationName()@:) Aggregate(record ceous.Recor
 }
 
 func (relation @raw("*")@relation.RelationName()@:) Realize() error {
-	records, err := NewUserQuery(ceous.WithRunner(relation._runner)).Where(ceous.Eq(Schema.@relation.ToModel.Name@:.ID, relation.keys)).All()
+	records, err := NewUserQuery(ceous.WithRunner(relation._runner)).Where(ceous.Eq(@ctx.InputPkgCtx.Ref(ctx.OutputPkg, "Schema").@relation.ToModel.Name@:.ID, relation.keys)).All()
 	if err != nil {
 		return err // TODO(jota): Shall this be wrapped into a custom error?
 	}
@@ -45,7 +46,7 @@ func (relation @raw("*")@relation.RelationName()@:) Realize() error {
 			return ceous.ErrInconsistentRelationResult
 		}
 		for _, r := range masterRecords {
-			r.@relation.FromField@: = record
+			r.Set@PascalCase(relation.FromField)@:(record)
 		}
 	}
 	return nil

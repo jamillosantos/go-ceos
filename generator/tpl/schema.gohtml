@@ -11,7 +11,7 @@ type schema struct {
 }
 }
 
-// Schema represents the schema of the package "@ctxPkg.Pkg.Name@:".
+// Schema represents the schema of the package "@ctxPkg.InputPkg.Name@:".
 var Schema = schema{
 @for _, m := range models {@
 	@m.Name@:: @raw("&")@m.SchemaName()@: {

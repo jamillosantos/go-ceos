@@ -2,9 +2,7 @@
 	import "github.com/jamillosantos/go-ceous/generator/models"
 	import . "github.com/jamillosantos/go-ceous/generator/helpers"
 
-	import myasthurts "github.com/lab259/go-my-ast-hurts"
-
-	var pkg *myasthurts.Package
+	var ctx *models.Ctx
 	var model *models.Model
 }
 
@@ -24,7 +22,7 @@ func (model @Pointer@model.Name@:) @PascalCase(relation.FromField)@:() @Pointer@
 @:
 // Set@PascalCase(relation.FromField) updates the value for the @relation.FromField@:,
 // updating the @relation.FromField@:.
-func (model @Pointer@model.Name@:) Set@PascalCase(relation.FromField)@:(value @Pointer@relation.FromColumnType) error {
+func (model @Pointer@model.Name@:) Set@PascalCase(relation.FromField)@:(value @Pointer@ctx.InputPkgCtx.Ref(ctx.InputPkg, relation.FromColumnType.RefType.Name())) error {
 	c, err := model.ColumnAddress("@relation.ToColumn")
 	if err != nil {
 		return err

@@ -21,7 +21,7 @@ func Models(ctxPkg *generatorModels.Ctx, models []*generatorModels.Model, embedd
 // RenderModels render tpl/models.gohtml
 func RenderModels(_buffer io.StringWriter, ctxPkg *generatorModels.Ctx, models []*generatorModels.Model, embeddeds []*generatorModels.Model, connections []*generatorModels.Connection) {
 	_buffer.WriteString("package ")
-	_buffer.WriteString(gorazor.HTMLEscape(ctxPkg.Pkg.Name))
+	_buffer.WriteString(gorazor.HTMLEscape(ctxPkg.InputPkg.Name))
 	_buffer.WriteString("\n\nimport (\n\t\"github.com/jamillosantos/go-ceous\"\n\t\"github.com/pkg/errors\"")
 	for _, pkg := range ctxPkg.ModelsImports.Imports {
 		if pkg.Alias == "-" || pkg.Pkg.ImportPath == "." {
@@ -38,7 +38,7 @@ func RenderModels(_buffer io.StringWriter, ctxPkg *generatorModels.Ctx, models [
 	}
 	_buffer.WriteString("\n)")
 	for _, m := range models {
-		RenderModel(_buffer, ctxPkg.Pkg, m)
+		RenderModel(_buffer, ctxPkg, m)
 	}
 	for _, m := range embeddeds {
 

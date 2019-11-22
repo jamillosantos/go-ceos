@@ -12,14 +12,14 @@ import (
 )
 
 // Store generates tpl/store.gohtml
-func Store(model *models.Model) string {
+func Store(ctx *models.Ctx, model *models.Model) string {
 	var _b strings.Builder
-	RenderStore(&_b, model)
+	RenderStore(&_b, ctx, model)
 	return _b.String()
 }
 
 // RenderStore render tpl/store.gohtml
-func RenderStore(_buffer io.StringWriter, model *models.Model) {
+func RenderStore(_buffer io.StringWriter, ctx *models.Ctx, model *models.Model) {
 	_buffer.WriteString("\n\n// ")
 	_buffer.WriteString(gorazor.HTMLEscape(model.StoreName()))
 	_buffer.WriteString(" is the query for the model `")
@@ -39,19 +39,19 @@ func RenderStore(_buffer io.StringWriter, model *models.Model) {
 	_buffer.WriteString(("&"))
 	_buffer.WriteString(gorazor.HTMLEscape(model.StoreName()))
 	_buffer.WriteString("{\n\t\tBaseStore: ceous.NewStore(")
-	_buffer.WriteString(gorazor.HTMLEscape(model.BaseSchemaName()))
+	_buffer.WriteString(gorazor.HTMLEscape(ctx.InputPkgCtx.Ref(ctx.OutputPkg, "Schema."+model.Name)))
 	_buffer.WriteString(", options...),\n\t}\n}\n\nfunc (store ")
 	_buffer.WriteString(("*"))
 	_buffer.WriteString(gorazor.HTMLEscape(model.StoreName()))
 	_buffer.WriteString(") Insert(record ")
 	_buffer.WriteString(("*"))
-	_buffer.WriteString(gorazor.HTMLEscape(model.Name))
+	_buffer.WriteString(gorazor.HTMLEscape(ctx.InputPkgCtx.Ref(ctx.OutputPkg, model.Name)))
 	_buffer.WriteString(", fields ...ceous.SchemaField) error {\n\treturn store.BaseStore.Insert(record, fields...)\n}\n\nfunc (store ")
 	_buffer.WriteString(("*"))
 	_buffer.WriteString(gorazor.HTMLEscape(model.StoreName()))
 	_buffer.WriteString(") Update(record ")
 	_buffer.WriteString(("*"))
-	_buffer.WriteString(gorazor.HTMLEscape(model.Name))
+	_buffer.WriteString(gorazor.HTMLEscape(ctx.InputPkgCtx.Ref(ctx.OutputPkg, model.Name)))
 	_buffer.WriteString(", fields ...ceous.SchemaField) (int64, error) {\n\treturn store.BaseStore.Update(record, fields...)\n}")
 
 }

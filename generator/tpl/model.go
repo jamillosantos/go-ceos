@@ -7,21 +7,20 @@ package tpl
 import (
 	. "github.com/jamillosantos/go-ceous/generator/helpers"
 	"github.com/jamillosantos/go-ceous/generator/models"
-	myasthurts "github.com/lab259/go-my-ast-hurts"
 	"github.com/sipin/gorazor/gorazor"
 	"io"
 	"strings"
 )
 
 // Model generates tpl/model.gohtml
-func Model(pkg *myasthurts.Package, model *models.Model) string {
+func Model(ctx *models.Ctx, model *models.Model) string {
 	var _b strings.Builder
-	RenderModel(&_b, pkg, model)
+	RenderModel(&_b, ctx, model)
 	return _b.String()
 }
 
 // RenderModel render tpl/model.gohtml
-func RenderModel(_buffer io.StringWriter, pkg *myasthurts.Package, model *models.Model) {
+func RenderModel(_buffer io.StringWriter, ctx *models.Ctx, model *models.Model) {
 	if model.PK != nil {
 		_buffer.WriteString("\n\n// GetID returns the primary key for model `")
 		_buffer.WriteString(gorazor.HTMLEscape(model.Name))
@@ -62,7 +61,7 @@ func RenderModel(_buffer io.StringWriter, pkg *myasthurts.Package, model *models
 		_buffer.WriteString(gorazor.HTMLEscape(PascalCase(relation.FromField)))
 		_buffer.WriteString("(value ")
 		_buffer.WriteString(gorazor.HTMLEscape(Pointer))
-		_buffer.WriteString(gorazor.HTMLEscape(relation.FromColumnType))
+		_buffer.WriteString(gorazor.HTMLEscape(ctx.InputPkgCtx.Ref(ctx.InputPkg, relation.FromColumnType.RefType.Name())))
 		_buffer.WriteString(") error {\n\tc, err := model.ColumnAddress(\"")
 		_buffer.WriteString(gorazor.HTMLEscape(relation.ToColumn))
 		_buffer.WriteString("\")\n\tif err != nil {\n\t\treturn err\n\t}\n\n\tv, ok := c.(")

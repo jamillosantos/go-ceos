@@ -14,12 +14,16 @@ type (
 	}
 
 	CtxImports struct {
+		Pkg          *myasthurts.Package
 		Imports      map[string]*CtxPkg
 		importsAlias map[string]string
 	}
 
 	Ctx struct {
-		Pkg           *myasthurts.Package
+		InputPkg      *myasthurts.Package
+		InputPkgCtx   *CtxPkg
+		OutputPkg     *myasthurts.Package
+		OutputPkgCtx  *CtxPkg
 		Reporter      reporters.Reporter
 		Models        map[string]*Model
 		Imports       CtxImports
@@ -28,14 +32,21 @@ type (
 	}
 )
 
-func newCtxImports() CtxImports {
+func newCtxImports(pkg *myasthurts.Package) CtxImports {
 	return CtxImports{
+		Pkg:          pkg,
 		Imports:      make(map[string]*CtxPkg),
 		importsAlias: make(map[string]string),
 	}
 }
 
 func (ctx *CtxImports) addImportPkg(pkg *myasthurts.Package) *CtxPkg {
+	if pkg.RealPath == ctx.Pkg.RealPath {
+		return &CtxPkg{
+			Pkg:   pkg,
+			Alias: pkg.Name,
+		}
+	}
 	i := 0
 	pkgName := pkg.Name
 	for {
@@ -69,15 +80,45 @@ func (ctx *CtxImports) AddRefType(refType myasthurts.RefType) *CtxPkg {
 	return ctxPkg
 }
 
-func NewCtx(reporter reporters.Reporter, pkgs ...*myasthurts.Package) *Ctx {
+func (ctx *CtxImports) Ref(refType myasthurts.RefType) string {
+	pkg := refType.Pkg()
+	if pkg.RealPath == ctx.Pkg.RealPath {
+		return refType.Name()
+	}
+	ctxPkg, ok := ctx.Imports[pkg.ImportPath]
+	if !ok {
+		return pkg.Name + "." + refType.Name()
+	}
+	if ctxPkg.Alias == "-" || ctxPkg.Alias == "." {
+		return refType.Name()
+	}
+	return ctxPkg.Alias + "." + refType.Name()
+}
+
+func (ctxPkg *CtxPkg) Ref(pkg *myasthurts.Package, typeName string) string {
+	if ctxPkg.Alias == "-" || (pkg != nil && pkg.RealPath == ctxPkg.Pkg.RealPath) {
+		return typeName
+	}
+	return ctxPkg.Alias + "." + typeName
+}
+
+func NewCtx(reporter reporters.Reporter, inputPackage, outputPackage *myasthurts.Package, pkgs ...*myasthurts.Package) *Ctx {
 	ctx := &Ctx{
 		Reporter:      reporter,
-		Pkg:           pkgs[0],
+		InputPkg:      inputPackage,
+		OutputPkg:     outputPackage,
 		Models:        make(map[string]*Model, 0),
-		Imports:       newCtxImports(),
-		ModelsImports: newCtxImports(),
+		Imports:       newCtxImports(outputPackage),
+		ModelsImports: newCtxImports(inputPackage),
 	}
+	inputPkg := ctx.ModelsImports.addImportPkg(inputPackage)
+	ctx.InputPkgCtx = &CtxPkg{
+		Pkg:   inputPackage,
+		Alias: inputPackage.Name,
+	}
+	inputPkg.Alias = "-"
 	for _, pkg := range pkgs {
+		ctx.ModelsImports.addImportPkg(pkg).Alias = "-"
 		ctx.Imports.addImportPkg(pkg).Alias = "-"
 	}
 	return ctx
