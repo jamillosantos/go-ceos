@@ -6,14 +6,18 @@
 	var models []*generatorModels.Model
 }
 
-type Connection interface {
-	ceous.Connection
+type Creator interface {
 @for _, model := range models {@
 	// @model.Name@:Query creates a new query related with the connection set.
 	@model.Name@:Query(options ...ceous.CeousOption) @Pointer@model.QueryName()
 	// @model.Name@:Store creates a new store related with the connection set.
 	@model.Name@:Store(options ...ceous.CeousOption) @Pointer@model.StoreName()
 }
+}
+
+type Connection interface {
+	ceous.Connection
+	Creator
 }
 
 @for _, conn := range connections {@
