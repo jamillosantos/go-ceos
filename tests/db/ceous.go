@@ -30,7 +30,7 @@ type Creator interface {
 }
 
 type Connection interface {
-	ceous.Connection
+	ceous.DBRunner
 	Creator
 }
 type DefaultConnection struct {

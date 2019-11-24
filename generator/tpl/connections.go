@@ -38,7 +38,7 @@ func RenderConnections(_buffer io.StringWriter, connections []*generatorModels.C
 		_buffer.WriteString(gorazor.HTMLEscape(Pointer))
 		_buffer.WriteString(gorazor.HTMLEscape(model.StoreName()))
 	}
-	_buffer.WriteString("\n}\n\ntype Connection interface {\n\tceous.Connection\n\tCreator\n}")
+	_buffer.WriteString("\n}\n\ntype Connection interface {\n\tceous.DBRunner\n\tCreator\n}")
 	for _, conn := range connections {
 		_buffer.WriteString("\ntype ")
 		_buffer.WriteString(gorazor.HTMLEscape(conn.ConnectionName()))
