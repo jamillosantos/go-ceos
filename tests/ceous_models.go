@@ -245,3 +245,103 @@ var AddressSchema = schemaAddress{
 	City:   ceous.NewSchemaField("city"),
 	State:  ceous.NewSchemaField("state"),
 }
+
+type schema struct {
+	User      *schemaUser
+	Group     *schemaGroup
+	UserGroup *schemaUserGroup
+}
+
+// Schema represents the schema of the package "tests".
+var Schema = schema{
+	User: &schemaUser{
+		BaseSchema: baseSchemaUser,
+
+		ID: baseSchemaUser.ColumnsArr[0],
+
+		Name: baseSchemaUser.ColumnsArr[1],
+
+		Password: baseSchemaUser.ColumnsArr[2],
+
+		Role: baseSchemaUser.ColumnsArr[3],
+
+		Address: AddressSchema,
+
+		Work: AddressSchema,
+
+		CreatedAt: baseSchemaUser.ColumnsArr[12],
+
+		UpdatedAt: baseSchemaUser.ColumnsArr[13],
+	},
+	Group: &schemaGroup{
+		BaseSchema: baseSchemaGroup,
+
+		ID: baseSchemaGroup.ColumnsArr[0],
+
+		Name: baseSchemaGroup.ColumnsArr[1],
+	},
+	UserGroup: &schemaUserGroup{
+		BaseSchema: baseSchemaUserGroup,
+
+		ID: UserGroupPKSchema,
+
+		Admin: baseSchemaUserGroup.ColumnsArr[2],
+	},
+}
+var baseSchemaUser = ceous.NewBaseSchema(
+	"users",
+	"",
+	ceous.NewSchemaField("id", ceous.FieldPK, ceous.FieldAutoIncrement),
+	ceous.NewSchemaField("name"),
+	ceous.NewSchemaField("password"),
+	ceous.NewSchemaField("role"),
+	ceous.NewSchemaField("street"),
+	ceous.NewSchemaField("number"),
+	ceous.NewSchemaField("city"),
+	ceous.NewSchemaField("state"),
+	ceous.NewSchemaField("work_street"),
+	ceous.NewSchemaField("work_number"),
+	ceous.NewSchemaField("work_city"),
+	ceous.NewSchemaField("work_state"),
+	ceous.NewSchemaField("created_at"),
+	ceous.NewSchemaField("updated_at"),
+)
+
+type schemaUser struct {
+	*ceous.BaseSchema
+	ID        ceous.SchemaField
+	Name      ceous.SchemaField
+	Password  ceous.SchemaField
+	Role      ceous.SchemaField
+	Address   schemaAddress
+	Work      schemaAddress
+	CreatedAt ceous.SchemaField
+	UpdatedAt ceous.SchemaField
+}
+
+var baseSchemaGroup = ceous.NewBaseSchema(
+	"groups",
+	"",
+	ceous.NewSchemaField("id", ceous.FieldPK, ceous.FieldAutoIncrement),
+	ceous.NewSchemaField("name"),
+)
+
+type schemaGroup struct {
+	*ceous.BaseSchema
+	ID   ceous.SchemaField
+	Name ceous.SchemaField
+}
+
+var baseSchemaUserGroup = ceous.NewBaseSchema(
+	"user_groups",
+	"",
+	ceous.NewSchemaField("user_id", ceous.FieldPK),
+	ceous.NewSchemaField("group_id", ceous.FieldPK),
+	ceous.NewSchemaField("admin"),
+)
+
+type schemaUserGroup struct {
+	*ceous.BaseSchema
+	ID    schemaUserGroupPK
+	Admin ceous.SchemaField
+}
