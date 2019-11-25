@@ -79,3 +79,27 @@ func (conn *BaseConnection) BeginTx(ctx context.Context, opts *sql.TxOptions) (*
 	}
 	return NewTx(tx), nil
 }
+
+func (conn *BaseConnection) Exec(query string, args ...interface{}) (sql.Result, error) {
+	return conn._db.Exec(query, args...)
+}
+
+func (conn *BaseConnection) ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
+	return conn._db.ExecContext(ctx, query, args)
+}
+
+func (conn *BaseConnection) Query(query string, args ...interface{}) (*sql.Rows, error) {
+	return conn._db.Query(query, args)
+}
+
+func (conn *BaseConnection) QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
+	return conn._db.QueryContext(ctx, query, args)
+}
+
+func (conn *BaseConnection) Prepare(query string) (*sql.Stmt, error) {
+	return conn._db.Prepare(query)
+}
+
+func (conn *BaseConnection) PrepareContext(ctx context.Context, query string) (*sql.Stmt, error) {
+	return conn._db.PrepareContext(ctx, query)
+}

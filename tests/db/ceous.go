@@ -10,8 +10,7 @@ import (
 	time "time"
 )
 
-type Connection interface {
-	ceous.Connection
+type Creator interface {
 	// UserQuery creates a new query related with the connection set.
 	UserQuery(options ...ceous.CeousOption) *userQuery
 	// UserStore creates a new store related with the connection set.
@@ -28,6 +27,11 @@ type Connection interface {
 	UserIgnoredQuery(options ...ceous.CeousOption) *userIgnoredQuery
 	// UserIgnoredStore creates a new store related with the connection set.
 	UserIgnoredStore(options ...ceous.CeousOption) *userIgnoredStore
+}
+
+type Connection interface {
+	ceous.DBRunner
+	Creator
 }
 type DefaultConnection struct {
 	*ceous.BaseConnection

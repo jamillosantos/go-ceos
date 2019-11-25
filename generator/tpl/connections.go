@@ -21,7 +21,7 @@ func Connections(connections []*generatorModels.Connection, models []*generatorM
 
 // RenderConnections render tpl/connections.gohtml
 func RenderConnections(_buffer io.StringWriter, connections []*generatorModels.Connection, models []*generatorModels.Model) {
-	_buffer.WriteString("\n\ntype Connection interface {\n\tceous.Connection")
+	_buffer.WriteString("\n\ntype Creator interface {")
 	for _, model := range models {
 		_buffer.WriteString("\n\t// ")
 		_buffer.WriteString(gorazor.HTMLEscape(model.Name))
@@ -38,7 +38,7 @@ func RenderConnections(_buffer io.StringWriter, connections []*generatorModels.C
 		_buffer.WriteString(gorazor.HTMLEscape(Pointer))
 		_buffer.WriteString(gorazor.HTMLEscape(model.StoreName()))
 	}
-	_buffer.WriteString("\n}")
+	_buffer.WriteString("\n}\n\ntype Connection interface {\n\tceous.DBRunner\n\tCreator\n}")
 	for _, conn := range connections {
 		_buffer.WriteString("\ntype ")
 		_buffer.WriteString(gorazor.HTMLEscape(conn.ConnectionName()))
