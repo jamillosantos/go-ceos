@@ -114,6 +114,14 @@ func (m *Model) parseField(ctx *Ctx, t *myasthurts.TagParam, field *myasthurts.F
 		return SkipField
 	}
 
+	if sStruct, ok := field.RefType.Type().(*myasthurts.Struct); ok {
+		ctx.Reporter.Line("Auto detecting embedded:", field.Name)
+		_, err := ParseModel(ctx, sStruct)
+		if err != nil {
+			return err
+		}
+	}
+
 	isStructE := false
 
 	fieldColumnName := ""
