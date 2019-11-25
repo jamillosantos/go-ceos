@@ -2,9 +2,7 @@
 	import "github.com/jamillosantos/go-ceous/generator/models"
 	import . "github.com/jamillosantos/go-ceous/generator/helpers"
 	
-	import myasthurts "github.com/lab259/go-my-ast-hurts"
-
-	var pkg *myasthurts.Package
+	var ctx *models.Ctx
 	var model *models.Model
 }
 
@@ -20,7 +18,7 @@ type @model.QueryName()@: struct {
 func New@model.Name@:Query(options ...ceous.CeousOption) @Pointer@model.QueryName()@: {
 	bq := ceous.NewBaseQuery(options...)
 	if bq.Schema == nil {
-		bq.Schema = Schema.@model.Name@:.BaseSchema
+		bq.Schema = @ctx.InputPkgCtx.Ref(ctx.OutputPkg, "Schema")@:.@model.Name@:.BaseSchema
 	}
 	return @raw("&")@model.QueryName()@:{
 		BaseQuery: bq,
@@ -29,9 +27,9 @@ func New@model.Name@:Query(options ...ceous.CeousOption) @Pointer@model.QueryNam
 
 @for _, field := range model.Conditions {@
 // By@field.NameForMethod@: add a filter by `@field.Field@:`.
-func (q @Pointer@model.QueryName()) By@field.NameForMethod@:(value @field.Type@:) @Pointer@model.QueryName()@: {
+func (q @Pointer@model.QueryName()) By@field.NameForMethod@:(value @ctx.Imports.Ref(field.Type.RefType)@:) @Pointer@model.QueryName()@: {
 	@for _, condition := range field.Conditions {@
-	q.BaseQuery.Where(ceous.Eq(Schema.@condition.SchemaField@:, value@condition.StringField()@:))
+	q.BaseQuery.Where(ceous.Eq(@ctx.InputPkgCtx.Ref(ctx.OutputPkg, "Schema")@:.@condition.SchemaField@:, value@condition.StringField()@:))
 	}
 	return q
 }
@@ -66,7 +64,7 @@ func (q @Pointer@model.QueryName()) Offset(offset uint64) @Pointer@model.QueryNa
 }
 
 // One results only one record matching the query.
-func (q @Pointer@model.QueryName()) One() (m @model.Name@:, err error) {
+func (q @Pointer@model.QueryName()) One() (m @ctx.InputPkgCtx.Ref(ctx.OutputPkg, model.Name)@:, err error) {
 	q.Limit(1).Offset(0)
 
 	query, err := q.RawQuery()
@@ -86,7 +84,7 @@ func (q @Pointer@model.QueryName()) One() (m @model.Name@:, err error) {
 		for _, rel := range q.BaseQuery.Relations {
 			err = rel.Aggregate(&m)
 			if err != nil {
-				return @model.Name@:{}, err // TODO(jota): Shall this error be wrapped? At first, yes.
+				return @ctx.InputPkgCtx.Ref(ctx.OutputPkg, model.Name)@:{}, err // TODO(jota): Shall this error be wrapped? At first, yes.
 			}
 		}
 	} else {
@@ -97,7 +95,7 @@ func (q @Pointer@model.QueryName()) One() (m @model.Name@:, err error) {
 		for _, rel := range q.BaseQuery.Relations {
 			err = rel.Realize()
 			if err != nil {
-				return @model.Name@:{}, err // TODO(jota): Shall this error be wrapped? At first, yes.
+				return @ctx.InputPkgCtx.Ref(ctx.OutputPkg, model.Name)@:{}, err // TODO(jota): Shall this error be wrapped? At first, yes.
 			}
 		}
 	}
@@ -106,7 +104,7 @@ func (q @Pointer@model.QueryName()) One() (m @model.Name@:, err error) {
 }
 
 // All return all records that match the query.
-func (q @Pointer@model.QueryName()) All() ([]@Pointer@model.Name@:, error) {
+func (q @Pointer@model.QueryName()) All() ([]@Pointer@ctx.InputPkgCtx.Ref(ctx.OutputPkg, model.Name)@:, error) {
 	query, err := q.RawQuery()
 	if err != nil {
 		return nil, err
@@ -115,9 +113,9 @@ func (q @Pointer@model.QueryName()) All() ([]@Pointer@model.Name@:, error) {
 	rs := New@model.Name@:ResultSet(query, nil)
 	defer rs.Close()
 
-	ms := make([]@Pointer@model.Name@:, 0)
+	ms := make([]@Pointer@ctx.InputPkgCtx.Ref(ctx.OutputPkg, model.Name)@:, 0)
 	for rs.Next() {
-		m := &@model.Name@:{}
+		m := &@ctx.InputPkgCtx.Ref(ctx.OutputPkg, model.Name)@:{}
 		err = rs.ToModel(m)
 		if err != nil {
 			return nil, err
@@ -149,5 +147,5 @@ func (q @Pointer@model.QueryName()) OrderBy(fields ...interface{}) @Pointer@mode
 
 
 @for _, relation := range model.Relations {
-	RenderRelation(_buffer, relation)
+	RenderRelation(_buffer, ctx, relation)
 }

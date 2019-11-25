@@ -15,12 +15,14 @@ import (
 )
 
 var (
-	recursive      bool
-	excludedFiles  []string
-	verbose        bool
-	modelsFileName string
-	outputFileName string
-	reporter       reporters.Reporter
+	recursive               bool
+	excludedFiles           []string
+	outputModelsFileName    string
+	outputGeneratedFileName string
+	inputPackage            string
+	outputPackage           string
+	verbose                 bool
+	reporter                reporters.Reporter
 )
 
 type fileIgnorer struct{}
@@ -28,7 +30,7 @@ type fileIgnorer struct{}
 // BeforeFile will ignore all files defined by the command line.
 func (*fileIgnorer) BeforeFile(_ *myasthurts.ParsePackageContext, filePath string) error {
 	for _, f := range excludedFiles {
-		if f == filePath || filePath == outputFileName || filePath == modelsFileName {
+		if f == filePath || filePath == outputGeneratedFileName || filePath == outputModelsFileName {
 			if verbose {
 				reporter.Linef("Ignoring file %s", filePath)
 			}
@@ -70,10 +72,24 @@ to quickly create a Cobra application.`,
 			panic(err) // TODO(jota): Decide how critical errors will be reported.
 		}
 
-		pkg, err := env.Parse(".")
+		inputPkg, err := env.Parse(inputPackage)
 		if err != nil {
-			panic(errors.Wrap(err, "could not parse the package")) // TODO(jota): Decide how critical errors will be reported.
+			panic(errors.Wrapf(err, "could not parse the input package %s", inputPackage)) // TODO(jota): Decide how critical errors will be reported.
 		}
+
+		reporter.Linef("Input package: %s (%s)", inputPkg.Name, inputPkg.ImportPath)
+
+		var outputPkg *myasthurts.Package
+		if outputPackage == "" || outputPackage == inputPackage {
+			outputPkg = inputPkg
+		} else {
+			outputPkg, err = env.Parse(outputPackage)
+			if err != nil {
+				panic(errors.Wrap(err, "could not parse the output package"))
+			}
+		}
+
+		reporter.Linef("Output package: %s (%s)", outputPkg.Name, outputPkg.ImportPath)
 
 		// Models will be a list of the structs that implement Model
 
@@ -82,13 +98,13 @@ to quickly create a Cobra application.`,
 		connections := make([]*generatorModels.Connection, 0)
 		connectionsMap := make(map[string]*generatorModels.Connection, 0)
 
-		ctx := generatorModels.NewCtx(reporter, pkg, env.BuiltIn)
+		ctx := generatorModels.NewCtx(reporter, inputPkg, outputPkg, env.BuiltIn)
 
 		var (
 			model *generatorModels.Model
 		)
 
-		for _, s := range pkg.Structs {
+		for _, s := range inputPkg.Structs {
 			reporter.Line("Analysing", s.Name())
 			for _, f := range s.Fields {
 				if f.RefType.Pkg() == nil {
@@ -129,6 +145,15 @@ to quickly create a Cobra application.`,
 
 		formattedCeousCode, err := format.Source(buffCeous.Bytes())
 		if err != nil {
+			/*
+				TODO(jota): In case of error, report the excerpt of the code.
+				if serr, ok := err.(scanner.ErrorList); ok {
+					for _, serri := range serr {
+						// reporter.Line(reflect.TypeOf(serri))
+					}
+				}
+				reporter.Line(buffCeous.String())
+			*/
 			panic(errors.Wrapf(err, "could not format the ceous code"))
 		}
 		formattedModelsCode, err := format.Source(buffModels.Bytes())
@@ -138,26 +163,26 @@ to quickly create a Cobra application.`,
 
 		reporter.Line("Creating files ...")
 
-		ceousFile, err := os.OpenFile(outputFileName, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0755)
+		ceousFile, err := os.OpenFile(path.Join(outputPkg.RealPath, outputGeneratedFileName), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0755)
 		if err != nil {
-			panic(errors.Wrapf(err, "error opening %s", outputFileName)) // TODO(jota): Decide how critical errors will be reported.
+			panic(errors.Wrapf(err, "error opening %s", outputGeneratedFileName)) // TODO(jota): Decide how critical errors will be reported.
 		}
 		defer ceousFile.Close()
 
-		modelsFile, err := os.OpenFile(path.Join(pkg.RealPath, modelsFileName), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0755)
+		modelsFile, err := os.OpenFile(path.Join(inputPkg.RealPath, outputModelsFileName), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0755)
 		if err != nil {
-			panic(errors.Wrapf(err, "error opening %s", modelsFileName)) // TODO(jota): Decide how critical errors will be reported.
+			panic(errors.Wrapf(err, "error opening %s", outputModelsFileName)) // TODO(jota): Decide how critical errors will be reported.
 		}
 		defer modelsFile.Close()
 
 		_, err = ceousFile.Write(formattedCeousCode)
 		if err != nil {
-			panic(errors.Wrapf(err, "error writing %s", outputFileName)) // TODO(jota): Decide how critical errors will be reported.
+			panic(errors.Wrapf(err, "error writing %s", outputGeneratedFileName)) // TODO(jota): Decide how critical errors will be reported.
 		}
 
 		_, err = modelsFile.Write(formattedModelsCode)
 		if err != nil {
-			panic(errors.Wrapf(err, "error writing %s", modelsFileName)) // TODO(jota): Decide how critical errors will be reported.
+			panic(errors.Wrapf(err, "error writing %s", outputModelsFileName)) // TODO(jota): Decide how critical errors will be reported.
 		}
 		reporter.Line("Done ...")
 	},
@@ -166,8 +191,10 @@ to quickly create a Cobra application.`,
 func init() {
 	rootCmd.AddCommand(genCmd)
 
-	genCmd.PersistentFlags().StringVarP(&outputFileName, "output", "o", "ceous.go", "name of the file")
-	genCmd.PersistentFlags().StringVarP(&modelsFileName, "model", "m", "ceous_models.go", "name of the models file")
-	genCmd.PersistentFlags().StringArrayVarP(&excludedFiles, "exclude-files", "e", []string{}, "exclude files")
-	genCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose mode")
+	genCmd.PersistentFlags().StringVarP(&inputPackage, "input-package", "p", ".", "the package where the ceous will find the models for generating the code.")
+	genCmd.PersistentFlags().StringArrayVarP(&excludedFiles, "exclude-files", "e", []string{}, "list of file names that will be ignored in the input package.")
+	genCmd.PersistentFlags().StringVarP(&outputGeneratedFileName, "output-filename", "o", "ceous.go", "the file name that will contain the connections, queries and stores implemented.")
+	genCmd.PersistentFlags().StringVarP(&outputModelsFileName, "output-model-filename", "m", "ceous_models.go", "the file name that will contain the models extensions.")
+	genCmd.PersistentFlags().StringVarP(&outputPackage, "output-package", "d", "", "the package were the connections, queries and stores will be placed.")
+	genCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose mode.")
 }

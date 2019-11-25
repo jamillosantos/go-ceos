@@ -29,7 +29,7 @@ func RenderSchema(_buffer io.StringWriter, ctxPkg *generatorModels.Ctx, models [
 		_buffer.WriteString(gorazor.HTMLEscape(m.SchemaName()))
 	}
 	_buffer.WriteString("\n}\n\n// Schema represents the schema of the package \"")
-	_buffer.WriteString(gorazor.HTMLEscape(ctxPkg.Pkg.Name))
+	_buffer.WriteString(gorazor.HTMLEscape(ctxPkg.InputPkg.Name))
 	_buffer.WriteString("\".\nvar Schema = schema{")
 	for _, m := range models {
 		_buffer.WriteString("\n\t")

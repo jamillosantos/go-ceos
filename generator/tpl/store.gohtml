@@ -1,6 +1,7 @@
 @{
 	import "github.com/jamillosantos/go-ceous/generator/models"
 
+	var ctx *models.Ctx
 	var model *models.Model
 }
 
@@ -12,14 +13,14 @@ type @model.StoreName()@: struct {
 // New@model.Name@:Store creates a new query for model `@model.Name`.
 func New@model.Name@:Store(options ...ceous.CeousOption) @raw("*")@model.StoreName()@: {
 	return @raw("&")@model.StoreName()@:{
-		BaseStore: ceous.NewStore(@model.BaseSchemaName()@:, options...),
+		BaseStore: ceous.NewStore(@ctx.InputPkgCtx.Ref(ctx.OutputPkg, "Schema." + model.Name)@:, options...),
 	}
 }
 
-func (store @raw("*")@model.StoreName()@:) Insert(record @raw("*")@model.Name@:, fields ...ceous.SchemaField) error {
+func (store @raw("*")@model.StoreName()@:) Insert(record @raw("*")@ctx.InputPkgCtx.Ref(ctx.OutputPkg, model.Name)@:, fields ...ceous.SchemaField) error {
 	return store.BaseStore.Insert(record, fields...)
 }
 
-func (store @raw("*")@model.StoreName()@:) Update(record @raw("*")@model.Name@:, fields ...ceous.SchemaField) (int64, error) {
+func (store @raw("*")@model.StoreName()@:) Update(record @raw("*")@ctx.InputPkgCtx.Ref(ctx.OutputPkg, model.Name)@:, fields ...ceous.SchemaField) (int64, error) {
 	return store.BaseStore.Update(record, fields...)
 }

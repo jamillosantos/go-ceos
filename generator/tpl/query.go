@@ -7,21 +7,20 @@ package tpl
 import (
 	. "github.com/jamillosantos/go-ceous/generator/helpers"
 	"github.com/jamillosantos/go-ceous/generator/models"
-	myasthurts "github.com/lab259/go-my-ast-hurts"
 	"github.com/sipin/gorazor/gorazor"
 	"io"
 	"strings"
 )
 
 // Query generates tpl/query.gohtml
-func Query(pkg *myasthurts.Package, model *models.Model) string {
+func Query(ctx *models.Ctx, model *models.Model) string {
 	var _b strings.Builder
-	RenderQuery(&_b, pkg, model)
+	RenderQuery(&_b, ctx, model)
 	return _b.String()
 }
 
 // RenderQuery render tpl/query.gohtml
-func RenderQuery(_buffer io.StringWriter, pkg *myasthurts.Package, model *models.Model) {
+func RenderQuery(_buffer io.StringWriter, ctx *models.Ctx, model *models.Model) {
 	_buffer.WriteString("\n\n// ")
 	_buffer.WriteString(gorazor.HTMLEscape(model.QueryName()))
 	_buffer.WriteString(" is the query for the model `")
@@ -43,7 +42,9 @@ func RenderQuery(_buffer io.StringWriter, pkg *myasthurts.Package, model *models
 	_buffer.WriteString("Query(options ...ceous.CeousOption) ")
 	_buffer.WriteString(gorazor.HTMLEscape(Pointer))
 	_buffer.WriteString(gorazor.HTMLEscape(model.QueryName()))
-	_buffer.WriteString(" {\n\tbq := ceous.NewBaseQuery(options...)\n\tif bq.Schema == nil {\n\t\tbq.Schema = Schema.")
+	_buffer.WriteString(" {\n\tbq := ceous.NewBaseQuery(options...)\n\tif bq.Schema == nil {\n\t\tbq.Schema = ")
+	_buffer.WriteString(gorazor.HTMLEscape(ctx.InputPkgCtx.Ref(ctx.OutputPkg, "Schema")))
+	_buffer.WriteString(".")
 	_buffer.WriteString(gorazor.HTMLEscape(model.Name))
 	_buffer.WriteString(".BaseSchema\n\t}\n\treturn ")
 	_buffer.WriteString(("&"))
@@ -60,13 +61,15 @@ func RenderQuery(_buffer io.StringWriter, pkg *myasthurts.Package, model *models
 		_buffer.WriteString(") By")
 		_buffer.WriteString(gorazor.HTMLEscape(field.NameForMethod))
 		_buffer.WriteString("(value ")
-		_buffer.WriteString(gorazor.HTMLEscape(field.Type))
+		_buffer.WriteString(gorazor.HTMLEscape(ctx.Imports.Ref(field.Type.RefType)))
 		_buffer.WriteString(") ")
 		_buffer.WriteString(gorazor.HTMLEscape(Pointer))
 		_buffer.WriteString(gorazor.HTMLEscape(model.QueryName()))
 		_buffer.WriteString(" {\n\t")
 		for _, condition := range field.Conditions {
-			_buffer.WriteString("\n\tq.BaseQuery.Where(ceous.Eq(Schema.")
+			_buffer.WriteString("\n\tq.BaseQuery.Where(ceous.Eq(")
+			_buffer.WriteString(gorazor.HTMLEscape(ctx.InputPkgCtx.Ref(ctx.OutputPkg, "Schema")))
+			_buffer.WriteString(".")
 			_buffer.WriteString(gorazor.HTMLEscape(condition.SchemaField))
 			_buffer.WriteString(", value")
 			_buffer.WriteString(gorazor.HTMLEscape(condition.StringField()))
@@ -108,26 +111,26 @@ func RenderQuery(_buffer io.StringWriter, pkg *myasthurts.Package, model *models
 	_buffer.WriteString(gorazor.HTMLEscape(Pointer))
 	_buffer.WriteString(gorazor.HTMLEscape(model.QueryName()))
 	_buffer.WriteString(") One() (m ")
-	_buffer.WriteString(gorazor.HTMLEscape(model.Name))
+	_buffer.WriteString(gorazor.HTMLEscape(ctx.InputPkgCtx.Ref(ctx.OutputPkg, model.Name)))
 	_buffer.WriteString(", err error) {\n\tq.Limit(1).Offset(0)\n\n\tquery, err := q.RawQuery()\n\tif err != nil {\n\t\treturn\n\t}\n\n\trs := New")
 	_buffer.WriteString(gorazor.HTMLEscape(model.Name))
 	_buffer.WriteString("ResultSet(query, nil)\n\tdefer rs.Close()\n\n\tif rs.Next() {\n\t\terr = rs.ToModel(&m)\n\t\tif err != nil {\n\t\t\treturn\n\t\t}\n\n\t\tfor _, rel := range q.BaseQuery.Relations {\n\t\t\terr = rel.Aggregate(&m)\n\t\t\tif err != nil {\n\t\t\t\treturn ")
-	_buffer.WriteString(gorazor.HTMLEscape(model.Name))
+	_buffer.WriteString(gorazor.HTMLEscape(ctx.InputPkgCtx.Ref(ctx.OutputPkg, model.Name)))
 	_buffer.WriteString("{}, err // TODO(jota): Shall this error be wrapped? At first, yes.\n\t\t\t}\n\t\t}\n\t} else {\n\t\terr = ceous.ErrNotFound\n\t}\n\n\tif err == nil {\n\t\tfor _, rel := range q.BaseQuery.Relations {\n\t\t\terr = rel.Realize()\n\t\t\tif err != nil {\n\t\t\t\treturn ")
-	_buffer.WriteString(gorazor.HTMLEscape(model.Name))
+	_buffer.WriteString(gorazor.HTMLEscape(ctx.InputPkgCtx.Ref(ctx.OutputPkg, model.Name)))
 	_buffer.WriteString("{}, err // TODO(jota): Shall this error be wrapped? At first, yes.\n\t\t\t}\n\t\t}\n\t}\n\n\treturn\n}\n\n// All return all records that match the query.\nfunc (q ")
 	_buffer.WriteString(gorazor.HTMLEscape(Pointer))
 	_buffer.WriteString(gorazor.HTMLEscape(model.QueryName()))
 	_buffer.WriteString(") All() ([]")
 	_buffer.WriteString(gorazor.HTMLEscape(Pointer))
-	_buffer.WriteString(gorazor.HTMLEscape(model.Name))
+	_buffer.WriteString(gorazor.HTMLEscape(ctx.InputPkgCtx.Ref(ctx.OutputPkg, model.Name)))
 	_buffer.WriteString(", error) {\n\tquery, err := q.RawQuery()\n\tif err != nil {\n\t\treturn nil, err\n\t}\n\n\trs := New")
 	_buffer.WriteString(gorazor.HTMLEscape(model.Name))
 	_buffer.WriteString("ResultSet(query, nil)\n\tdefer rs.Close()\n\n\tms := make([]")
 	_buffer.WriteString(gorazor.HTMLEscape(Pointer))
-	_buffer.WriteString(gorazor.HTMLEscape(model.Name))
+	_buffer.WriteString(gorazor.HTMLEscape(ctx.InputPkgCtx.Ref(ctx.OutputPkg, model.Name)))
 	_buffer.WriteString(", 0)\n\tfor rs.Next() {\n\t\tm := &")
-	_buffer.WriteString(gorazor.HTMLEscape(model.Name))
+	_buffer.WriteString(gorazor.HTMLEscape(ctx.InputPkgCtx.Ref(ctx.OutputPkg, model.Name)))
 	_buffer.WriteString("{}\n\t\terr = rs.ToModel(m)\n\t\tif err != nil {\n\t\t\treturn nil, err\n\t\t}\n\n\t\tfor _, rel := range q.BaseQuery.Relations {\n\t\t\terr = rel.Aggregate(m)\n\t\t\tif err != nil {\n\t\t\t\treturn nil, err // TODO(jota): Shall this error be wrapped? At first, yes.\n\t\t\t}\n\t\t}\n\t\tms = append(ms, m)\n\t}\n\n\tfor _, rel := range q.BaseQuery.Relations {\n\t\terr = rel.Realize()\n\t\tif err != nil {\n\t\t\treturn nil, err // TODO(jota): Shall this error be wrapped? At first, yes.\n\t\t}\n\t}\n\n\treturn ms, nil\n}\n\nfunc (q ")
 	_buffer.WriteString(gorazor.HTMLEscape(Pointer))
 	_buffer.WriteString(gorazor.HTMLEscape(model.QueryName()))
@@ -136,7 +139,7 @@ func RenderQuery(_buffer io.StringWriter, pkg *myasthurts.Package, model *models
 	_buffer.WriteString(gorazor.HTMLEscape(model.QueryName()))
 	_buffer.WriteString(" {\n\tq.BaseQuery.OrderBy(fields...)\n\treturn q\n}")
 	for _, relation := range model.Relations {
-		RenderRelation(_buffer, relation)
+		RenderRelation(_buffer, ctx, relation)
 	}
 
 }

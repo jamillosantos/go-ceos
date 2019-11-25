@@ -3,6 +3,7 @@ package ceous_test
 import (
 	"github.com/jamillosantos/go-ceous"
 	"github.com/jamillosantos/go-ceous/tests"
+	"github.com/jamillosantos/go-ceous/tests/db"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -11,13 +12,13 @@ var _ = Describe("Store", func() {
 	Describe("BaseStore", func() {
 		Context("Insert", func() {
 			BeforeEach(func() {
-				tests.DBStart()
-				tests.DBUsersCreate()
-				tests.DBUserGroupsCreate()
+				db.DBStart()
+				db.DBUsersCreate()
+				db.DBUserGroupsCreate()
 			})
 
 			AfterEach(func() {
-				tests.DBStop()
+				db.DBStop()
 			})
 
 			It("should insert a user specifying no fields", func() {
@@ -27,12 +28,12 @@ var _ = Describe("Store", func() {
 					Role:     "stealth",
 				}
 
-				userStore := tests.Default.UserStore()
+				userStore := db.Default.UserStore()
 				Expect(userStore.Insert(&user)).To(Succeed())
 
-				b, err := tests.Default.UserQuery().Builder()
+				b, err := db.Default.UserQuery().Builder()
 				Expect(err).ToNot(HaveOccurred())
-				rs := tests.NewUserResultSet(b.RunWith(tests.DB).Query())
+				rs := db.NewUserResultSet(b.RunWith(db.DB).Query())
 				Expect(rs.Next()).To(BeTrue())
 				var userFound tests.User
 				Expect(rs.ToModel(&userFound)).To(Succeed())
@@ -54,16 +55,16 @@ var _ = Describe("Store", func() {
 					Role:     "intelligence",
 				}
 
-				userStore := tests.Default.UserStore()
+				userStore := db.Default.UserStore()
 				Expect(userStore.Insert(&user1)).To(Succeed())
 				Expect(user1.ID).To(Equal(1))
 
 				Expect(userStore.Insert(&user2)).To(Succeed())
 				Expect(user2.ID).To(Equal(2))
 
-				b, err := tests.Default.UserQuery().Builder()
+				b, err := db.Default.UserQuery().Builder()
 				Expect(err).ToNot(HaveOccurred())
-				rs := tests.NewUserResultSet(b.RunWith(tests.DB).Query())
+				rs := db.NewUserResultSet(b.RunWith(db.DB).Query())
 				Expect(rs.Next()).To(BeTrue())
 				var userFound tests.User
 				Expect(rs.ToModel(&userFound)).To(Succeed())
@@ -83,12 +84,12 @@ var _ = Describe("Store", func() {
 					Name: "Snake Eyes",
 				}
 
-				userStore := tests.Default.UserStore()
+				userStore := db.Default.UserStore()
 				Expect(userStore.Insert(&user, tests.Schema.User.Name)).To(Succeed())
 
-				b, err := tests.Default.UserQuery().Builder()
+				b, err := db.Default.UserQuery().Builder()
 				Expect(err).ToNot(HaveOccurred())
-				rs := tests.NewUserResultSet(b.RunWith(tests.DB).Query())
+				rs := db.NewUserResultSet(b.RunWith(db.DB).Query())
 				Expect(rs.Next()).To(BeTrue())
 				var userFound tests.User
 				Expect(rs.ToModel(&userFound)).To(Succeed())
@@ -107,12 +108,12 @@ var _ = Describe("Store", func() {
 					Admin: true,
 				}
 
-				userGroupStore := tests.Default.UserGroupStore()
+				userGroupStore := db.Default.UserGroupStore()
 				Expect(userGroupStore.Insert(&userGroup)).To(Succeed())
 
-				b, err := tests.Default.UserGroupQuery().Builder()
+				b, err := db.Default.UserGroupQuery().Builder()
 				Expect(err).ToNot(HaveOccurred())
-				rs := tests.NewUserGroupResultSet(b.RunWith(tests.DB).Query())
+				rs := db.NewUserGroupResultSet(b.RunWith(db.DB).Query())
 				Expect(rs.Next()).To(BeTrue())
 				var userGroupFound tests.UserGroup
 				Expect(rs.ToModel(&userGroupFound)).To(Succeed())
@@ -125,22 +126,22 @@ var _ = Describe("Store", func() {
 
 		Context("Update", func() {
 			BeforeEach(func() {
-				tests.DBStart()
-				tests.DBUsersCreate()
-				tests.DBUsersInsertJoes()
-				tests.DBUserGroupsCreate()
-				tests.DBUserGroupsInsert()
+				db.DBStart()
+				db.DBUsersCreate()
+				db.DBUsersInsertJoes()
+				db.DBUserGroupsCreate()
+				db.DBUserGroupsInsert()
 			})
 
 			AfterEach(func() {
-				tests.DBStop()
+				db.DBStop()
 			})
 
 			It("should update a user not specifying fields", func() {
-				user, err := tests.Default.UserQuery().ByID(1).One()
+				user, err := db.Default.UserQuery().ByID(1).One()
 				Expect(err).ToNot(HaveOccurred())
 
-				store := tests.Default.UserStore()
+				store := db.Default.UserStore()
 				user.Name = "Snake Eyes 02"
 				user.Password = "67890"
 				user.Role = "stealth 02"
@@ -148,7 +149,7 @@ var _ = Describe("Store", func() {
 				Expect(err).ToNot(HaveOccurred())
 				Expect(n).To(Equal(int64(1)))
 
-				userFound, err := tests.Default.UserQuery().ByID(1).One()
+				userFound, err := db.Default.UserQuery().ByID(1).One()
 				Expect(err).ToNot(HaveOccurred())
 				Expect(userFound.Name).To(Equal("Snake Eyes 02"))
 				Expect(userFound.Password).To(Equal("67890"))
@@ -156,10 +157,10 @@ var _ = Describe("Store", func() {
 			})
 
 			It("should update a user specifying fields", func() {
-				user, err := tests.Default.UserQuery().ByID(1).One()
+				user, err := db.Default.UserQuery().ByID(1).One()
 				Expect(err).ToNot(HaveOccurred())
 
-				store := tests.Default.UserStore()
+				store := db.Default.UserStore()
 				user.Name = "Snake Eyes 02"
 				user.Password = "67890"
 				user.Role = "stealth 02"
@@ -167,7 +168,7 @@ var _ = Describe("Store", func() {
 				Expect(err).ToNot(HaveOccurred())
 				Expect(n).To(Equal(int64(1)))
 
-				userFound, err := tests.Default.UserQuery().ByID(1).One()
+				userFound, err := db.Default.UserQuery().ByID(1).One()
 				Expect(err).ToNot(HaveOccurred())
 				Expect(userFound.Name).To(Equal("Snake Eyes 02"))
 				Expect(userFound.Password).To(Equal(""))
@@ -180,16 +181,16 @@ var _ = Describe("Store", func() {
 					GroupID: 2,
 				}
 
-				userGroup, err := tests.Default.UserGroupQuery().ByID(pk).One()
+				userGroup, err := db.Default.UserGroupQuery().ByID(pk).One()
 				Expect(err).ToNot(HaveOccurred())
 
-				store := tests.Default.UserGroupStore()
+				store := db.Default.UserGroupStore()
 				userGroup.Admin = true
 				n, err := store.Update(&userGroup, tests.Schema.UserGroup.Admin)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(n).To(Equal(int64(1)))
 
-				userGroupFound, err := tests.Default.UserGroupQuery().ByID(pk).One()
+				userGroupFound, err := db.Default.UserGroupQuery().ByID(pk).One()
 				Expect(err).ToNot(HaveOccurred())
 				Expect(userGroupFound.ID.UserID).To(Equal(1))
 				Expect(userGroupFound.ID.GroupID).To(Equal(2))
@@ -201,25 +202,25 @@ var _ = Describe("Store", func() {
 
 		Context("Delete", func() {
 			BeforeEach(func() {
-				tests.DBStart()
-				tests.DBUsersCreate()
-				tests.DBUsersInsertJoes()
-				tests.DBUserGroupsCreate()
-				tests.DBUserGroupsInsert()
+				db.DBStart()
+				db.DBUsersCreate()
+				db.DBUsersInsertJoes()
+				db.DBUserGroupsCreate()
+				db.DBUserGroupsInsert()
 			})
 
 			AfterEach(func() {
-				tests.DBStop()
+				db.DBStop()
 			})
 
 			It("should delete a user", func() {
-				user, err := tests.Default.UserQuery().ByID(1).One()
+				user, err := db.Default.UserQuery().ByID(1).One()
 				Expect(err).ToNot(HaveOccurred())
 
-				store := tests.Default.UserStore()
+				store := db.Default.UserStore()
 				Expect(store.Delete(&user)).To(Succeed())
 
-				_, err = tests.Default.UserQuery().ByID(1).One()
+				_, err = db.Default.UserQuery().ByID(1).One()
 				Expect(err).To(Equal(ceous.ErrNotFound))
 			})
 
@@ -229,13 +230,13 @@ var _ = Describe("Store", func() {
 					GroupID: 2,
 				}
 
-				userGroup, err := tests.Default.UserGroupQuery().ByID(pk).One()
+				userGroup, err := db.Default.UserGroupQuery().ByID(pk).One()
 				Expect(err).ToNot(HaveOccurred())
 
-				store := tests.Default.UserGroupStore()
+				store := db.Default.UserGroupStore()
 				Expect(store.Delete(&userGroup)).To(Succeed())
 
-				_, err = tests.Default.UserGroupQuery().ByID(pk).One()
+				_, err = db.Default.UserGroupQuery().ByID(pk).One()
 				Expect(err).To(Equal(ceous.ErrNotFound))
 			})
 

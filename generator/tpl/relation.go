@@ -13,21 +13,21 @@ import (
 )
 
 // Relation generates tpl/relation.gohtml
-func Relation(relation *models.ModelRelation) string {
+func Relation(ctx *models.Ctx, relation *models.ModelRelation) string {
 	var _b strings.Builder
-	RenderRelation(&_b, relation)
+	RenderRelation(&_b, ctx, relation)
 	return _b.String()
 }
 
 // RenderRelation render tpl/relation.gohtml
-func RenderRelation(_buffer io.StringWriter, relation *models.ModelRelation) {
+func RenderRelation(_buffer io.StringWriter, ctx *models.Ctx, relation *models.ModelRelation) {
 	_buffer.WriteString("\n\ntype ")
 	_buffer.WriteString(gorazor.HTMLEscape(relation.RelationName()))
 	_buffer.WriteString(" struct {\n\t_runner ceous.DBRunner\n\tkeys []interface{}\n\trecords map[")
 	_buffer.WriteString(gorazor.HTMLEscape(relation.PkType()))
 	_buffer.WriteString("][]")
 	_buffer.WriteString(("*"))
-	_buffer.WriteString(gorazor.HTMLEscape(relation.FromModel.Name))
+	_buffer.WriteString(gorazor.HTMLEscape(ctx.InputPkgCtx.Ref(ctx.OutputPkg, relation.FromModel.Name)))
 	_buffer.WriteString("\n}\n\nfunc New")
 	_buffer.WriteString(gorazor.HTMLEscape(relation.RelationName()))
 	_buffer.WriteString("(runner ceous.DBRunner) ")
@@ -40,13 +40,13 @@ func RenderRelation(_buffer io.StringWriter, relation *models.ModelRelation) {
 	_buffer.WriteString(gorazor.HTMLEscape(relation.PkType()))
 	_buffer.WriteString("][]")
 	_buffer.WriteString(("*"))
-	_buffer.WriteString(gorazor.HTMLEscape(relation.FromModel.Name))
+	_buffer.WriteString(gorazor.HTMLEscape(ctx.InputPkgCtx.Ref(ctx.OutputPkg, relation.FromModel.Name)))
 	_buffer.WriteString("),\n\t}\n}\n\nfunc (relation ")
 	_buffer.WriteString(("*"))
 	_buffer.WriteString(gorazor.HTMLEscape(relation.RelationName()))
 	_buffer.WriteString(") Aggregate(record ceous.Record) error {\n\tugRecord, ok := record.(")
 	_buffer.WriteString(("*"))
-	_buffer.WriteString(gorazor.HTMLEscape(relation.FromModel.Name))
+	_buffer.WriteString(gorazor.HTMLEscape(ctx.InputPkgCtx.Ref(ctx.OutputPkg, relation.FromModel.Name)))
 	_buffer.WriteString(")\n\tif !ok {\n\t\treturn ceous.ErrInvalidRecordType\n\t}\n\tif rs, ok := relation.records[ugRecord.")
 	_buffer.WriteString(gorazor.HTMLEscape(relation.Column().FullField))
 	_buffer.WriteString("]; ok {\n\t\trelation.records[ugRecord.")
@@ -58,11 +58,13 @@ func RenderRelation(_buffer io.StringWriter, relation *models.ModelRelation) {
 	_buffer.WriteString(")\n\t}\n\treturn nil\n}\n\nfunc (relation ")
 	_buffer.WriteString(("*"))
 	_buffer.WriteString(gorazor.HTMLEscape(relation.RelationName()))
-	_buffer.WriteString(") Realize() error {\n\trecords, err := NewUserQuery(ceous.WithRunner(relation._runner)).Where(ceous.Eq(Schema.")
+	_buffer.WriteString(") Realize() error {\n\trecords, err := NewUserQuery(ceous.WithRunner(relation._runner)).Where(ceous.Eq(")
+	_buffer.WriteString(gorazor.HTMLEscape(ctx.InputPkgCtx.Ref(ctx.OutputPkg, "Schema")))
+	_buffer.WriteString(".")
 	_buffer.WriteString(gorazor.HTMLEscape(relation.ToModel.Name))
-	_buffer.WriteString(".ID, relation.keys)).All()\n\tif err != nil {\n\t\treturn err // TODO(jota): Shall this be wrapped into a custom error?\n\t}\n\tfor _, record := range records {\n\t\tmasterRecords, ok := relation.records[record.ID]\n\t\tif !ok {\n\t\t\treturn ceous.ErrInconsistentRelationResult\n\t\t}\n\t\tfor _, r := range masterRecords {\n\t\t\tr.")
-	_buffer.WriteString(gorazor.HTMLEscape(relation.FromField))
-	_buffer.WriteString(" = record\n\t\t}\n\t}\n\treturn nil\n}\n\nfunc (q ")
+	_buffer.WriteString(".ID, relation.keys)).All()\n\tif err != nil {\n\t\treturn err // TODO(jota): Shall this be wrapped into a custom error?\n\t}\n\tfor _, record := range records {\n\t\tmasterRecords, ok := relation.records[record.ID]\n\t\tif !ok {\n\t\t\treturn ceous.ErrInconsistentRelationResult\n\t\t}\n\t\tfor _, r := range masterRecords {\n\t\t\tr.Set")
+	_buffer.WriteString(gorazor.HTMLEscape(PascalCase(relation.FromField)))
+	_buffer.WriteString("(record)\n\t\t}\n\t}\n\treturn nil\n}\n\nfunc (q ")
 	_buffer.WriteString(("*"))
 	_buffer.WriteString(gorazor.HTMLEscape(relation.FromModel.QueryName()))
 	_buffer.WriteString(") With")
