@@ -40,5 +40,11 @@ func RenderModels(_buffer io.StringWriter, ctxPkg *generatorModels.Ctx, models [
 	for _, m := range models {
 		RenderModel(_buffer, ctxPkg.Pkg, m)
 	}
+	for _, m := range embeddeds {
+
+		_buffer.WriteString(("\n\n"))
+
+		RenderEmbedded(_buffer, m)
+	}
 
 }

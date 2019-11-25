@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bytes"
-	"fmt"
 	"go/format"
 	"os"
 	"path"
@@ -126,22 +125,7 @@ to quickly create a Cobra application.`,
 		tpl.RenderCeous(buffCeous, ctx, models, embeddeds, connections)
 		tpl.RenderModels(buffModels, ctx, models, embeddeds, connections)
 
-		ceousFile, err := os.OpenFile(outputFileName, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0755)
-		if err != nil {
-			panic(errors.Wrapf(err, "error opening %s", outputFileName)) // TODO(jota): Decide how critical errors will be reported.
-		}
-		defer ceousFile.Close()
-
-		fmt.Println(modelsFileName)
-		fmt.Println(path.Join(pkg.RealPath, modelsFileName))
-
-		modelsFile, err := os.OpenFile(path.Join(pkg.RealPath, modelsFileName), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0755)
-		if err != nil {
-			panic(errors.Wrapf(err, "error opening %s", modelsFileName)) // TODO(jota): Decide how critical errors will be reported.
-		}
-		defer modelsFile.Close()
-
-		reporter.Line("Generating file ...")
+		reporter.Line("Formatting code ...")
 
 		formattedCeousCode, err := format.Source(buffCeous.Bytes())
 		if err != nil {
@@ -151,6 +135,20 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			panic(errors.Wrapf(err, "could not format the models code"))
 		}
+
+		reporter.Line("Creating files ...")
+
+		ceousFile, err := os.OpenFile(outputFileName, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0755)
+		if err != nil {
+			panic(errors.Wrapf(err, "error opening %s", outputFileName)) // TODO(jota): Decide how critical errors will be reported.
+		}
+		defer ceousFile.Close()
+
+		modelsFile, err := os.OpenFile(path.Join(pkg.RealPath, modelsFileName), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0755)
+		if err != nil {
+			panic(errors.Wrapf(err, "error opening %s", modelsFileName)) // TODO(jota): Decide how critical errors will be reported.
+		}
+		defer modelsFile.Close()
 
 		_, err = ceousFile.Write(formattedCeousCode)
 		if err != nil {

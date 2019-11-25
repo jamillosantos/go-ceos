@@ -22,7 +22,7 @@ func Ceous(ctxPkg *generatorModels.Ctx, models []*generatorModels.Model, embedde
 func RenderCeous(_buffer io.StringWriter, ctxPkg *generatorModels.Ctx, models []*generatorModels.Model, embeddeds []*generatorModels.Model, connections []*generatorModels.Connection) {
 	_buffer.WriteString("package ")
 	_buffer.WriteString(gorazor.HTMLEscape(ctxPkg.Pkg.Name))
-	_buffer.WriteString("\n\nimport (\n\t\"github.com/jamillosantos/go-ceous\"\n\t\"github.com/pkg/errors\"\n\t\"context\"\n\t\"database/sql\"")
+	_buffer.WriteString("\n\nimport (\n\t\"github.com/jamillosantos/go-ceous\"\n\t\"context\"\n\t\"database/sql\"")
 	for _, pkg := range ctxPkg.Imports.Imports {
 		if pkg.Alias == "-" {
 			continue
@@ -37,12 +37,6 @@ func RenderCeous(_buffer io.StringWriter, ctxPkg *generatorModels.Ctx, models []
 		_buffer.WriteString("\"")
 	}
 	_buffer.WriteString("\n)")
-	for _, m := range embeddeds {
-
-		_buffer.WriteString(("\n\n"))
-
-		RenderEmbedded(_buffer, m)
-	}
 	if len(connections) > 0 {
 		RenderConnections(_buffer, connections, models)
 	}
