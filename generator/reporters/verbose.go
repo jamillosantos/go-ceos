@@ -15,5 +15,8 @@ func (q *Verbose) Linef(format string, args ...interface{}) {
 }
 
 func (q *Verbose) Line(args ...interface{}) {
-	fmt.Fprintln(os.Stderr, args...)
+	for _, arg := range args {
+		fmt.Fprint(os.Stderr, arg)
+	}
+	fmt.Fprintln(os.Stderr)
 }

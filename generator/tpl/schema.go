@@ -12,14 +12,14 @@ import (
 )
 
 // Schema generates tpl/schema.gohtml
-func Schema(ctxPkg *generatorModels.Ctx, models []*generatorModels.Model) string {
+func Schema(ctx *generatorModels.GenContext, models []*generatorModels.Model) string {
 	var _b strings.Builder
-	RenderSchema(&_b, ctxPkg, models)
+	RenderSchema(&_b, ctx, models)
 	return _b.String()
 }
 
 // RenderSchema render tpl/schema.gohtml
-func RenderSchema(_buffer io.StringWriter, ctxPkg *generatorModels.Ctx, models []*generatorModels.Model) {
+func RenderSchema(_buffer io.StringWriter, ctx *generatorModels.GenContext, models []*generatorModels.Model) {
 	_buffer.WriteString("\n\ntype schema struct {")
 	for _, m := range models {
 		_buffer.WriteString("\n\t")
@@ -28,8 +28,24 @@ func RenderSchema(_buffer io.StringWriter, ctxPkg *generatorModels.Ctx, models [
 		_buffer.WriteString(("*"))
 		_buffer.WriteString(gorazor.HTMLEscape(m.SchemaName()))
 	}
-	_buffer.WriteString("\n}\n\n// Schema represents the schema of the package \"")
-	_buffer.WriteString(gorazor.HTMLEscape(ctxPkg.InputPkg.Name))
+	_buffer.WriteString("\n}")
+	for _, s := range ctx.Schemas {
+		_buffer.WriteString("\n// schema")
+		_buffer.WriteString(gorazor.HTMLEscape(s.Name))
+		_buffer.WriteString(" have all fields for the model ")
+		_buffer.WriteString(gorazor.HTMLEscape(s.Name))
+		_buffer.WriteString(".\ntype schema")
+		_buffer.WriteString(gorazor.HTMLEscape(s.Name))
+		_buffer.WriteString(" struct {\n\t*ceous.BaseSchema")
+		for _, field := range s.Fields {
+			_buffer.WriteString("\n\t\t")
+			_buffer.WriteString(gorazor.HTMLEscape(field.Name))
+			_buffer.WriteString(" ceous.SchemaField")
+		}
+		_buffer.WriteString("\n}")
+	}
+	_buffer.WriteString("\n\n// Schema represents the schema of the package \"")
+	_buffer.WriteString(gorazor.HTMLEscape(ctx.InputPkg.Name))
 	_buffer.WriteString("\".\nvar Schema = schema{")
 	for _, m := range models {
 		_buffer.WriteString("\n\t")
@@ -85,25 +101,7 @@ func RenderSchema(_buffer io.StringWriter, ctxPkg *generatorModels.Ctx, models [
 			}
 			_buffer.WriteString("),")
 		}
-		_buffer.WriteString("\n)\n\ntype ")
-		_buffer.WriteString(gorazor.HTMLEscape(model.SchemaName()))
-		_buffer.WriteString(" struct {\n\t*ceous.BaseSchema")
-		for _, field := range model.SchemaFields {
-			_buffer.WriteString("\n\t")
-			_buffer.WriteString(gorazor.HTMLEscape(field.Name))
-			_buffer.WriteString(" ")
-			if field.SchemaType == "" {
-
-				_buffer.WriteString("ceous.SchemaField")
-
-			} else {
-
-				_buffer.WriteString("schema")
-				_buffer.WriteString(gorazor.HTMLEscape(field.SchemaType))
-
-			}
-		}
-		_buffer.WriteString("\n}")
+		_buffer.WriteString("\n)")
 	}
 
 }

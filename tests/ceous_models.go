@@ -213,91 +213,74 @@ func (model *UserIgnored) Value(name string) (interface{}, error) {
 	}
 }
 
-// ColumnAddress returns the pointer address of a field given its column name.
-func (model *UserGroupPK) ColumnAddress(name string) (interface{}, error) {
-	switch name {
-	case "user_id":
-		return &model.UserID, nil
-	case "group_id":
-		return &model.GroupID, nil
-	default:
-		return nil, errors.Wrapf(ceous.ErrFieldNotFound, "field %s not found", name)
-	}
+type schema struct {
+	User        *schemaUser
+	Group       *schemaGroup
+	UserGroup   *schemaUserGroup
+	UserIgnored *schemaUserIgnored
 }
 
-// Value returns the value from a field given its column name.
-func (model *UserGroupPK) Value(name string) (interface{}, error) {
-	switch name {
-	case "user_id":
-		return model.UserID, nil
-	case "group_id":
-		return model.GroupID, nil
-	default:
-		return nil, errors.Wrapf(ceous.ErrFieldNotFound, "field %s not found", name)
-	}
-}
-
-type schemaUserGroupPK struct {
-	UserID  ceous.SchemaField
-	GroupID ceous.SchemaField
-}
-
-var UserGroupPKSchema = schemaUserGroupPK{
-	UserID:  ceous.NewSchemaField("user_id"),
-	GroupID: ceous.NewSchemaField("group_id"),
-}
-
-// ColumnAddress returns the pointer address of a field given its column name.
-func (model *Address) ColumnAddress(name string) (interface{}, error) {
-	switch name {
-	case "street":
-		return &model.Street, nil
-	case "number":
-		return &model.Number, nil
-	case "city":
-		return &model.City, nil
-	case "state":
-		return &model.State, nil
-	default:
-		return nil, errors.Wrapf(ceous.ErrFieldNotFound, "field %s not found", name)
-	}
-}
-
-// Value returns the value from a field given its column name.
-func (model *Address) Value(name string) (interface{}, error) {
-	switch name {
-	case "street":
-		return model.Street, nil
-	case "number":
-		return model.Number, nil
-	case "city":
-		return model.City, nil
-	case "state":
-		return model.State, nil
-	default:
-		return nil, errors.Wrapf(ceous.ErrFieldNotFound, "field %s not found", name)
-	}
-}
-
-type schemaAddress struct {
+// schemaUserAddressAddress have all fields for the model UserAddressAddress.
+type schemaUserAddressAddress struct {
+	*ceous.BaseSchema
 	Street ceous.SchemaField
 	Number ceous.SchemaField
 	City   ceous.SchemaField
 	State  ceous.SchemaField
 }
 
-var AddressSchema = schemaAddress{
-	Street: ceous.NewSchemaField("street"),
-	Number: ceous.NewSchemaField("number"),
-	City:   ceous.NewSchemaField("city"),
-	State:  ceous.NewSchemaField("state"),
+// schemaUserWorkAddress have all fields for the model UserWorkAddress.
+type schemaUserWorkAddress struct {
+	*ceous.BaseSchema
+	Street ceous.SchemaField
+	Number ceous.SchemaField
+	City   ceous.SchemaField
+	State  ceous.SchemaField
 }
 
-type schema struct {
-	User        *schemaUser
-	Group       *schemaGroup
-	UserGroup   *schemaUserGroup
-	UserIgnored *schemaUserIgnored
+// schemaUser have all fields for the model User.
+type schemaUser struct {
+	*ceous.BaseSchema
+	ID        ceous.SchemaField
+	Name      ceous.SchemaField
+	Password  ceous.SchemaField
+	Role      ceous.SchemaField
+	Address   ceous.SchemaField
+	Work      ceous.SchemaField
+	CreatedAt ceous.SchemaField
+	UpdatedAt ceous.SchemaField
+}
+
+// schemaGroup have all fields for the model Group.
+type schemaGroup struct {
+	*ceous.BaseSchema
+	ID   ceous.SchemaField
+	Name ceous.SchemaField
+}
+
+// schemaUserGroupIDUserGroupPK have all fields for the model UserGroupIDUserGroupPK.
+type schemaUserGroupIDUserGroupPK struct {
+	*ceous.BaseSchema
+	UserID  ceous.SchemaField
+	GroupID ceous.SchemaField
+}
+
+// schemaUserGroup have all fields for the model UserGroup.
+type schemaUserGroup struct {
+	*ceous.BaseSchema
+	ID    ceous.SchemaField
+	Admin ceous.SchemaField
+}
+
+// schemaUserIgnored have all fields for the model UserIgnored.
+type schemaUserIgnored struct {
+	*ceous.BaseSchema
+	ID        ceous.SchemaField
+	Name      ceous.SchemaField
+	Password  ceous.SchemaField
+	Role      ceous.SchemaField
+	CreatedAt ceous.SchemaField
+	UpdatedAt ceous.SchemaField
 }
 
 // Schema represents the schema of the package "tests".
@@ -369,32 +352,12 @@ var baseSchemaUser = ceous.NewBaseSchema(
 	ceous.NewSchemaField("created_at"),
 	ceous.NewSchemaField("updated_at"),
 )
-
-type schemaUser struct {
-	*ceous.BaseSchema
-	ID        ceous.SchemaField
-	Name      ceous.SchemaField
-	Password  ceous.SchemaField
-	Role      ceous.SchemaField
-	Address   schemaAddress
-	Work      schemaAddress
-	CreatedAt ceous.SchemaField
-	UpdatedAt ceous.SchemaField
-}
-
 var baseSchemaGroup = ceous.NewBaseSchema(
 	"groups",
 	"",
 	ceous.NewSchemaField("id", ceous.FieldPK, ceous.FieldAutoIncrement),
 	ceous.NewSchemaField("name"),
 )
-
-type schemaGroup struct {
-	*ceous.BaseSchema
-	ID   ceous.SchemaField
-	Name ceous.SchemaField
-}
-
 var baseSchemaUserGroup = ceous.NewBaseSchema(
 	"user_groups",
 	"",
@@ -402,13 +365,6 @@ var baseSchemaUserGroup = ceous.NewBaseSchema(
 	ceous.NewSchemaField("group_id", ceous.FieldPK),
 	ceous.NewSchemaField("admin"),
 )
-
-type schemaUserGroup struct {
-	*ceous.BaseSchema
-	ID    schemaUserGroupPK
-	Admin ceous.SchemaField
-}
-
 var baseSchemaUserIgnored = ceous.NewBaseSchema(
 	"users",
 	"",
@@ -419,13 +375,3 @@ var baseSchemaUserIgnored = ceous.NewBaseSchema(
 	ceous.NewSchemaField("created_at"),
 	ceous.NewSchemaField("updated_at"),
 )
-
-type schemaUserIgnored struct {
-	*ceous.BaseSchema
-	ID        ceous.SchemaField
-	Name      ceous.SchemaField
-	Password  ceous.SchemaField
-	Role      ceous.SchemaField
-	CreatedAt ceous.SchemaField
-	UpdatedAt ceous.SchemaField
-}

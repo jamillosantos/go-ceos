@@ -13,14 +13,14 @@ import (
 )
 
 // Model generates tpl/model.gohtml
-func Model(ctx *models.Ctx, model *models.Model) string {
+func Model(ctx *models.GenContext, model *models.Model) string {
 	var _b strings.Builder
 	RenderModel(&_b, ctx, model)
 	return _b.String()
 }
 
 // RenderModel render tpl/model.gohtml
-func RenderModel(_buffer io.StringWriter, ctx *models.Ctx, model *models.Model) {
+func RenderModel(_buffer io.StringWriter, ctx *models.GenContext, model *models.Model) {
 	if model.PK != nil {
 		_buffer.WriteString("\n\n// GetID returns the primary key for model `")
 		_buffer.WriteString(gorazor.HTMLEscape(model.Name))

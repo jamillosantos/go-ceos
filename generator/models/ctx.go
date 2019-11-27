@@ -19,20 +19,81 @@ type (
 		importsAlias map[string]string
 	}
 
-	Ctx struct {
-		InputPkg      *myasthurts.Package
-		InputPkgCtx   *CtxPkg
-		OutputPkg     *myasthurts.Package
-		OutputPkgCtx  *CtxPkg
-		Reporter      reporters.Reporter
-		Models        map[string]*Model
+	GenContext struct {
+		InputPkg    *myasthurts.Package
+		InputPkgCtx *CtxPkg
+
+		OutputPkg    *myasthurts.Package
+		OutputPkgCtx *CtxPkg
+
+		Reporter reporters.Reporter
+
+		Models    []*Model
+		ModelsMap map[string]*Model
+
+		Schemas []*Schema
+
+		Connections []*Connection
+
 		Imports       CtxImports
 		ModelsImports CtxImports
 		count         int
 	}
+
+	ModelContext struct {
+		Gen      *GenContext
+		Reporter reporters.Reporter
+		Model    *Model
+		Schema   *Schema
+	}
+
+	SchemaContext struct {
+		Gen      *GenContext
+		Reporter reporters.Reporter
+		Prefix   []string
+	}
+
+	SchemaFieldContext struct {
+		Gen      *GenContext
+		Schema   *Schema
+		Reporter reporters.Reporter
+		Prefix   []string
+	}
 )
 
-func newCtxImports(pkg *myasthurts.Package) CtxImports {
+func NewGenContext(reporter reporters.Reporter, inputPackage, outputPackage *myasthurts.Package, pkgs ...*myasthurts.Package) *GenContext {
+	ctx := &GenContext{
+		Reporter:  reporter,
+		InputPkg:  inputPackage,
+		OutputPkg: outputPackage,
+
+		Imports:       NewCtxImports(outputPackage),
+		ModelsImports: NewCtxImports(inputPackage),
+
+		Schemas: make([]*Schema, 0),
+
+		Connections: make([]*Connection, 0),
+	}
+	inputPkg := ctx.ModelsImports.addImportPkg(inputPackage)
+	ctx.InputPkgCtx = &CtxPkg{
+		Pkg:   inputPackage,
+		Alias: inputPackage.Name,
+	}
+	inputPkg.Alias = "-"
+	for _, pkg := range pkgs {
+		ctx.ModelsImports.addImportPkg(pkg).Alias = "-"
+		ctx.Imports.addImportPkg(pkg).Alias = "-"
+	}
+	ceousPkg := &myasthurts.Package{
+		Name:       "ceous",
+		ImportPath: "github.com/jamillosantos/go-ceous",
+	}
+	ctx.ModelsImports.addImportPkg(ceousPkg)
+	ctx.Imports.addImportPkg(ceousPkg)
+	return ctx
+}
+
+func NewCtxImports(pkg *myasthurts.Package) CtxImports {
 	return CtxImports{
 		Pkg:          pkg,
 		Imports:      make(map[string]*CtxPkg),
@@ -102,40 +163,48 @@ func (ctxPkg *CtxPkg) Ref(pkg *myasthurts.Package, typeName string) string {
 	return ctxPkg.Alias + "." + typeName
 }
 
-func NewCtx(reporter reporters.Reporter, inputPackage, outputPackage *myasthurts.Package, pkgs ...*myasthurts.Package) *Ctx {
-	ctx := &Ctx{
-		Reporter:      reporter,
-		InputPkg:      inputPackage,
-		OutputPkg:     outputPackage,
-		Models:        make(map[string]*Model, 0),
-		Imports:       newCtxImports(outputPackage),
-		ModelsImports: newCtxImports(inputPackage),
-	}
-	inputPkg := ctx.ModelsImports.addImportPkg(inputPackage)
-	ctx.InputPkgCtx = &CtxPkg{
-		Pkg:   inputPackage,
-		Alias: inputPackage.Name,
-	}
-	inputPkg.Alias = "-"
-	for _, pkg := range pkgs {
-		ctx.ModelsImports.addImportPkg(pkg).Alias = "-"
-		ctx.Imports.addImportPkg(pkg).Alias = "-"
-	}
-	ceousPkg := &myasthurts.Package{
-		Name:       "ceous",
-		ImportPath: "github.com/jamillosantos/go-ceous",
-	}
-	ctx.ModelsImports.addImportPkg(ceousPkg)
-	ctx.Imports.addImportPkg(ceousPkg)
-	return ctx
+// structKey returns a string that represents the struct in the context
+// modelsMap.
+func (ctx *GenContext) structKey(s *myasthurts.Struct) string {
+	return s.Package().ImportPath + "." + s.Name()
 }
 
-func (ctx *Ctx) EnsureModel(name string) *Model {
-	m, ok := ctx.Models[name]
-	if ok {
-		return m
+// HasModel receives a `*myasthurts.Struct` and checks if it is defined in the
+// models map.
+func (ctx *GenContext) HasModel(s *myasthurts.Struct) (*Model, bool) {
+	if ctx.Models == nil {
+		return nil, false
 	}
-	m = NewModel(name)
-	ctx.Models[name] = m
-	return m
+	model, ok := ctx.ModelsMap[ctx.structKey(s)]
+	return model, ok
+}
+
+// AddModel adds a model to the Models list.
+//
+// If given `s` was already parsed, it returns the same instance and true.
+// Otherwise, it parses the given `s` returns the new `*Model` and false.
+func (ctx *GenContext) AddModel(s *myasthurts.Struct) (*Model, bool) {
+	if model, ok := ctx.HasModel(s); ok {
+		return model, true
+	}
+	if ctx.Models == nil {
+		ctx.Models = make([]*Model, 0)
+	}
+	if ctx.ModelsMap == nil {
+		ctx.ModelsMap = make(map[string]*Model, 0)
+	}
+	model := NewModel(s)
+	ctx.Models = append(ctx.Models, model)
+	ctx.ModelsMap[ctx.structKey(s)] = model
+	return model, false
+}
+
+// AddSchema creates a new schema, registers it in the context and returns the
+// new instance.
+func (ctx *GenContext) AddSchema(schema *Schema) *Schema {
+	if ctx.Schemas == nil {
+		ctx.Schemas = make([]*Schema, 0)
+	}
+	ctx.Schemas = append(ctx.Schemas, schema)
+	return schema
 }

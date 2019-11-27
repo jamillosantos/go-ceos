@@ -12,14 +12,14 @@ import (
 )
 
 // Store generates tpl/store.gohtml
-func Store(ctx *models.Ctx, model *models.Model) string {
+func Store(ctx *models.GenContext, model *models.Model) string {
 	var _b strings.Builder
 	RenderStore(&_b, ctx, model)
 	return _b.String()
 }
 
 // RenderStore render tpl/store.gohtml
-func RenderStore(_buffer io.StringWriter, ctx *models.Ctx, model *models.Model) {
+func RenderStore(_buffer io.StringWriter, ctx *models.GenContext, model *models.Model) {
 	_buffer.WriteString("\n\n// ")
 	_buffer.WriteString(gorazor.HTMLEscape(model.StoreName()))
 	_buffer.WriteString(" is the query for the model `")

@@ -13,14 +13,14 @@ import (
 )
 
 // Relation generates tpl/relation.gohtml
-func Relation(ctx *models.Ctx, relation *models.ModelRelation) string {
+func Relation(ctx *models.GenContext, relation *models.ModelRelation) string {
 	var _b strings.Builder
 	RenderRelation(&_b, ctx, relation)
 	return _b.String()
 }
 
 // RenderRelation render tpl/relation.gohtml
-func RenderRelation(_buffer io.StringWriter, ctx *models.Ctx, relation *models.ModelRelation) {
+func RenderRelation(_buffer io.StringWriter, ctx *models.GenContext, relation *models.ModelRelation) {
 	_buffer.WriteString("\n\ntype ")
 	_buffer.WriteString(gorazor.HTMLEscape(relation.RelationName()))
 	_buffer.WriteString(" struct {\n\t_runner ceous.DBRunner\n\tkeys []interface{}\n\trecords map[")

@@ -1,7 +1,7 @@
 @{
 	import generatorModels "github.com/jamillosantos/go-ceous/generator/models"
 
-	var ctxPkg *generatorModels.Ctx
+	var ctx *generatorModels.GenContext
 	var models []*generatorModels.Model
 -}
 
@@ -11,7 +11,16 @@ type schema struct {
 }
 }
 
-// Schema represents the schema of the package "@ctxPkg.InputPkg.Name@:".
+@for _, s := range ctx.Schemas {@
+// schema@s.Name have all fields for the model @s.Name@:.
+type schema@s.Name@: struct {
+	*ceous.BaseSchema@for _, field := range s.Fields {@
+		@field.Name ceous.SchemaField}
+}
+
+}
+
+// Schema represents the schema of the package "@ctx.InputPkg.Name@:".
 var Schema = schema{
 @for _, m := range models {@
 	@m.Name@:: @raw("&")@m.SchemaName()@: {
@@ -40,16 +49,4 @@ var @model.BaseSchemaName() = ceous.NewBaseSchema(
 	}@),
 }
 )
-
-type @model.SchemaName()@: struct {
-	*ceous.BaseSchema
-
-@for _, field := range model.SchemaFields {@
-	@field.Name @if field.SchemaType == "" {
-		@:ceous.SchemaField
-	} else {
-		@:schema@field.SchemaType
-	}
-}
-}
 }

@@ -13,14 +13,14 @@ import (
 )
 
 // Query generates tpl/query.gohtml
-func Query(ctx *models.Ctx, model *models.Model) string {
+func Query(ctx *models.GenContext, model *models.Model) string {
 	var _b strings.Builder
 	RenderQuery(&_b, ctx, model)
 	return _b.String()
 }
 
 // RenderQuery render tpl/query.gohtml
-func RenderQuery(_buffer io.StringWriter, ctx *models.Ctx, model *models.Model) {
+func RenderQuery(_buffer io.StringWriter, ctx *models.GenContext, model *models.Model) {
 	_buffer.WriteString("\n\n// ")
 	_buffer.WriteString(gorazor.HTMLEscape(model.QueryName()))
 	_buffer.WriteString(" is the query for the model `")

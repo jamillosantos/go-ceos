@@ -40,7 +40,6 @@ type (
 	}
 
 	Address struct {
-		ceous.Embedded
 		Street string `ceous:"street"`
 		Number string `ceous:"number"`
 		City   string `ceous:"city"`

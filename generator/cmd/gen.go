@@ -7,6 +7,7 @@ import (
 	"path"
 
 	generatorModels "github.com/jamillosantos/go-ceous/generator/models"
+	"github.com/jamillosantos/go-ceous/generator/parser"
 	"github.com/jamillosantos/go-ceous/generator/reporters"
 	"github.com/jamillosantos/go-ceous/generator/tpl"
 	myasthurts "github.com/lab259/go-my-ast-hurts"
@@ -38,14 +39,6 @@ func (*fileIgnorer) BeforeFile(_ *myasthurts.ParsePackageContext, filePath strin
 		}
 	}
 	return nil
-}
-
-func isModel(refType myasthurts.RefType) bool {
-	return refType.Pkg().Name == "ceous" && refType.Name() == "Model"
-}
-
-func isEmbedded(refType myasthurts.RefType) bool {
-	return refType.Pkg().Name == "ceous" && refType.Name() == "Embedded"
 }
 
 // genCmd represents the gen command
@@ -93,53 +86,19 @@ to quickly create a Cobra application.`,
 
 		// Models will be a list of the structs that implement Model
 
-		models := make([]*generatorModels.Model, 0)
-		embeddeds := make([]*generatorModels.Model, 0)
-		connections := make([]*generatorModels.Connection, 0)
-		connectionsMap := make(map[string]*generatorModels.Connection, 0)
+		genCtx := generatorModels.NewGenContext(reporter, inputPkg, outputPkg, env.BuiltIn)
 
-		ctx := generatorModels.NewCtx(reporter, inputPkg, outputPkg, env.BuiltIn)
-
-		var (
-			model *generatorModels.Model
-		)
-
-		for _, s := range inputPkg.Structs {
-			reporter.Line("Analysing", s.Name())
-			for _, f := range s.Fields {
-				if f.RefType.Pkg() == nil {
-					continue
-				}
-				if isModel(f.RefType) {
-					model, err = generatorModels.ParseModel(ctx, s)
-					if err != nil {
-						panic(errors.Wrapf(err, "error parsing model %s", s.Name())) // TODO(jota): Decide how critical errors will be reported.
-					}
-					models = append(models, model)
-				} else if isEmbedded(f.RefType) {
-					model, err = generatorModels.ParseModel(ctx, s)
-					if err != nil {
-						panic(errors.Wrapf(err, "error parsing embedded %s", s.Name())) // TODO(jota): Decide how critical errors will be reported.
-					}
-					embeddeds = append(embeddeds, model)
-				} else {
-					continue
-				}
-
-				if _, ok := connectionsMap[model.Connection]; !ok {
-					conn := generatorModels.NewConnection(model.Connection)
-					connectionsMap[model.Connection] = conn
-					connections = append(connections, conn)
-				}
-			}
+		err = parser.Parse(genCtx)
+		if err != nil {
+			panic(errors.Wrap(err, "could not parse information"))
 		}
 
 		buffCeous := bytes.NewBuffer(nil)
 		buffModels := bytes.NewBuffer(nil)
 
 		reporter.Line("Generating code ...")
-		tpl.RenderCeous(buffCeous, ctx, models, embeddeds, connections)
-		tpl.RenderModels(buffModels, ctx, models, embeddeds, connections)
+		tpl.RenderCeous(buffCeous, genCtx)
+		tpl.RenderModels(buffModels, genCtx)
 
 		reporter.Line("Formatting code ...")
 
