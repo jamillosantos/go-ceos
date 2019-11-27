@@ -30,7 +30,15 @@ type fileIgnorer struct{}
 
 // BeforeFile will ignore all files defined by the command line.
 func (*fileIgnorer) BeforeFile(_ *myasthurts.ParsePackageContext, filePath string) error {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return errors.Wrap(err, "could not get the working directory")
+	}
+
 	for _, f := range excludedFiles {
+		if !path.IsAbs(f) {
+			f = path.Clean(path.Join(cwd, f))
+		}
 		if f == filePath || filePath == outputGeneratedFileName || filePath == outputModelsFileName {
 			if verbose {
 				reporter.Linef("Ignoring file %s", filePath)

@@ -168,56 +168,10 @@ func (model *UserGroup) Value(name string) (interface{}, error) {
 	}
 }
 
-// GetID returns the primary key for model `UserIgnored`.
-func (model *UserIgnored) GetID() interface{} {
-	return model.ID
-}
-
-// ColumnAddress returns the pointer address of a field given its column name.
-func (model *UserIgnored) ColumnAddress(name string) (interface{}, error) {
-	switch name {
-	case "id":
-		return &model.ID, nil
-	case "name":
-		return &model.Name, nil
-	case "password":
-		return &model.Password, nil
-	case "role":
-		return &model.Role, nil
-	case "created_at":
-		return &model.CreatedAt, nil
-	case "updated_at":
-		return &model.UpdatedAt, nil
-	default:
-		return nil, errors.Wrapf(ceous.ErrFieldNotFound, "field %s not found", name)
-	}
-}
-
-// Value returns the value from a field given its column name.
-func (model *UserIgnored) Value(name string) (interface{}, error) {
-	switch name {
-	case "id":
-		return model.ID, nil
-	case "name":
-		return model.Name, nil
-	case "password":
-		return model.Password, nil
-	case "role":
-		return model.Role, nil
-	case "created_at":
-		return model.CreatedAt, nil
-	case "updated_at":
-		return model.UpdatedAt, nil
-	default:
-		return nil, errors.Wrapf(ceous.ErrFieldNotFound, "field %s not found", name)
-	}
-}
-
 type schema struct {
-	User        *schemaUser
-	Group       *schemaGroup
-	UserGroup   *schemaUserGroup
-	UserIgnored *schemaUserIgnored
+	User      *schemaUser
+	Group     *schemaGroup
+	UserGroup *schemaUserGroup
 }
 
 // schemaUserAddressAddress have all fields for the model UserAddressAddress.
@@ -272,17 +226,6 @@ type schemaUserGroup struct {
 	Admin ceous.SchemaField
 }
 
-// schemaUserIgnored have all fields for the model UserIgnored.
-type schemaUserIgnored struct {
-	*ceous.BaseSchema
-	ID        ceous.SchemaField
-	Name      ceous.SchemaField
-	Password  ceous.SchemaField
-	Role      ceous.SchemaField
-	CreatedAt ceous.SchemaField
-	UpdatedAt ceous.SchemaField
-}
-
 // Schema represents the schema of the package "tests".
 var Schema = schema{
 	User: &schemaUser{
@@ -318,21 +261,6 @@ var Schema = schema{
 
 		Admin: baseSchemaUserGroup.ColumnsArr[2],
 	},
-	UserIgnored: &schemaUserIgnored{
-		BaseSchema: baseSchemaUserIgnored,
-
-		ID: baseSchemaUserIgnored.ColumnsArr[0],
-
-		Name: baseSchemaUserIgnored.ColumnsArr[1],
-
-		Password: baseSchemaUserIgnored.ColumnsArr[2],
-
-		Role: baseSchemaUserIgnored.ColumnsArr[3],
-
-		CreatedAt: baseSchemaUserIgnored.ColumnsArr[4],
-
-		UpdatedAt: baseSchemaUserIgnored.ColumnsArr[5],
-	},
 }
 var baseSchemaUser = ceous.NewBaseSchema(
 	"users",
@@ -364,14 +292,4 @@ var baseSchemaUserGroup = ceous.NewBaseSchema(
 	ceous.NewSchemaField("user_id", ceous.FieldPK),
 	ceous.NewSchemaField("group_id", ceous.FieldPK),
 	ceous.NewSchemaField("admin"),
-)
-var baseSchemaUserIgnored = ceous.NewBaseSchema(
-	"users",
-	"",
-	ceous.NewSchemaField("id", ceous.FieldPK, ceous.FieldAutoIncrement),
-	ceous.NewSchemaField("name"),
-	ceous.NewSchemaField("password"),
-	ceous.NewSchemaField("role"),
-	ceous.NewSchemaField("created_at"),
-	ceous.NewSchemaField("updated_at"),
 )

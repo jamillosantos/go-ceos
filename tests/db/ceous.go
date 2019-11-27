@@ -23,10 +23,6 @@ type Creator interface {
 	UserGroupQuery(options ...ceous.CeousOption) *userGroupQuery
 	// UserGroupStore creates a new store related with the connection set.
 	UserGroupStore(options ...ceous.CeousOption) *userGroupStore
-	// UserIgnoredQuery creates a new query related with the connection set.
-	UserIgnoredQuery(options ...ceous.CeousOption) *userIgnoredQuery
-	// UserIgnoredStore creates a new store related with the connection set.
-	UserIgnoredStore(options ...ceous.CeousOption) *userIgnoredStore
 }
 
 type Connection interface {
@@ -65,16 +61,6 @@ func (c *DefaultConnection) UserGroupQuery(options ...ceous.CeousOption) *userGr
 // UserGroupStore creates a new store related with the connection Default set.
 func (c *DefaultConnection) UserGroupStore(options ...ceous.CeousOption) *userGroupStore {
 	return NewUserGroupStore(append(options, ceous.WithConn(c))...)
-}
-
-// UserIgnoredQuery creates a new query related with the connection Default set.
-func (c *DefaultConnection) UserIgnoredQuery(options ...ceous.CeousOption) *userIgnoredQuery {
-	return NewUserIgnoredQuery(append(options, ceous.WithConn(c))...)
-}
-
-// UserIgnoredStore creates a new store related with the connection Default set.
-func (c *DefaultConnection) UserIgnoredStore(options ...ceous.CeousOption) *userIgnoredStore {
-	return NewUserIgnoredStore(append(options, ceous.WithConn(c))...)
 }
 
 // Begin creates a new transaction with Default set.
@@ -146,16 +132,6 @@ func (c *Transaction) UserGroupQuery(options ...ceous.CeousOption) *userGroupQue
 // UserGroupStore creates a new store from a transaction.
 func (c *Transaction) UserGroupStore(options ...ceous.CeousOption) *userGroupStore {
 	return NewUserGroupStore(append(options, ceous.WithRunner(c))...)
-}
-
-// UserIgnoredQuery creates a new query from a transaction.
-func (c *Transaction) UserIgnoredQuery(options ...ceous.CeousOption) *userIgnoredQuery {
-	return NewUserIgnoredQuery(append(options, ceous.WithRunner(c))...)
-}
-
-// UserIgnoredStore creates a new store from a transaction.
-func (c *Transaction) UserIgnoredStore(options ...ceous.CeousOption) *userIgnoredStore {
-	return NewUserIgnoredStore(append(options, ceous.WithRunner(c))...)
 }
 
 type userResultSet struct {
@@ -796,215 +772,5 @@ func (store *userGroupStore) Insert(record *tests.UserGroup, fields ...ceous.Sch
 }
 
 func (store *userGroupStore) Update(record *tests.UserGroup, fields ...ceous.SchemaField) (int64, error) {
-	return store.BaseStore.Update(record, fields...)
-}
-
-type userIgnoredResultSet struct {
-	*ceous.RecordResultSet
-}
-
-func NewUserIgnoredResultSet(rs ceous.ResultSet, err error) *userIgnoredResultSet {
-	return &userIgnoredResultSet{
-		RecordResultSet: ceous.NewRecordResultSet(rs, err),
-	}
-}
-
-// userIgnoredQuery is the query for the model `UserIgnored`.
-type userIgnoredQuery struct {
-	*ceous.BaseQuery
-	ID        ceous.SchemaField
-	Name      ceous.SchemaField
-	Password  ceous.SchemaField
-	Role      ceous.SchemaField
-	CreatedAt ceous.SchemaField
-	UpdatedAt ceous.SchemaField
-}
-
-// NewUserIgnoredQuery creates a new query for model `UserIgnored`.
-func NewUserIgnoredQuery(options ...ceous.CeousOption) *userIgnoredQuery {
-	bq := ceous.NewBaseQuery(options...)
-	if bq.Schema == nil {
-		bq.Schema = tests.Schema.UserIgnored.BaseSchema
-	}
-	return &userIgnoredQuery{
-		BaseQuery: bq,
-	}
-}
-
-// ByID add a filter by `ID`.
-func (q *userIgnoredQuery) ByID(value int) *userIgnoredQuery {
-
-	q.BaseQuery.Where(ceous.Eq(tests.Schema.UserIgnored.ID, value))
-
-	return q
-}
-
-// ByName add a filter by `Name`.
-func (q *userIgnoredQuery) ByName(value string) *userIgnoredQuery {
-
-	q.BaseQuery.Where(ceous.Eq(tests.Schema.UserIgnored.Name, value))
-
-	return q
-}
-
-// ByPassword add a filter by `Password`.
-func (q *userIgnoredQuery) ByPassword(value string) *userIgnoredQuery {
-
-	q.BaseQuery.Where(ceous.Eq(tests.Schema.UserIgnored.Password, value))
-
-	return q
-}
-
-// ByRole add a filter by `Role`.
-func (q *userIgnoredQuery) ByRole(value string) *userIgnoredQuery {
-
-	q.BaseQuery.Where(ceous.Eq(tests.Schema.UserIgnored.Role, value))
-
-	return q
-}
-
-// ByCreatedAt add a filter by `CreatedAt`.
-func (q *userIgnoredQuery) ByCreatedAt(value time.Time) *userIgnoredQuery {
-
-	q.BaseQuery.Where(ceous.Eq(tests.Schema.UserIgnored.CreatedAt, value))
-
-	return q
-}
-
-// ByUpdatedAt add a filter by `UpdatedAt`.
-func (q *userIgnoredQuery) ByUpdatedAt(value time.Time) *userIgnoredQuery {
-
-	q.BaseQuery.Where(ceous.Eq(tests.Schema.UserIgnored.UpdatedAt, value))
-
-	return q
-}
-
-// Select defines what fields should be selected from the database.
-func (q *userIgnoredQuery) Select(fields ...ceous.SchemaField) *userIgnoredQuery {
-	q.BaseQuery.Select(fields...)
-	return q
-}
-
-// ExcludeFields defines what fields should not be selected from the database.
-func (q *userIgnoredQuery) ExcludeFields(fields ...ceous.SchemaField) *userIgnoredQuery {
-	q.BaseQuery.ExcludeFields(fields...)
-	return q
-}
-
-// Where defines the conditions for
-func (q *userIgnoredQuery) Where(pred interface{}, args ...interface{}) *userIgnoredQuery {
-	q.BaseQuery.Where(pred, args...)
-	return q
-}
-
-func (q *userIgnoredQuery) Limit(limit uint64) *userIgnoredQuery {
-	q.BaseQuery.Limit(limit)
-	return q
-}
-
-func (q *userIgnoredQuery) Offset(offset uint64) *userIgnoredQuery {
-	q.BaseQuery.Offset(offset)
-	return q
-}
-
-// One results only one record matching the query.
-func (q *userIgnoredQuery) One() (m tests.UserIgnored, err error) {
-	q.Limit(1).Offset(0)
-
-	query, err := q.RawQuery()
-	if err != nil {
-		return
-	}
-
-	rs := NewUserIgnoredResultSet(query, nil)
-	defer rs.Close()
-
-	if rs.Next() {
-		err = rs.ToModel(&m)
-		if err != nil {
-			return
-		}
-
-		for _, rel := range q.BaseQuery.Relations {
-			err = rel.Aggregate(&m)
-			if err != nil {
-				return tests.UserIgnored{}, err // TODO(jota): Shall this error be wrapped? At first, yes.
-			}
-		}
-	} else {
-		err = ceous.ErrNotFound
-	}
-
-	if err == nil {
-		for _, rel := range q.BaseQuery.Relations {
-			err = rel.Realize()
-			if err != nil {
-				return tests.UserIgnored{}, err // TODO(jota): Shall this error be wrapped? At first, yes.
-			}
-		}
-	}
-
-	return
-}
-
-// All return all records that match the query.
-func (q *userIgnoredQuery) All() ([]*tests.UserIgnored, error) {
-	query, err := q.RawQuery()
-	if err != nil {
-		return nil, err
-	}
-
-	rs := NewUserIgnoredResultSet(query, nil)
-	defer rs.Close()
-
-	ms := make([]*tests.UserIgnored, 0)
-	for rs.Next() {
-		m := &tests.UserIgnored{}
-		err = rs.ToModel(m)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, rel := range q.BaseQuery.Relations {
-			err = rel.Aggregate(m)
-			if err != nil {
-				return nil, err // TODO(jota): Shall this error be wrapped? At first, yes.
-			}
-		}
-		ms = append(ms, m)
-	}
-
-	for _, rel := range q.BaseQuery.Relations {
-		err = rel.Realize()
-		if err != nil {
-			return nil, err // TODO(jota): Shall this error be wrapped? At first, yes.
-		}
-	}
-
-	return ms, nil
-}
-
-func (q *userIgnoredQuery) OrderBy(fields ...interface{}) *userIgnoredQuery {
-	q.BaseQuery.OrderBy(fields...)
-	return q
-}
-
-// userIgnoredStore is the query for the model `UserIgnored`.
-type userIgnoredStore struct {
-	*ceous.BaseStore
-}
-
-// NewUserIgnoredStore creates a new query for model `UserIgnored`.
-func NewUserIgnoredStore(options ...ceous.CeousOption) *userIgnoredStore {
-	return &userIgnoredStore{
-		BaseStore: ceous.NewStore(tests.Schema.UserIgnored, options...),
-	}
-}
-
-func (store *userIgnoredStore) Insert(record *tests.UserIgnored, fields ...ceous.SchemaField) error {
-	return store.BaseStore.Insert(record, fields...)
-}
-
-func (store *userIgnoredStore) Update(record *tests.UserIgnored, fields ...ceous.SchemaField) (int64, error) {
 	return store.BaseStore.Update(record, fields...)
 }
