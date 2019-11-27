@@ -42,7 +42,7 @@ func ParseSchema(ctx *models.SchemaContext, s *myasthurts.Struct) (*models.Schem
 			Gen:      ctx.Gen,
 			Schema:   schema,
 			Prefix:   append(ctx.Prefix, s.Name()),
-			Reporter: reporters.WithPrefix(ctx.Reporter, "    "),
+			Reporter: reporters.SubReporter(ctx.Reporter),
 		}, structField)
 		if err == Skip {
 			continue
@@ -76,7 +76,7 @@ func parseSchemaField(ctx *models.SchemaFieldContext, field *myasthurts.Field) (
 	if s, ok := field.RefType.Type().(*myasthurts.Struct); ok {
 		schema, err := ParseSchema(&models.SchemaContext{
 			Gen:      ctx.Gen,
-			Reporter: reporters.WithPrefix(ctx.Reporter, "    "),
+			Reporter: reporters.SubReporter(ctx.Reporter),
 			Prefix:   append(ctx.Prefix, field.Name),
 		}, s)
 		if err != nil {

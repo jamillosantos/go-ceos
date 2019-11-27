@@ -66,7 +66,7 @@ func parseField(ctx *models.FieldContext, t *myasthurts.TagParam, field *myasthu
 			}
 			f.Modifiers = append(f.Modifiers, fieldPK)
 			ctx.Model.PK = f
-			ctx.Reporter.Linef(" * PK: %s", f.Name)
+			ctx.Reporter.Linef("* PK: %s", f.Name)
 		case "autoincr":
 			f.Modifiers = append(f.Modifiers, fieldAutoInc)
 		}
@@ -106,7 +106,7 @@ func parseField(ctx *models.FieldContext, t *myasthurts.TagParam, field *myasthu
 		f.SchemaType = field.RefType.Name()
 	}
 
-	ctx.Reporter.Linef(" + %s: %s", field.Name, field.RefType.Name())
+	ctx.Reporter.Linef("+ %s: %s", field.Name, field.RefType.Name())
 	ctx.Model.Fields = append(ctx.Model.Fields, f)
 	ctx.Model.SchemaFields = append(ctx.Model.SchemaFields, f)
 

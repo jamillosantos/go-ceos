@@ -1,9 +1,15 @@
 package parser
 
 import (
+	"errors"
+
 	"github.com/jamillosantos/go-ceous/generator/models"
 	"github.com/jamillosantos/go-ceous/generator/reporters"
 	myasthurts "github.com/lab259/go-my-ast-hurts"
+)
+
+var (
+	ErrTableNameNotDefined = errors.New("tablename was not defined")
 )
 
 func ParseModel(ctx *models.ModelContext, s *myasthurts.Struct) (*models.Model, error) {
@@ -13,9 +19,11 @@ func ParseModel(ctx *models.ModelContext, s *myasthurts.Struct) (*models.Model, 
 			modelInfo = field
 		}
 	}
+
 	if modelInfo == nil {
-		return nil, Skip
+		return nil, Skip // If no modelInfo found, just skip this struct.
 	}
+
 	m, ok := ctx.Gen.AddModel(s)
 	if ok {
 		ctx.Reporter.Line("model found among the previous analyzed, skipping.")
@@ -24,16 +32,20 @@ func ParseModel(ctx *models.ModelContext, s *myasthurts.Struct) (*models.Model, 
 
 	ctx.Reporter.Linef("Model for %s", s.Name())
 
-	reporter := reporters.WithPrefix(ctx.Reporter, "    ")
+	reporter := reporters.SubReporter(ctx.Reporter)
 
 	ctx.Model = m
 
 	// Process table name
+	// TODO(jota): If it is empty, add a way to "calculate" the table name by the struct name.
 	tableNameTag := modelInfo.Tag.TagParamByName("tableName")
 	if tableNameTag != nil {
 		m.TableName = tableNameTag.Value
 	}
 	reporter.Line("TableName: ", m.TableName)
+	if m.TableName == "" {
+		return nil, ErrTableNameNotDefined
+	}
 
 	// Find the connection name
 	connectionTag := modelInfo.Tag.TagParamByName("conn")
@@ -43,7 +55,7 @@ func ParseModel(ctx *models.ModelContext, s *myasthurts.Struct) (*models.Model, 
 	reporter.Line("Connection: ", m.Connection)
 
 	for _, field := range s.Fields {
-		if field == modelInfo {
+		if field == modelInfo { // If the field is the model info, just ignore it.
 			continue
 		}
 		if field.Name == "" {
@@ -53,9 +65,10 @@ func ParseModel(ctx *models.ModelContext, s *myasthurts.Struct) (*models.Model, 
 			Schema:   ctx.Schema,
 			Gen:      ctx.Gen,
 			Model:    m,
-			Reporter: reporters.WithPrefix(reporter, "    "),
+			Reporter: reporter,
 		}, field)
 		if err == Skip {
+			reporter.Line("skipping field %s", field.Name)
 			continue
 		} else if err != nil {
 			return nil, err

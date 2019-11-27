@@ -25,7 +25,7 @@ func Parse(ctx *models.GenContext) error {
 
 	for _, s := range ctx.InputPkg.Structs {
 		ctx.Reporter.Line("Analysing ", s.Name())
-		reporter := reporters.WithPrefix(ctx.Reporter, "    ")
+		reporter := reporters.SubReporter(ctx.Reporter)
 		model, err = ParseModel(&models.ModelContext{
 			Gen:      ctx,
 			Reporter: reporter,

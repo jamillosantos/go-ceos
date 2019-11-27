@@ -13,6 +13,10 @@ func WithPrefix(reporter Reporter, prefix string) Reporter {
 	}
 }
 
+func SubReporter(reporter Reporter) Reporter {
+	return WithPrefix(reporter, "   ")
+}
+
 // Linef calls the reporter `Linef` implemenation with a prefix.
 func (reporter *prefixReporter) Linef(fmt string, args ...interface{}) {
 	reporter.reporter.Linef(reporter.prefix+fmt, args...)
