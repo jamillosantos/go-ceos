@@ -15,13 +15,13 @@ var (
 func ParseModel(ctx *models.ModelContext, s *myasthurts.Struct) (*models.Model, error) {
 	var modelInfo *myasthurts.Field
 	for _, field := range s.Fields {
-		if isModel(field.RefType) {
+		if isRefTypeModel(field.RefType) {
 			modelInfo = field
 		}
 	}
 
-	if modelInfo == nil {
-		return nil, Skip // If no modelInfo found, just skip this struct.
+	if modelInfo == nil { // If no modelInfo found, just skip this struct.
+		return nil, Skip
 	}
 
 	m, ok := ctx.Gen.AddModel(s)
@@ -47,6 +47,13 @@ func ParseModel(ctx *models.ModelContext, s *myasthurts.Struct) (*models.Model, 
 		return nil, ErrTableNameNotDefined
 	}
 
+	baseSchema := models.NewBaseSchema(s.Name(), m.TableName)
+	ctx.Gen.AddBaseSchema(baseSchema)
+
+	schema := models.NewSchema(s.Name(), baseSchema)
+	schema.IsModel = true
+	ctx.Gen.AddSchema(schema)
+
 	// Find the connection name
 	connectionTag := modelInfo.Tag.TagParamByName("conn")
 	if connectionTag != nil {
@@ -62,13 +69,14 @@ func ParseModel(ctx *models.ModelContext, s *myasthurts.Struct) (*models.Model, 
 			continue
 		}
 		err := ParseField(&models.FieldContext{
-			Schema:   ctx.Schema,
-			Gen:      ctx.Gen,
-			Model:    m,
-			Reporter: reporter,
+			BaseSchema: baseSchema,
+			Schema:     schema,
+			Gen:        ctx.Gen,
+			Model:      m,
+			Reporter:   reporter,
 		}, field)
 		if err == Skip {
-			reporter.Line("skipping field %s", field.Name)
+			reporter.Linef("skipping field %s", field.Name)
 			continue
 		} else if err != nil {
 			return nil, err

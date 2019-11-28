@@ -3,8 +3,10 @@ package cmd
 import (
 	"bytes"
 	"go/format"
+	"go/scanner"
 	"os"
 	"path"
+	"reflect"
 
 	generatorModels "github.com/jamillosantos/go-ceous/generator/models"
 	"github.com/jamillosantos/go-ceous/generator/parser"
@@ -112,19 +114,24 @@ to quickly create a Cobra application.`,
 
 		formattedCeousCode, err := format.Source(buffCeous.Bytes())
 		if err != nil {
-			/*
-				TODO(jota): In case of error, report the excerpt of the code.
-				if serr, ok := err.(scanner.ErrorList); ok {
-					for _, serri := range serr {
-						// reporter.Line(reflect.TypeOf(serri))
-					}
+			// TODO(jota): In case of error, report the excerpt of the code.
+			if serr, ok := err.(scanner.ErrorList); ok {
+				for _, serri := range serr {
+					reporter.Line(reflect.TypeOf(serri))
 				}
-				reporter.Line(buffCeous.String())
-			*/
+			}
+			reporter.Line(buffCeous.String())
 			panic(errors.Wrapf(err, "could not format the ceous code"))
 		}
 		formattedModelsCode, err := format.Source(buffModels.Bytes())
 		if err != nil {
+			// TODO(jota): In case of error, report the excerpt of the code.
+			if serr, ok := err.(scanner.ErrorList); ok {
+				for _, serri := range serr {
+					reporter.Line(reflect.TypeOf(serri))
+				}
+			}
+			reporter.Line(buffModels.String())
 			panic(errors.Wrapf(err, "could not format the models code"))
 		}
 

@@ -29,7 +29,7 @@ func New@model.Name@:Query(options ...ceous.CeousOption) @Pointer@model.QueryNam
 // By@field.NameForMethod@: add a filter by `@field.Field@:`.
 func (q @Pointer@model.QueryName()) By@field.NameForMethod@:(value @ctx.Imports.Ref(field.Type.RefType)@:) @Pointer@model.QueryName()@: {
 	@for _, condition := range field.Conditions {@
-	q.BaseQuery.Where(ceous.Eq(@ctx.InputPkgCtx.Ref(ctx.OutputPkg, "Schema")@:.@condition.SchemaField@:, value@condition.StringField()@:))
+	q.BaseQuery.Where(ceous.Eq(@ctx.InputPkgCtx.Ref(ctx.OutputPkg, "Schema")@:.@condition.SchemaField@:, value@:))
 	}
 	return q
 }

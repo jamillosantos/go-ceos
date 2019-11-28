@@ -7,7 +7,16 @@ import (
 	"github.com/pkg/errors"
 )
 
-func isModel(refType myasthurts.RefType) bool {
+func isStructModel(s *myasthurts.Struct) bool {
+	for _, field := range s.Fields {
+		if isRefTypeModel(field.RefType) {
+			return true
+		}
+	}
+	return false
+}
+
+func isRefTypeModel(refType myasthurts.RefType) bool {
 	return refType.Pkg().Name == "ceous" && refType.Name() == "Model"
 }
 
@@ -30,19 +39,12 @@ func Parse(ctx *models.GenContext) error {
 			Gen:      ctx,
 			Reporter: reporter,
 		}, s)
-		if err == Skip {
-			reporter.Line("Skipping")
-			continue
-		} else if err != nil {
+		if err != Skip && err != nil {
 			return errors.Wrapf(err, "error parsing model %s", s.Name()) // TODO(jota): Decide how critical errors will be reported.
 		}
-		_, err = ParseSchema(&models.SchemaContext{
-			Gen:      ctx,
-			Reporter: reporter,
-			Prefix:   []string{},
-		}, s)
+
 		if err != nil {
-			return errors.Wrapf(err, "error parsing schema %s", s.Name()) // TODO(jota): Decide how critical errors will be reported.
+			//
 		}
 
 		if _, ok := connectionsMap[model.Connection]; !ok {

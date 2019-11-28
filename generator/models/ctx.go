@@ -31,7 +31,8 @@ type (
 		Models    []*Model
 		ModelsMap map[string]*Model
 
-		Schemas []*Schema
+		BaseSchemas []*BaseSchema
+		Schemas     []*Schema
 
 		Connections []*Connection
 
@@ -44,20 +45,37 @@ type (
 		Gen      *GenContext
 		Reporter reporters.Reporter
 		Model    *Model
-		Schema   *Schema
 	}
 
 	SchemaContext struct {
-		Gen      *GenContext
-		Reporter reporters.Reporter
-		Prefix   []string
+		Gen            *GenContext
+		Reporter       reporters.Reporter
+		Model          *Model
+		BaseSchema     *BaseSchema
+		Schema         *Schema
+		ColumnPrefix   []string
+		FieldPath      []string
+		FieldModifiers []ModelFieldModifier
 	}
 
 	SchemaFieldContext struct {
-		Gen      *GenContext
-		Schema   *Schema
-		Reporter reporters.Reporter
-		Prefix   []string
+		Gen            *GenContext
+		Model          *Model
+		BaseSchema     *BaseSchema
+		Schema         *Schema
+		Reporter       reporters.Reporter
+		FieldPath      []string
+		ColumnPrefix   []string
+		FieldModifiers []ModelFieldModifier
+	}
+
+	EmbeddedContext struct {
+		Gen          *GenContext
+		Model        *Model
+		BaseSchema   *BaseSchema
+		FieldPath    []string
+		ColumnPrefix []string
+		Modifiers    []ModelFieldModifier
 	}
 )
 
@@ -70,7 +88,7 @@ func NewGenContext(reporter reporters.Reporter, inputPackage, outputPackage *mya
 		Imports:       NewCtxImports(outputPackage),
 		ModelsImports: NewCtxImports(inputPackage),
 
-		Schemas: make([]*Schema, 0),
+		BaseSchemas: make([]*BaseSchema, 0),
 
 		Connections: make([]*Connection, 0),
 	}
@@ -197,6 +215,16 @@ func (ctx *GenContext) AddModel(s *myasthurts.Struct) (*Model, bool) {
 	ctx.Models = append(ctx.Models, model)
 	ctx.ModelsMap[ctx.structKey(s)] = model
 	return model, false
+}
+
+// AddBaseSchema creates a new schema, registers it in the context and returns the
+// new instance.
+func (ctx *GenContext) AddBaseSchema(schema *BaseSchema) *BaseSchema {
+	if ctx.BaseSchemas == nil {
+		ctx.BaseSchemas = make([]*BaseSchema, 0)
+	}
+	ctx.BaseSchemas = append(ctx.BaseSchemas, schema)
+	return schema
 }
 
 // AddSchema creates a new schema, registers it in the context and returns the

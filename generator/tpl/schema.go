@@ -8,6 +8,7 @@ import (
 	generatorModels "github.com/jamillosantos/go-ceous/generator/models"
 	"github.com/sipin/gorazor/gorazor"
 	"io"
+	"strconv"
 	"strings"
 )
 
@@ -36,15 +37,44 @@ func RenderSchema(_buffer io.StringWriter, ctx *generatorModels.GenContext, mode
 		_buffer.WriteString(gorazor.HTMLEscape(s.Name))
 		_buffer.WriteString(".\ntype schema")
 		_buffer.WriteString(gorazor.HTMLEscape(s.Name))
-		_buffer.WriteString(" struct {\n\t*ceous.BaseSchema")
+		_buffer.WriteString(" struct {\n\t")
+		if s.IsModel {
+			_buffer.WriteString("\n\t*ceous.BaseSchema\n\t")
+		}
+		_buffer.WriteString("\n\t")
 		for _, field := range s.Fields {
 			_buffer.WriteString("\n\t\t")
 			_buffer.WriteString(gorazor.HTMLEscape(field.Name))
-			_buffer.WriteString(" ceous.SchemaField")
+			_buffer.WriteString(" ")
+			if field.Type == "" {
+				_buffer.WriteString("ceous.SchemaField")
+			} else {
+				_buffer.WriteString(field.Type)
+			}
 		}
 		_buffer.WriteString("\n}")
 	}
-	_buffer.WriteString("\n\n// Schema represents the schema of the package \"")
+	_buffer.WriteString("\n\n\nvar (")
+	for _, s := range ctx.Schemas {
+		if !s.IsModel {
+			_buffer.WriteString("\n\tbaseSchema")
+			_buffer.WriteString(gorazor.HTMLEscape(s.Name))
+			_buffer.WriteString(" = schema")
+			_buffer.WriteString(gorazor.HTMLEscape(s.Name))
+			_buffer.WriteString(" {\n\t\t")
+			for _, field := range s.Fields {
+				_buffer.WriteString("\n\t\t\t")
+				_buffer.WriteString(gorazor.HTMLEscape(field.Name))
+				_buffer.WriteString(" : baseSchema")
+				_buffer.WriteString(gorazor.HTMLEscape(s.BaseSchema.Name))
+				_buffer.WriteString(".ColumnsArr[")
+				_buffer.WriteString(gorazor.HTMLEscape(s.BaseSchema.FieldsMap[field.ColumnName]))
+				_buffer.WriteString("],\n\t\t")
+			}
+			_buffer.WriteString("\n\t}\n\t")
+		}
+	}
+	_buffer.WriteString("\n)\n\n// Schema represents the schema of the package \"")
 	_buffer.WriteString(gorazor.HTMLEscape(ctx.InputPkg.Name))
 	_buffer.WriteString("\".\nvar Schema = schema{")
 	for _, m := range models {
@@ -57,51 +87,35 @@ func RenderSchema(_buffer io.StringWriter, ctx *generatorModels.GenContext, mode
 		_buffer.WriteString(gorazor.HTMLEscape(m.BaseSchemaName()))
 		_buffer.WriteString(",\n\n\t")
 		for _, field := range m.Fields {
-			_buffer.WriteString("\n\t\t")
+
 			_buffer.WriteString(gorazor.HTMLEscape(field.Name))
+
 			_buffer.WriteString(": ")
+
 			if field.SchemaType == "" {
 				i := m.ColumnsMap[field.FieldName]
-
-				_buffer.WriteString(gorazor.HTMLEscape(m.BaseSchemaName()))
-
-				_buffer.WriteString(".ColumnsArr[")
-				_buffer.WriteString(gorazor.HTMLEscape(i))
-				_buffer.WriteString("],")
-
+				_buffer.WriteString(m.BaseSchemaName() + ".ColumnsArr[" + strconv.Itoa(i) + "],\n")
 			} else {
-
-				_buffer.WriteString(gorazor.HTMLEscape(field.SchemaType))
-
-				_buffer.WriteString("Schema,")
-
+				_buffer.WriteString("baseSchema" + field.SchemaType + ",\n")
 			}
-			_buffer.WriteString("\n\t")
 		}
-		_buffer.WriteString("\n\t},")
+		_buffer.WriteString("},")
 	}
-	_buffer.WriteString("\n}")
-	for _, model := range models {
-		_buffer.WriteString("\nvar ")
-		_buffer.WriteString(gorazor.HTMLEscape(model.BaseSchemaName()))
-		_buffer.WriteString(" = ceous.NewBaseSchema(\n\t\"")
-		_buffer.WriteString(gorazor.HTMLEscape(model.TableName))
-		_buffer.WriteString("\",\n\t\"\",")
-		for _, field := range model.Columns {
-			_buffer.WriteString("\n\tceous.NewSchemaField(\"")
-			_buffer.WriteString(gorazor.HTMLEscape(field.Column))
-			_buffer.WriteString("\"")
-			if len(field.Modifiers) > 0 {
-				for _, m := range field.Modifiers {
-
-					_buffer.WriteString((", "))
-					_buffer.WriteString((m()))
-
-				}
-			}
-			_buffer.WriteString("),")
+	_buffer.WriteString("\n}\n\nvar (")
+	for i, schema := range ctx.BaseSchemas {
+		_buffer.WriteString("\n\tbaseSchema")
+		_buffer.WriteString(gorazor.HTMLEscape(schema.Name))
+		_buffer.WriteString(" = ceous.NewBaseSchema(\n\t\t\"\",\n\t\t\"\", ")
+		for _, field := range schema.Fields {
+			_buffer.WriteString("\n\t\tceous.NewSchemaField(\"")
+			_buffer.WriteString(gorazor.HTMLEscape(field.ColumnName))
+			_buffer.WriteString("\"),")
 		}
-		_buffer.WriteString("\n)")
+		_buffer.WriteString("\n\t)\n\t")
+		if i+1 == len(ctx.BaseSchemas) {
+			_buffer.WriteString("\n")
+		}
 	}
+	_buffer.WriteString("\n)")
 
 }

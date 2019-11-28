@@ -200,30 +200,66 @@ func (q *userQuery) ByRole(value string) *userQuery {
 	return q
 }
 
-// ByAddress add a filter by `Address`.
-func (q *userQuery) ByAddress(value tests.Address) *userQuery {
+// ByAddressStreet add a filter by `Address.Street`.
+func (q *userQuery) ByAddressStreet(value string) *userQuery {
 
-	q.BaseQuery.Where(ceous.Eq(tests.Schema.User.Address.Street, value.Street))
-
-	q.BaseQuery.Where(ceous.Eq(tests.Schema.User.Address.Number, value.Number))
-
-	q.BaseQuery.Where(ceous.Eq(tests.Schema.User.Address.City, value.City))
-
-	q.BaseQuery.Where(ceous.Eq(tests.Schema.User.Address.State, value.State))
+	q.BaseQuery.Where(ceous.Eq(tests.Schema.User.Address.Street, value))
 
 	return q
 }
 
-// ByWork add a filter by `Work`.
-func (q *userQuery) ByWork(value tests.Address) *userQuery {
+// ByAddressNumber add a filter by `Address.Number`.
+func (q *userQuery) ByAddressNumber(value string) *userQuery {
 
-	q.BaseQuery.Where(ceous.Eq(tests.Schema.User.Work.Street, value.Street))
+	q.BaseQuery.Where(ceous.Eq(tests.Schema.User.Address.Number, value))
 
-	q.BaseQuery.Where(ceous.Eq(tests.Schema.User.Work.Number, value.Number))
+	return q
+}
 
-	q.BaseQuery.Where(ceous.Eq(tests.Schema.User.Work.City, value.City))
+// ByAddressCity add a filter by `Address.City`.
+func (q *userQuery) ByAddressCity(value string) *userQuery {
 
-	q.BaseQuery.Where(ceous.Eq(tests.Schema.User.Work.State, value.State))
+	q.BaseQuery.Where(ceous.Eq(tests.Schema.User.Address.City, value))
+
+	return q
+}
+
+// ByAddressState add a filter by `Address.State`.
+func (q *userQuery) ByAddressState(value string) *userQuery {
+
+	q.BaseQuery.Where(ceous.Eq(tests.Schema.User.Address.State, value))
+
+	return q
+}
+
+// ByWorkStreet add a filter by `Work.Street`.
+func (q *userQuery) ByWorkStreet(value string) *userQuery {
+
+	q.BaseQuery.Where(ceous.Eq(tests.Schema.User.Work.Street, value))
+
+	return q
+}
+
+// ByWorkNumber add a filter by `Work.Number`.
+func (q *userQuery) ByWorkNumber(value string) *userQuery {
+
+	q.BaseQuery.Where(ceous.Eq(tests.Schema.User.Work.Number, value))
+
+	return q
+}
+
+// ByWorkCity add a filter by `Work.City`.
+func (q *userQuery) ByWorkCity(value string) *userQuery {
+
+	q.BaseQuery.Where(ceous.Eq(tests.Schema.User.Work.City, value))
+
+	return q
+}
+
+// ByWorkState add a filter by `Work.State`.
+func (q *userQuery) ByWorkState(value string) *userQuery {
+
+	q.BaseQuery.Where(ceous.Eq(tests.Schema.User.Work.State, value))
 
 	return q
 }
@@ -561,7 +597,6 @@ func NewUserGroupResultSet(rs ceous.ResultSet, err error) *userGroupResultSet {
 // userGroupQuery is the query for the model `UserGroup`.
 type userGroupQuery struct {
 	*ceous.BaseQuery
-	ID    ceous.SchemaField
 	Admin ceous.SchemaField
 }
 
@@ -574,16 +609,6 @@ func NewUserGroupQuery(options ...ceous.CeousOption) *userGroupQuery {
 	return &userGroupQuery{
 		BaseQuery: bq,
 	}
-}
-
-// ByID add a filter by `ID`.
-func (q *userGroupQuery) ByID(value tests.UserGroupPK) *userGroupQuery {
-
-	q.BaseQuery.Where(ceous.Eq(tests.Schema.UserGroup.ID.UserID, value.UserID))
-
-	q.BaseQuery.Where(ceous.Eq(tests.Schema.UserGroup.ID.GroupID, value.GroupID))
-
-	return q
 }
 
 // ByAdmin add a filter by `Admin`.
@@ -701,57 +726,6 @@ func (q *userGroupQuery) All() ([]*tests.UserGroup, error) {
 
 func (q *userGroupQuery) OrderBy(fields ...interface{}) *userGroupQuery {
 	q.BaseQuery.OrderBy(fields...)
-	return q
-}
-
-type UserGroupModeluserRelation struct {
-	_runner ceous.DBRunner
-	keys    []interface{}
-	records map[int][]*tests.UserGroup
-}
-
-func NewUserGroupModeluserRelation(runner ceous.DBRunner) *UserGroupModeluserRelation {
-	return &UserGroupModeluserRelation{
-		_runner: runner,
-		keys:    make([]interface{}, 0),
-		records: make(map[int][]*tests.UserGroup),
-	}
-}
-
-func (relation *UserGroupModeluserRelation) Aggregate(record ceous.Record) error {
-	ugRecord, ok := record.(*tests.UserGroup)
-	if !ok {
-		return ceous.ErrInvalidRecordType
-	}
-	if rs, ok := relation.records[ugRecord.ID.UserID]; ok {
-		relation.records[ugRecord.ID.UserID] = append(rs, ugRecord)
-		// No need to add the key here, since its will be already in the `keys`.
-	} else {
-		relation.records[ugRecord.ID.UserID] = append(rs, ugRecord)
-		relation.keys = append(relation.keys, ugRecord.ID.UserID)
-	}
-	return nil
-}
-
-func (relation *UserGroupModeluserRelation) Realize() error {
-	records, err := NewUserQuery(ceous.WithRunner(relation._runner)).Where(ceous.Eq(tests.Schema.User.ID, relation.keys)).All()
-	if err != nil {
-		return err // TODO(jota): Shall this be wrapped into a custom error?
-	}
-	for _, record := range records {
-		masterRecords, ok := relation.records[record.ID]
-		if !ok {
-			return ceous.ErrInconsistentRelationResult
-		}
-		for _, r := range masterRecords {
-			r.SetUser(record)
-		}
-	}
-	return nil
-}
-
-func (q *userGroupQuery) WithUser() *userGroupQuery {
-	q.BaseQuery.Relations = append(q.BaseQuery.Relations, NewUserGroupModeluserRelation(q.BaseQuery.Runner))
 	return q
 }
 

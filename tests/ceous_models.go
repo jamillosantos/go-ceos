@@ -23,13 +23,13 @@ func (model *User) ColumnAddress(name string) (interface{}, error) {
 		return &model.Password, nil
 	case "role":
 		return &model.Role, nil
-	case "street":
+	case "Address_street":
 		return &model.Address.Street, nil
-	case "number":
+	case "Address_number":
 		return &model.Address.Number, nil
-	case "city":
+	case "Address_city":
 		return &model.Address.City, nil
-	case "state":
+	case "Address_state":
 		return &model.Address.State, nil
 	case "work_street":
 		return &model.Work.Street, nil
@@ -59,13 +59,13 @@ func (model *User) Value(name string) (interface{}, error) {
 		return model.Password, nil
 	case "role":
 		return model.Role, nil
-	case "street":
+	case "Address_street":
 		return model.Address.Street, nil
-	case "number":
+	case "Address_number":
 		return model.Address.Number, nil
-	case "city":
+	case "Address_city":
 		return model.Address.City, nil
-	case "state":
+	case "Address_state":
 		return model.Address.State, nil
 	case "work_street":
 		return model.Work.Street, nil
@@ -118,35 +118,9 @@ func (model *UserGroup) GetID() interface{} {
 	return model.ID
 }
 
-// User returns the user from UserGroup.
-func (model *UserGroup) User() *User {
-	return model.user
-}
-
-// SetUser updates the value for the user,
-// updating the user.
-func (model *UserGroup) SetUser(value *User) error {
-	c, err := model.ColumnAddress("user_id")
-	if err != nil {
-		return err
-	}
-
-	v, ok := c.(*int)
-	if !ok {
-		return errors.New("invalid key value") // TODO(jota): To formalize this error.
-	}
-	*v = value.ID
-	model.user = value
-	return nil
-}
-
 // ColumnAddress returns the pointer address of a field given its column name.
 func (model *UserGroup) ColumnAddress(name string) (interface{}, error) {
 	switch name {
-	case "user_id":
-		return &model.ID.UserID, nil
-	case "group_id":
-		return &model.ID.GroupID, nil
 	case "admin":
 		return &model.Admin, nil
 	default:
@@ -157,10 +131,6 @@ func (model *UserGroup) ColumnAddress(name string) (interface{}, error) {
 // Value returns the value from a field given its column name.
 func (model *UserGroup) Value(name string) (interface{}, error) {
 	switch name {
-	case "user_id":
-		return model.ID.UserID, nil
-	case "group_id":
-		return model.ID.GroupID, nil
 	case "admin":
 		return model.Admin, nil
 	default:
@@ -174,9 +144,22 @@ type schema struct {
 	UserGroup *schemaUserGroup
 }
 
+// schemaUser have all fields for the model User.
+type schemaUser struct {
+	*ceous.BaseSchema
+
+	ID        ceous.SchemaField
+	Name      ceous.SchemaField
+	Password  ceous.SchemaField
+	Role      ceous.SchemaField
+	Address   schemaUserAddressAddress
+	Work      schemaUserWorkAddress
+	CreatedAt ceous.SchemaField
+	UpdatedAt ceous.SchemaField
+}
+
 // schemaUserAddressAddress have all fields for the model UserAddressAddress.
 type schemaUserAddressAddress struct {
-	*ceous.BaseSchema
 	Street ceous.SchemaField
 	Number ceous.SchemaField
 	City   ceous.SchemaField
@@ -185,111 +168,108 @@ type schemaUserAddressAddress struct {
 
 // schemaUserWorkAddress have all fields for the model UserWorkAddress.
 type schemaUserWorkAddress struct {
-	*ceous.BaseSchema
 	Street ceous.SchemaField
 	Number ceous.SchemaField
 	City   ceous.SchemaField
 	State  ceous.SchemaField
 }
 
-// schemaUser have all fields for the model User.
-type schemaUser struct {
-	*ceous.BaseSchema
-	ID        ceous.SchemaField
-	Name      ceous.SchemaField
-	Password  ceous.SchemaField
-	Role      ceous.SchemaField
-	Address   ceous.SchemaField
-	Work      ceous.SchemaField
-	CreatedAt ceous.SchemaField
-	UpdatedAt ceous.SchemaField
-}
-
 // schemaGroup have all fields for the model Group.
 type schemaGroup struct {
 	*ceous.BaseSchema
+
 	ID   ceous.SchemaField
 	Name ceous.SchemaField
-}
-
-// schemaUserGroupIDUserGroupPK have all fields for the model UserGroupIDUserGroupPK.
-type schemaUserGroupIDUserGroupPK struct {
-	*ceous.BaseSchema
-	UserID  ceous.SchemaField
-	GroupID ceous.SchemaField
 }
 
 // schemaUserGroup have all fields for the model UserGroup.
 type schemaUserGroup struct {
 	*ceous.BaseSchema
-	ID    ceous.SchemaField
+
 	Admin ceous.SchemaField
 }
+
+var (
+	baseSchemaUserAddressAddress = schemaUserAddressAddress{
+
+		Street: baseSchemaUser.ColumnsArr[4],
+
+		Number: baseSchemaUser.ColumnsArr[5],
+
+		City: baseSchemaUser.ColumnsArr[6],
+
+		State: baseSchemaUser.ColumnsArr[7],
+	}
+
+	baseSchemaUserWorkAddress = schemaUserWorkAddress{
+
+		Street: baseSchemaUser.ColumnsArr[8],
+
+		Number: baseSchemaUser.ColumnsArr[9],
+
+		City: baseSchemaUser.ColumnsArr[10],
+
+		State: baseSchemaUser.ColumnsArr[11],
+	}
+)
 
 // Schema represents the schema of the package "tests".
 var Schema = schema{
 	User: &schemaUser{
 		BaseSchema: baseSchemaUser,
 
-		ID: baseSchemaUser.ColumnsArr[0],
-
-		Name: baseSchemaUser.ColumnsArr[1],
-
-		Password: baseSchemaUser.ColumnsArr[2],
-
-		Role: baseSchemaUser.ColumnsArr[3],
-
-		Address: AddressSchema,
-
-		Work: AddressSchema,
-
+		ID:        baseSchemaUser.ColumnsArr[0],
+		Name:      baseSchemaUser.ColumnsArr[1],
+		Password:  baseSchemaUser.ColumnsArr[2],
+		Role:      baseSchemaUser.ColumnsArr[3],
+		Address:   baseSchemaUserAddressAddress,
+		Work:      baseSchemaUserWorkAddress,
 		CreatedAt: baseSchemaUser.ColumnsArr[12],
-
 		UpdatedAt: baseSchemaUser.ColumnsArr[13],
 	},
 	Group: &schemaGroup{
 		BaseSchema: baseSchemaGroup,
 
-		ID: baseSchemaGroup.ColumnsArr[0],
-
+		ID:   baseSchemaGroup.ColumnsArr[0],
 		Name: baseSchemaGroup.ColumnsArr[1],
 	},
 	UserGroup: &schemaUserGroup{
 		BaseSchema: baseSchemaUserGroup,
 
-		ID: UserGroupPKSchema,
-
-		Admin: baseSchemaUserGroup.ColumnsArr[2],
+		Admin: baseSchemaUserGroup.ColumnsArr[0],
 	},
 }
-var baseSchemaUser = ceous.NewBaseSchema(
-	"users",
-	"",
-	ceous.NewSchemaField("id", ceous.FieldPK, ceous.FieldAutoIncrement),
-	ceous.NewSchemaField("name"),
-	ceous.NewSchemaField("password"),
-	ceous.NewSchemaField("role"),
-	ceous.NewSchemaField("street"),
-	ceous.NewSchemaField("number"),
-	ceous.NewSchemaField("city"),
-	ceous.NewSchemaField("state"),
-	ceous.NewSchemaField("work_street"),
-	ceous.NewSchemaField("work_number"),
-	ceous.NewSchemaField("work_city"),
-	ceous.NewSchemaField("work_state"),
-	ceous.NewSchemaField("created_at"),
-	ceous.NewSchemaField("updated_at"),
-)
-var baseSchemaGroup = ceous.NewBaseSchema(
-	"groups",
-	"",
-	ceous.NewSchemaField("id", ceous.FieldPK, ceous.FieldAutoIncrement),
-	ceous.NewSchemaField("name"),
-)
-var baseSchemaUserGroup = ceous.NewBaseSchema(
-	"user_groups",
-	"",
-	ceous.NewSchemaField("user_id", ceous.FieldPK),
-	ceous.NewSchemaField("group_id", ceous.FieldPK),
-	ceous.NewSchemaField("admin"),
+
+var (
+	baseSchemaUser = ceous.NewBaseSchema(
+		"",
+		"",
+		ceous.NewSchemaField("id"),
+		ceous.NewSchemaField("name"),
+		ceous.NewSchemaField("password"),
+		ceous.NewSchemaField("role"),
+		ceous.NewSchemaField("Address_street"),
+		ceous.NewSchemaField("Address_number"),
+		ceous.NewSchemaField("Address_city"),
+		ceous.NewSchemaField("Address_state"),
+		ceous.NewSchemaField("work_street"),
+		ceous.NewSchemaField("work_number"),
+		ceous.NewSchemaField("work_city"),
+		ceous.NewSchemaField("work_state"),
+		ceous.NewSchemaField("created_at"),
+		ceous.NewSchemaField("updated_at"),
+	)
+
+	baseSchemaGroup = ceous.NewBaseSchema(
+		"",
+		"",
+		ceous.NewSchemaField("id"),
+		ceous.NewSchemaField("name"),
+	)
+
+	baseSchemaUserGroup = ceous.NewBaseSchema(
+		"",
+		"",
+		ceous.NewSchemaField("admin"),
+	)
 )

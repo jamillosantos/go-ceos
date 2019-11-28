@@ -71,9 +71,7 @@ func RenderQuery(_buffer io.StringWriter, ctx *models.GenContext, model *models.
 			_buffer.WriteString(gorazor.HTMLEscape(ctx.InputPkgCtx.Ref(ctx.OutputPkg, "Schema")))
 			_buffer.WriteString(".")
 			_buffer.WriteString(gorazor.HTMLEscape(condition.SchemaField))
-			_buffer.WriteString(", value")
-			_buffer.WriteString(gorazor.HTMLEscape(condition.StringField()))
-			_buffer.WriteString("))\n\t")
+			_buffer.WriteString(", value))\n\t")
 		}
 		_buffer.WriteString("\n\treturn q\n}")
 	}

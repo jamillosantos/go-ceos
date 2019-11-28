@@ -2,8 +2,10 @@ package parser
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/jamillosantos/go-ceous/generator/models"
+	"github.com/jamillosantos/go-ceous/generator/reporters"
 	myasthurts "github.com/lab259/go-my-ast-hurts"
 )
 
@@ -25,7 +27,7 @@ func ParseField(ctx *models.FieldContext, field *myasthurts.Field) error {
 		case "ceous":
 			return parseField(ctx, &t, field)
 		case "fk":
-			return parseFK(ctx, &t, field)
+			// return parseFK(ctx, &t, field)
 		default:
 			// If there is nothing is detected. No problem, just continue.
 		}
@@ -41,8 +43,6 @@ func parseField(ctx *models.FieldContext, t *myasthurts.TagParam, field *myasthu
 
 	isStructE := false
 
-	fieldColumnName := ""
-
 	f := &models.ModelField{
 		Name:      field.Name,
 		FieldName: field.Name, // TODO(jota): Let the developer to choose its default naming convention...
@@ -54,7 +54,6 @@ func parseField(ctx *models.FieldContext, t *myasthurts.TagParam, field *myasthu
 
 	if t.Value != "" {
 		f.FieldName = t.Value
-		fieldColumnName = t.Value
 	}
 
 	// To support multiple options...
@@ -72,48 +71,40 @@ func parseField(ctx *models.FieldContext, t *myasthurts.TagParam, field *myasthu
 		}
 	}
 
+	ctx.Reporter.Linef("+ %s: %s", field.Name, field.RefType.Name())
+
 	if s, ok := field.RefType.Type().(*myasthurts.Struct); ok {
 		isStructE = true
-		cond := models.NewModelCondition(ctx.Gen, field.Name, field.RefType)
-		for _, embeddedField := range s.Fields {
-			ceousTag := embeddedField.Tag.TagParamByName("ceous")
-			if ceousTag == nil || ceousTag.Value == "" {
-				continue
-			}
-			columnName := ceousTag.Value
-			if columnName == "" {
-				columnName = embeddedField.Name // TODO(jota): Apply the default naming convention here.
-			}
-			if fieldColumnName != "" {
-				columnName = fieldColumnName + "_" + columnName
-			}
-			column := &models.ModelColumn{
-				Column:    columnName,
-				Type:      models.NewModelType(ctx.Gen, embeddedField.RefType),
-				FullField: field.Name + "." + embeddedField.Name,
-				Modifiers: f.Modifiers,
-			}
-			ctx.Model.Columns = append(ctx.Model.Columns, column)
-			ctx.Model.ColumnsMap[column.Column] = len(ctx.Model.Columns) - 1
 
-			cond.Conditions = append(cond.Conditions, &models.ModelConditionCondition{
-				FullField:   field.Name + "." + embeddedField.Name,
-				Field:       embeddedField.Name,
-				SchemaField: ctx.Model.Name + "." + field.Name + "." + embeddedField.Name,
-			})
+		schema := models.NewSchema(strings.Join(append(ctx.Prefix, ctx.Model.Name, field.Name, s.Name()), ""), ctx.BaseSchema)
+		ctx.Reporter.Linef("Schema for %s", schema.Name)
+		for _, embeddedField := range s.Fields {
+			_, err := parseSchemaField(&models.SchemaFieldContext{
+				Gen:            ctx.Gen,
+				Reporter:       reporters.SubReporter(ctx.Reporter),
+				Model:          ctx.Model,
+				BaseSchema:     ctx.BaseSchema,
+				Schema:         schema,
+				FieldModifiers: f.Modifiers,
+				ColumnPrefix:   []string{f.FieldName},
+				FieldPath:      []string{field.Name},
+			}, embeddedField)
+			if err != nil {
+				return err
+			}
 		}
-		ctx.Model.Conditions = append(ctx.Model.Conditions, cond)
-		f.SchemaType = field.RefType.Name()
+		ctx.Gen.AddSchema(schema)
+		f.SchemaType = schema.Name
+		ctx.Schema.AddField(field.Name, "schema"+schema.Name, "") // TODO(jota): Remove "schema" from here and add in the schema.Name initialization.
 	}
 
-	ctx.Reporter.Linef("+ %s: %s", field.Name, field.RefType.Name())
 	ctx.Model.Fields = append(ctx.Model.Fields, f)
 	ctx.Model.SchemaFields = append(ctx.Model.SchemaFields, f)
 
 	if isStructE { /// If is a embedded struct, it does not need to have the field appended. Instead, only the m.PK will be set.
 		return nil
 	}
-	cond := models.NewModelCondition(ctx.Gen, f.Name, field.RefType)
+	cond := models.NewModelCondition(ctx.Gen, append(ctx.Prefix, field.Name), field.RefType)
 	cond.Conditions = append(cond.Conditions, &models.ModelConditionCondition{
 		SchemaField: ctx.Model.Name + "." + field.Name,
 		FullField:   field.Name,
@@ -127,6 +118,9 @@ func parseField(ctx *models.FieldContext, t *myasthurts.TagParam, field *myasthu
 	}
 	ctx.Model.Columns = append(ctx.Model.Columns, column)
 	ctx.Model.ColumnsMap[f.FieldName] = len(ctx.Model.Columns) - 1
+
+	ctx.Schema.AddField(field.Name, "", f.FieldName)
+	ctx.BaseSchema.AddField(field.Name, f.FieldName)
 
 	return nil
 }

@@ -39,6 +39,7 @@ type (
 
 	ModelCondition struct {
 		Field         string
+		FieldPath     []string
 		NameForMethod string
 		Type          *ModelType
 		Conditions    []*ModelConditionCondition
@@ -79,11 +80,11 @@ func NewModelType(ctx *GenContext, refType myasthurts.RefType) *ModelType {
 	}
 }
 
-func NewModelCondition(ctx *GenContext, field string, refType myasthurts.RefType) *ModelCondition {
-	nfM := strings.Replace(field, ".", "", 0) // Prepare name for method by removing possible dots from property members.
+func NewModelCondition(ctx *GenContext, fieldPath []string, refType myasthurts.RefType) *ModelCondition {
 	return &ModelCondition{
-		Field:         field,
-		NameForMethod: nfM,
+		Field:         strings.Join(fieldPath, "."),
+		FieldPath:     fieldPath,
+		NameForMethod: strings.Join(fieldPath, ""),
 		Type:          NewModelType(ctx, refType),
 		Conditions:    make([]*ModelConditionCondition, 0),
 	}
@@ -121,10 +122,12 @@ func NewModel(s *myasthurts.Struct) *Model {
 }
 
 type FieldContext struct {
-	Gen      *GenContext
-	Model    *Model
-	Schema   *Schema
-	Reporter reporters.Reporter
+	Gen        *GenContext
+	Model      *Model
+	Schema     *Schema
+	BaseSchema *BaseSchema
+	Reporter   reporters.Reporter
+	Prefix     []string
 }
 
 func (m *Model) SchemaName() string {
