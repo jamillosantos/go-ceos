@@ -7,6 +7,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+func isRefTypeModel(refType myasthurts.RefType) bool {
+	return refType.Pkg().Name == "ceous" && refType.Name() == "Model"
+}
+
+func isEmbedded(refType myasthurts.RefType) bool {
+	return refType.Pkg().Name == "ceous" && refType.Name() == "Embedded"
+}
+
 func isStructModel(s *myasthurts.Struct) bool {
 	for _, field := range s.Fields {
 		if isRefTypeModel(field.RefType) {
@@ -16,12 +24,13 @@ func isStructModel(s *myasthurts.Struct) bool {
 	return false
 }
 
-func isRefTypeModel(refType myasthurts.RefType) bool {
-	return refType.Pkg().Name == "ceous" && refType.Name() == "Model"
-}
-
-func isEmbedded(refType myasthurts.RefType) bool {
-	return refType.Pkg().Name == "ceous" && refType.Name() == "Embedded"
+func isStructEmbedded(s *myasthurts.Struct) bool {
+	for _, field := range s.Fields {
+		if isEmbedded(field.RefType) {
+			return true
+		}
+	}
+	return false
 }
 
 func Parse(ctx *models.GenContext) error {
@@ -43,10 +52,6 @@ func Parse(ctx *models.GenContext) error {
 			return errors.Wrapf(err, "error parsing model %s", s.Name()) // TODO(jota): Decide how critical errors will be reported.
 		}
 
-		if err != nil {
-			//
-		}
-
 		if _, ok := connectionsMap[model.Connection]; !ok {
 			conn := models.NewConnection(model.Connection)
 			connectionsMap[model.Connection] = conn
@@ -54,5 +59,26 @@ func Parse(ctx *models.GenContext) error {
 		}
 	}
 
+	return nil
+}
+
+func Parse2(ctx *models.FieldableContext) error {
+	for _, s := range ctx.InputPkg.Structs {
+		fieldable := ctx.EnsureFieldable(s.Name())
+		ctx.Reporter.Linef("Model %s", fieldable.Name)
+		fieldable.IsModel = isStructModel(s)
+		fieldable.IsEmbedded = isStructEmbedded(s)
+		for _, f := range s.Fields {
+			fieldContext := models.NewField2Context(ctx, fieldable, reporters.SubReporter(ctx.Reporter), ctx.ModelsImports)
+			field, err := parseField2(fieldContext, f)
+			if err == Skip {
+				continue
+			}
+			if err != nil {
+				return err
+			}
+			fieldable.AddField(field)
+		}
+	}
 	return nil
 }

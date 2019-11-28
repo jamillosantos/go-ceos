@@ -90,15 +90,6 @@ func NewModelCondition(ctx *GenContext, fieldPath []string, refType myasthurts.R
 	}
 }
 
-func isStructEmbedded(s *myasthurts.Struct) bool {
-	for _, f := range s.Fields {
-		if isEmbedded(f.RefType) {
-			return true
-		}
-	}
-	return false
-}
-
 // isModel returns whether or not a given `r` is represents a model.
 func isModel(r myasthurts.RefType) bool {
 	return r.Pkg().Name == "ceous" && r.Name() == "Model"
@@ -106,6 +97,15 @@ func isModel(r myasthurts.RefType) bool {
 
 func isEmbedded(r myasthurts.RefType) bool {
 	return r.Pkg().Name == "ceous" && r.Name() == "Embedded"
+}
+
+func isStructEmbedded(s *myasthurts.Struct) bool {
+	for _, f := range s.Fields {
+		if isEmbedded(f.RefType) {
+			return true
+		}
+	}
+	return false
 }
 
 func NewModel(s *myasthurts.Struct) *Model {

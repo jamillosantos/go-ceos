@@ -96,8 +96,13 @@ to quickly create a Cobra application.`,
 
 		// Models will be a list of the structs that implement Model
 
-		genCtx := generatorModels.NewGenContext(reporter, inputPkg, outputPkg, env.BuiltIn)
+		parse2Ctx := generatorModels.NewFieldableContext(inputPkg, outputPkg, reporter)
+		err = parser.Parse2(parse2Ctx)
+		if err != nil {
+			panic(errors.Wrap(err, "could not parse information"))
+		}
 
+		genCtx := generatorModels.NewGenContext(reporter, inputPkg, outputPkg, env.BuiltIn)
 		err = parser.Parse(genCtx)
 		if err != nil {
 			panic(errors.Wrap(err, "could not parse information"))

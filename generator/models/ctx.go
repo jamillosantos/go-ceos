@@ -36,8 +36,8 @@ type (
 
 		Connections []*Connection
 
-		Imports       CtxImports
-		ModelsImports CtxImports
+		Imports       *CtxImports
+		ModelsImports *CtxImports
 		count         int
 	}
 
@@ -111,8 +111,8 @@ func NewGenContext(reporter reporters.Reporter, inputPackage, outputPackage *mya
 	return ctx
 }
 
-func NewCtxImports(pkg *myasthurts.Package) CtxImports {
-	return CtxImports{
+func NewCtxImports(pkg *myasthurts.Package) *CtxImports {
+	return &CtxImports{
 		Pkg:          pkg,
 		Imports:      make(map[string]*CtxPkg),
 		importsAlias: make(map[string]string),
@@ -161,7 +161,7 @@ func (ctx *CtxImports) AddRefType(refType myasthurts.RefType) *CtxPkg {
 
 func (ctx *CtxImports) Ref(refType myasthurts.RefType) string {
 	pkg := refType.Pkg()
-	if pkg.RealPath == ctx.Pkg.RealPath {
+	if pkg.RealPath == ctx.Pkg.RealPath || pkg.Name == "builtin" {
 		return refType.Name()
 	}
 	ctxPkg, ok := ctx.Imports[pkg.ImportPath]
