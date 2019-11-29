@@ -16,15 +16,15 @@ func NewTransaction(tx *ceous.BaseTxRunner) *Transaction {
 }
 
 @for _, query := range env.Queries {@
-// @query.Name@: creates a new query from a transaction.
-func (c *Transaction) @query.Name@:Query(options ...ceous.CeousOption) @Pointer@query.Name@: {
-	return New@query.Name@:(append(options, ceous.WithRunner(c))...)
+// @query.FullName@: creates a new query from a transaction.
+func (c *Transaction) @query.FullName@:Query(options ...ceous.CeousOption) @Pointer@query.FullName@: {
+	return New@query.FullName@:(append(options, ceous.WithRunner(c))...)
 }
 }
 
 @for _, store := range env.Stores {@
-// @store.Name creates a new store from a transaction.
-func (c *Transaction) @store.Name@:Store(options ...ceous.CeousOption) @Pointer@store.Name {
-	return New@store.Name@:(append(options, ceous.WithRunner(c))...)
+// @store.FullName creates a new store from a transaction.
+func (c *Transaction) @store.FullName@:Store(options ...ceous.CeousOption) @Pointer@store.FullName {
+	return New@store.FullName@:(append(options, ceous.WithRunner(c))...)
 }
 }
