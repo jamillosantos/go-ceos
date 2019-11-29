@@ -116,6 +116,7 @@ func parseFieldCeous(ctx *parseFieldContext, tagCeous *myasthurts.TagParam, tagF
 		optsStr = "(" + strings.Join(optsReporter, ",") + ")"
 	}
 
+	ctx.ModelsImports.AddRefType(f.RefType)
 	field.Type = ctx.ModelsImports.Ref(f.RefType)
 	ctx.Reporter.Linef("+ %s%s: %s %s", field.Name, fieldableStr, field.Type, optsStr)
 	return field, nil
