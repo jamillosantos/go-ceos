@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"go/format"
 	"go/scanner"
 	"os"
@@ -95,21 +96,30 @@ to quickly create a Cobra application.`,
 
 		// Models will be a list of the structs that implement Model
 
-		parse2Ctx := generatorModels.NewFieldableContext(inputPkg, outputPkg, reporter)
-		err = parser.Parse2(parse2Ctx)
+		fieldableCtx := generatorModels.NewFieldableContext(inputPkg, outputPkg, reporter)
+		err = parser.Parse(fieldableCtx)
 		if err != nil {
 			panic(errors.Wrap(err, "could not parse information"))
 		}
 
+		reporter.Linef("Models loaded.")
+		reporter.Line()
+		reporter.Linef("Preparing schema...")
+
 		parsedEnv, err := parser.ParseEnvironment(&parser.EnvironmentContext{
-			Reporter:     reporter,
-			InputPkg:     inputPkg,
-			OutputPkg:    outputPkg,
-			Fieldables:   parse2Ctx.Fieldables,
-			FieldableMap: parse2Ctx.FieldableMap,
+			Reporter:      reporter,
+			InputPkg:      inputPkg,
+			OutputPkg:     outputPkg,
+			Imports:       fieldableCtx.Imports,
+			ModelsImports: fieldableCtx.ModelsImports,
+			Fieldables:    fieldableCtx.Fieldables,
+			FieldableMap:  fieldableCtx.FieldableMap,
 		})
 
 		reporter.Line("Generating code ...")
+		buffCeous := bytes.NewBuffer(nil)
+		buffModels := bytes.NewBuffer(nil)
+
 		tpl.RenderCeous(buffCeous, parsedEnv)
 		tpl.RenderModels(buffModels, parsedEnv)
 
