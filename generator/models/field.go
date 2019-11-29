@@ -23,6 +23,7 @@ type (
 		IsModel    bool
 		IsEmbedded bool
 		Fields     []*Field
+		PK         *Field
 	}
 
 	FieldableContext struct {
@@ -33,13 +34,6 @@ type (
 
 		Fieldables   []*Fieldable
 		FieldableMap map[string]*Fieldable
-	}
-
-	Field2Context struct {
-		Ctx           *FieldableContext
-		Fieldable     *Fieldable
-		Reporter      reporters.Reporter
-		ModelsImports *CtxImports
 	}
 )
 
@@ -54,15 +48,6 @@ func NewFieldableContext(inputPkg, outputPkg *myasthurts.Package, reporter repor
 	}
 }
 
-func NewField2Context(ctx *FieldableContext, fieldable *Fieldable, reporter reporters.Reporter, modelsImports *CtxImports) *Field2Context {
-	return &Field2Context{
-		Ctx:           ctx,
-		Fieldable:     fieldable,
-		Reporter:      reporter,
-		ModelsImports: modelsImports,
-	}
-}
-
 // NewFieldable returns a new instance of `Fieldable` with the given `name` set.
 func NewFieldable(name string) *Fieldable {
 	return &Fieldable{
@@ -74,6 +59,9 @@ func NewFieldable(name string) *Fieldable {
 // AddField appends the field to the list of fields and returns it.
 func (f *Fieldable) AddField(field *Field) *Field {
 	f.Fields = append(f.Fields, field)
+	if field.IsPrimaryKey {
+		f.PK = field // TODO(jota): This should support composite PKs.
+	}
 	return field
 }
 

@@ -15,8 +15,8 @@ type (
 	}
 
 	SchemaField struct {
-		Name       string
-		Type       string
+		Name string
+		// Type       string
 		ColumnName string
 	}
 
@@ -59,10 +59,10 @@ func (schema *BaseSchema) AddField(name, columnName string) *BaseSchemaField {
 
 // AddField adds a new instance of SchemaField to the schema fields and returns
 // it.
-func (schema *Schema) AddField(name, t, columnName string) *SchemaField {
+func (schema *Schema) AddField(name, columnName string) *SchemaField {
 	field := &SchemaField{
-		Name:       name,
-		Type:       t,
+		Name: name,
+		// Type:       t,
 		ColumnName: columnName,
 	}
 	schema.Fields = append(schema.Fields, field)

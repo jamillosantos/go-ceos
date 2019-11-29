@@ -6,8 +6,16 @@ import (
 	"strings"
 
 	"github.com/jamillosantos/go-ceous/generator/models"
+	"github.com/jamillosantos/go-ceous/generator/reporters"
 	myasthurts "github.com/lab259/go-my-ast-hurts"
 )
+
+type parseFieldContext struct {
+	Ctx           *models.FieldableContext
+	Fieldable     *models.Fieldable
+	Reporter      reporters.Reporter
+	ModelsImports *models.CtxImports
+}
 
 func fieldPK() string {
 	return "ceous.FieldPK"
@@ -21,36 +29,16 @@ func fieldAutoInc() string {
 // field.
 var Skip = errors.New("field skipped")
 
-func parseFK(ctx *models.FieldContext, t *myasthurts.TagParam, field *myasthurts.Field) error {
-	s, ok := field.RefType.Type().(*myasthurts.Struct)
-	if !ok {
-		return Skip
-	}
-	model, _ := ctx.Gen.AddModel(s)
-	relation := &models.ModelRelation{
-		FromModel:      ctx.Model,
-		FromField:      field.Name,
-		FromColumnType: models.NewModelType(ctx.Gen, field.RefType),
-		ToModel:        model,
-		ToColumn:       t.Value,
-	}
-	ctx.Model.Relations = append(ctx.Model.Relations, relation)
-	ctx.Gen.ModelsImports.AddRefType(field.RefType)
-	ctx.Reporter.Linef("FK: %s(%s): %s", field.Name, relation.ToColumn, relation.FromColumnType.String())
-	return nil
-}
-
-func parseField2(ctx *models.Field2Context, f *myasthurts.Field) (*models.Field, error) {
+func parseField(ctx *parseFieldContext, f *myasthurts.Field) (*models.Field, error) {
 	if isRefTypeModel(f.RefType) {
 		return nil, parseFieldModel(ctx, f)
 	}
-	if tag := f.Tag.TagParamByName("ceous"); tag != nil && tag.Value != "-" {
-		return parseFieldCeous(ctx, tag, f)
-	}
-	return nil, Skip
+	tagCeous := f.Tag.TagParamByName("ceous")
+	tagFK := f.Tag.TagParamByName("fk")
+	return parseFieldCeous(ctx, tagCeous, tagFK, f)
 }
 
-func parseFieldModel(ctx *models.Field2Context, f *myasthurts.Field) error {
+func parseFieldModel(ctx *parseFieldContext, f *myasthurts.Field) error {
 	tableName := f.Tag.TagParamByName("tableName")
 	if tableName != nil {
 		ctx.Fieldable.TableName = tableName.Value
@@ -68,15 +56,28 @@ func parseFieldModel(ctx *models.Field2Context, f *myasthurts.Field) error {
 	return Skip
 }
 
-func parseFieldCeous(ctx *models.Field2Context, tag *myasthurts.TagParam, f *myasthurts.Field) (*models.Field, error) {
-	column := tag.Value
-	if column == "" {
-		column = f.Name
+func parseFieldCeous(ctx *parseFieldContext, tagCeous *myasthurts.TagParam, tagFK *myasthurts.TagParam, f *myasthurts.Field) (*models.Field, error) {
+	if (tagCeous == nil && tagFK == nil) || (tagCeous != nil && tagCeous.Value == "-" && tagFK == nil) {
+		return nil, Skip
+	}
+
+	var column string
+	if tagCeous != nil {
+		column = tagCeous.Value
+		if column == "" {
+			column = f.Name
+		}
+	}
+
+	var foreignKeyColumn string
+	if tagFK != nil {
+		foreignKeyColumn = tagFK.Value
 	}
 
 	field := &models.Field{
-		Name:   f.Name,
-		Column: column,
+		Name:             f.Name,
+		Column:           column,
+		ForeignKeyColumn: foreignKeyColumn,
 	}
 
 	// If it is a model from the same package.
@@ -87,18 +88,26 @@ func parseFieldCeous(ctx *models.Field2Context, tag *myasthurts.TagParam, f *mya
 		field.Fieldable = ctx.Ctx.EnsureFieldable(s.Name())
 		fieldableStr = "[*]"
 	}
+	if foreignKeyColumn != "" {
+		fieldableStr += "[FK:" + field.Fieldable.TableName + "." + field.ForeignKeyColumn + "]"
+	}
 
-	optsReporter := []string{column}
-	for _, opt := range tag.Options {
-		switch opt {
-		case "autoincr":
-			field.IsAutoIncrement = true
-			optsReporter = append(optsReporter, "auto increment")
-		case "pk":
-			field.IsPrimaryKey = true
-			optsReporter = append(optsReporter, "primary key")
-		default:
-			return nil, fmt.Errorf("unknown tag %s", opt)
+	optsReporter := []string{}
+	if column != "" {
+		optsReporter = append(optsReporter, column)
+	}
+	if tagCeous != nil {
+		for _, opt := range tagCeous.Options {
+			switch opt {
+			case "autoincr":
+				field.IsAutoIncrement = true
+				optsReporter = append(optsReporter, "auto increment")
+			case "pk":
+				field.IsPrimaryKey = true
+				optsReporter = append(optsReporter, "primary key")
+			default:
+				return nil, fmt.Errorf("unknown tag %s", opt)
+			}
 		}
 	}
 

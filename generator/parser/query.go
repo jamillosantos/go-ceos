@@ -33,5 +33,14 @@ func parseQueryField(ctx *parseQueryFieldContext, field *models.Field) (*models.
 	qField := models.NewQueryField(field.Name, append(ctx.FieldPrefix))
 	qField.FieldPath = append(ctx.FieldPrefix, field.Name)
 	qField.Type = field.Type
+	if field.ForeignKeyColumn != "" {
+		ctx.Query.AddRelation(&models.Relation{
+			Name:             field.Name + "Relation",
+			LocalModelType:   field.Type,
+			LocalColumn:      field.Column,
+			ForeignModelType: field.Fieldable.Name,
+			ForeignColumn:    field.Fieldable.PK.Column,
+		})
+	}
 	return qField, nil
 }

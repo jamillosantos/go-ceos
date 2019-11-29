@@ -3,6 +3,7 @@ package parser
 import (
 	"strings"
 
+	. "github.com/jamillosantos/go-ceous/generator/helpers"
 	"github.com/jamillosantos/go-ceous/generator/models"
 	"github.com/jamillosantos/go-ceous/generator/reporters"
 )
@@ -71,7 +72,7 @@ func parseSchemaField(ctx *parseSchemaFieldContext, field *models.Field) error {
 			BaseSchema:   ctx.BaseSchema,
 			Schema:       ctx.Schema,
 			Reporter:     ctx.Reporter,
-			ColumnPrefix: append(ctx.ColumnPrefix, field.Column),
+			ColumnPrefix: AppendStringIfNotEmpty(ctx.ColumnPrefix, field.Column),
 			FieldPath:    append(ctx.FieldPath, field.Name),
 		}, field.Fieldable)
 		if err != nil {
@@ -80,9 +81,9 @@ func parseSchemaField(ctx *parseSchemaFieldContext, field *models.Field) error {
 		return nil
 	}
 
-	ctx.Reporter.Linef("+ %s: %s", field.Name, field.Type)
-	ctx.Schema.AddField(field.Name, "", columnName)
-	ctx.BaseSchema.AddField(field.Name, columnName)
+	schemaField := ctx.Schema.AddField(field.Name, columnName)
+	baseSchemaField := ctx.BaseSchema.AddField(field.Name, columnName)
+	ctx.Reporter.Linef("+ %s => %s", schemaField.Name, baseSchemaField.ColumnName)
 
 	return nil
 }

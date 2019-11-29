@@ -1,9 +1,13 @@
 package models
 
+import . "github.com/jamillosantos/go-ceous/generator/helpers"
+
 type (
 	Query struct {
-		Name   string
-		Fields []*QueryField
+		Name      string
+		FullName  string
+		Fields    []*QueryField
+		Relations []*Relation
 	}
 
 	QueryField struct {
@@ -16,8 +20,10 @@ type (
 // NewQuery returns a new instance of `Query` with the given `name` set.
 func NewQuery(name string) *Query {
 	return &Query{
-		Name:   name,
-		Fields: make([]*QueryField, 0),
+		Name:      name,
+		FullName:  PascalCase(name) + "Query",
+		Fields:    make([]*QueryField, 0),
+		Relations: make([]*Relation, 0),
 	}
 }
 
@@ -34,4 +40,10 @@ func NewQueryField(name string, fieldPath []string) *QueryField {
 func (q *Query) AddField(field *QueryField) *QueryField {
 	q.Fields = append(q.Fields, field)
 	return field
+}
+
+// AddRelation appends the given `relation` to the relation list.
+func (q *Query) AddRelation(relation *Relation) *Relation {
+	q.Relations = append(q.Relations, relation)
+	return relation
 }

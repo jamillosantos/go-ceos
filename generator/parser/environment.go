@@ -21,12 +21,15 @@ func ParseEnvironment(ctx *EnvironmentContext) (*models.Environment, error) {
 	for _, model := range ctx.Fieldables {
 		if model.IsModel {
 			baseSchema := models.NewBaseSchema(model.Name, model.TableName)
+			env.EnsureConnection(model.Connection)
 			schema := models.NewSchema(model.Name, baseSchema)
 			err := parseSchema(&parseSchemaContext{
-				Env:        env,
-				BaseSchema: baseSchema,
-				Schema:     schema,
-				Reporter:   ctx.Reporter,
+				Env:          env,
+				BaseSchema:   baseSchema,
+				Schema:       schema,
+				Reporter:     ctx.Reporter,
+				FieldPath:    []string{},
+				ColumnPrefix: []string{},
 			}, model)
 			if err != nil {
 				return nil, err
@@ -54,5 +57,16 @@ func ParseEnvironment(ctx *EnvironmentContext) (*models.Environment, error) {
 			env.AddStore(store)
 		}
 	}
+
+	ctx.Reporter.Line("Connections")
+	for _, conn := range env.Connections {
+		ctx.Reporter.Linef("+ %s", conn.Name)
+	}
+
+	ctx.Reporter.Line("Queries")
+	for _, conn := range env.Queries {
+		ctx.Reporter.Linef("+ %s", conn.FullName)
+	}
+
 	return env, nil
 }
