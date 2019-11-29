@@ -7,12 +7,12 @@
 
 type Creator interface {
 @for _, query := range env.Queries {@
-	// @query.Name@: creates a new query related with the connection set.
-	@query.Name@:(options ...ceous.CeousOption) @Pointer@query.Name
+	// @query.FullName creates a new query related with the connection set.
+	@query.FullName@:(options ...ceous.CeousOption) @Pointer@query.FullName
 }
 @for _, store := range env.Stores {@
-	// @store.Name@: creates a new store related with the connection set.
-	@store.Name@:(options ...ceous.CeousOption) @Pointer@store.Name
+	// @store.FullName creates a new store related with the connection set.
+	@store.FullName@:(options ...ceous.CeousOption) @Pointer@store.FullName
 }
 }
 
@@ -22,26 +22,25 @@ type Connection interface {
 }
 
 @for _, conn := range env.Connections {@
-type @conn.Name struct {
+type @conn.FullName struct {
 	@Pointer@:ceous.BaseConnection
 }
 
 	@for _, query := range env.Queries {@
-// @query.Name@: creates a new query related with the connection @conn.Name@: set.
-func (c @Pointer@conn.Name) @query.Name@:Query(options ...ceous.CeousOption) @Pointer@query.Name {
-	return New@query.Name@:Query(append(options, ceous.WithConn(c))...)
+// @query.FullName creates a new query related with the connection @conn.Name@: set.
+func (c @Pointer@conn.FullName) @query.Name@:Query(options ...ceous.CeousOption) @Pointer@query.FullName {
+	return New@query.FullName@:(append(options, ceous.WithConn(c))...)
 }
 	}
-
 	@for _, store := range env.Stores {@
 // @store.Name@:Store creates a new store related with the connection @conn.Name@: set.
-func (c @Pointer@conn.Name) @store.Name@:Store(options ...ceous.CeousOption) @Pointer@store.Name {
+func (c @Pointer@conn.FullName) @store.Name@:Store(options ...ceous.CeousOption) @Pointer@store.FullName {
 	return New@store.Name@:Store(append(options, ceous.WithConn(c))...)
 }
 	}
 
 // Begin creates a new transaction with @conn.Name@: set.
-func (c @Pointer@conn.Name) Begin() (*Transaction, error) {
+func (c @Pointer@conn.FullName) Begin() (*Transaction, error) {
 	tx, err := c.BaseConnection.Begin()
 	if err != nil {
 		return nil, err
@@ -51,7 +50,7 @@ func (c @Pointer@conn.Name) Begin() (*Transaction, error) {
 
 // BeginTx creates a new transaction with extended config params with the
 // connection @conn.Name@: set.
-func (c @Pointer@conn.Name) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Transaction, error) {
+func (c @Pointer@conn.FullName) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Transaction, error) {
 	tx, err := c.BaseConnection.BeginTx(ctx, opts)
 	if err != nil {
 		return nil, err
@@ -62,15 +61,15 @@ func (c @Pointer@conn.Name) BeginTx(ctx context.Context, opts *sql.TxOptions) (*
 
 var (
 @for _, conn := range env.Connections {@
-	// @conn.Name@ is a database connection reference.
-	@(conn.Name) @Pointer@conn.Name
+	// @PascalCase(conn.Name) is a database connection reference.
+	@PascalCase(conn.Name) @Pointer@conn.FullName
 }
 )
 
 @for _, conn := range env.Connections {@
 // Init@PascalCase(conn.Name)@: initializes the connection `@PascalCase(conn.Name):@`.
 func Init@PascalCase(conn.Name)@:(db *sql.DB) {
-	@conn.Name = @raw("&")@conn.Name@:{
+	@PascalCase(conn.Name) = @raw("&")@conn.FullName@:{
 		BaseConnection: ceous.NewConnection(db),
 	}
 }
