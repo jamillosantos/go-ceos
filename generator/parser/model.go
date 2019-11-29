@@ -68,19 +68,21 @@ func ParseModel(ctx *models.ModelContext, s *myasthurts.Struct) (*models.Model, 
 		if field.Name == "" {
 			continue
 		}
-		err := ParseField(&models.FieldContext{
-			BaseSchema: baseSchema,
-			Schema:     schema,
-			Gen:        ctx.Gen,
-			Model:      m,
-			Reporter:   reporter,
-		}, field)
-		if err == Skip {
-			reporter.Linef("skipping field %s", field.Name)
-			continue
-		} else if err != nil {
-			return nil, err
-		}
+		/*
+			err := ParseField(&models.FieldContext{
+				BaseSchema: baseSchema,
+				Schema:     schema,
+				Gen:        ctx.Gen,
+				Model:      m,
+				Reporter:   reporter,
+			}, field)
+			if err == Skip {
+				reporter.Linef("skipping field %s", field.Name)
+				continue
+			} else if err != nil {
+				return nil, err
+			}
+		*/
 	}
 	return m, nil
 }

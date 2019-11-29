@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bytes"
 	"go/format"
 	"go/scanner"
 	"os"
@@ -102,18 +101,17 @@ to quickly create a Cobra application.`,
 			panic(errors.Wrap(err, "could not parse information"))
 		}
 
-		genCtx := generatorModels.NewGenContext(reporter, inputPkg, outputPkg, env.BuiltIn)
-		err = parser.Parse(genCtx)
-		if err != nil {
-			panic(errors.Wrap(err, "could not parse information"))
-		}
-
-		buffCeous := bytes.NewBuffer(nil)
-		buffModels := bytes.NewBuffer(nil)
+		parsedEnv, err := parser.ParseEnvironment(&parser.EnvironmentContext{
+			Reporter:     reporter,
+			InputPkg:     inputPkg,
+			OutputPkg:    outputPkg,
+			Fieldables:   parse2Ctx.Fieldables,
+			FieldableMap: parse2Ctx.FieldableMap,
+		})
 
 		reporter.Line("Generating code ...")
-		tpl.RenderCeous(buffCeous, genCtx)
-		tpl.RenderModels(buffModels, genCtx)
+		tpl.RenderCeous(buffCeous, parsedEnv)
+		tpl.RenderModels(buffModels, parsedEnv)
 
 		reporter.Line("Formatting code ...")
 

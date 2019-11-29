@@ -1,26 +1,26 @@
 @{
 	import "github.com/jamillosantos/go-ceous/generator/models"
 
-	var ctx *models.GenContext
-	var model *models.Model
+	var env *models.Environment
+	var store *models.Store
 }
 
-// @model.StoreName() is the query for the model `@model.Name`.
-type @model.StoreName()@: struct {
+// @store.Name is the query for the store `@store.Name`.
+type @store.Name@: struct {
 	*ceous.BaseStore
 }
 
-// New@model.Name@:Store creates a new query for model `@model.Name`.
-func New@model.Name@:Store(options ...ceous.CeousOption) @raw("*")@model.StoreName()@: {
-	return @raw("&")@model.StoreName()@:{
-		BaseStore: ceous.NewStore(@ctx.InputPkgCtx.Ref(ctx.OutputPkg, "Schema." + model.Name)@:, options...),
+// New@store.Name creates a new query for model `@store.Name`.
+func New@store.Name@:Store(options ...ceous.CeousOption) @raw("*")@store.Name@: {
+	return @raw("&")@store.Name@:{
+		BaseStore: ceous.NewStore(@env.InputPkgCtx.Ref(env.OutputPkg, "Schema." + store.Name)@:, options...),
 	}
 }
 
-func (store @raw("*")@model.StoreName()@:) Insert(record @raw("*")@ctx.InputPkgCtx.Ref(ctx.OutputPkg, model.Name)@:, fields ...ceous.SchemaField) error {
+func (store @raw("*")@store.Name@:) Insert(record @raw("*")@env.InputPkgCtx.Ref(env.OutputPkg, store.Name)@:, fields ...ceous.SchemaField) error {
 	return store.BaseStore.Insert(record, fields...)
 }
 
-func (store @raw("*")@model.StoreName()@:) Update(record @raw("*")@ctx.InputPkgCtx.Ref(ctx.OutputPkg, model.Name)@:, fields ...ceous.SchemaField) (int64, error) {
+func (store @raw("*")@store.Name@:) Update(record @raw("*")@env.InputPkgCtx.Ref(env.OutputPkg, store.Name)@:, fields ...ceous.SchemaField) (int64, error) {
 	return store.BaseStore.Update(record, fields...)
 }

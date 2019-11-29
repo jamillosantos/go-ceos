@@ -1,8 +1,8 @@
 @{
-	import generatorModels "github.com/jamillosantos/go-ceous/generator/models"
+	import "github.com/jamillosantos/go-ceous/generator/models"
 	import . "github.com/jamillosantos/go-ceous/generator/helpers"
 
-	var models []*generatorModels.Model
+	var env *models.Environment
 }
 
 type Transaction struct {
@@ -15,14 +15,16 @@ func NewTransaction(tx *ceous.BaseTxRunner) *Transaction {
 	}
 }
 
-@for _, model := range models {@
-// @model.Name@:Query creates a new query from a transaction.
-func (c *Transaction) @model.Name@:Query(options ...ceous.CeousOption) @Pointer@model.QueryName() {
-	return New@model.Name@:Query(append(options, ceous.WithRunner(c))...)
+@for _, query := range env.Queries {@
+// @query.Name@: creates a new query from a transaction.
+func (c *Transaction) @query.Name@:Query(options ...ceous.CeousOption) @Pointer@query.Name@: {
+	return New@query.Name@:(append(options, ceous.WithRunner(c))...)
+}
 }
 
-// @model.Name@:Store creates a new store from a transaction.
-func (c *Transaction) @model.Name@:Store(options ...ceous.CeousOption) @Pointer@model.StoreName() {
-	return New@model.Name@:Store(append(options, ceous.WithRunner(c))...)
+@for _, store := range env.Stores {@
+// @store.Name creates a new store from a transaction.
+func (c *Transaction) @store.Name@:Store(options ...ceous.CeousOption) @Pointer@store.Name {
+	return New@store.Name@:(append(options, ceous.WithRunner(c))...)
 }
 }
