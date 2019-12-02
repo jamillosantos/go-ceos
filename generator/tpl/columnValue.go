@@ -5,33 +5,19 @@
 package tpl
 
 import (
-	. "github.com/jamillosantos/go-ceous/generator/helpers"
 	"github.com/jamillosantos/go-ceous/generator/models"
-	"github.com/sipin/gorazor/gorazor"
 	"io"
 	"strings"
 )
 
 // ColumnValue generates tpl/columnValue.gohtml
-func ColumnValue(model *models.Model) string {
+func ColumnValue(baseSchema *models.BaseSchema) string {
 	var _b strings.Builder
-	RenderColumnValue(&_b, model)
+	RenderColumnValue(&_b, baseSchema)
 	return _b.String()
 }
 
 // RenderColumnValue render tpl/columnValue.gohtml
-func RenderColumnValue(_buffer io.StringWriter, model *models.Model) {
-	_buffer.WriteString("\n\n// Value returns the value from a field given its column name.\nfunc (model ")
-	_buffer.WriteString(gorazor.HTMLEscape(Pointer))
-	_buffer.WriteString(gorazor.HTMLEscape(model.Name))
-	_buffer.WriteString(") Value(name string) (interface{}, error) {\n\tswitch name {")
-	for _, field := range model.Columns {
-		_buffer.WriteString("\n\tcase \"")
-		_buffer.WriteString(gorazor.HTMLEscape(field.Column))
-		_buffer.WriteString("\":\n\t\treturn model.")
-		_buffer.WriteString(gorazor.HTMLEscape(field.FullField))
-		_buffer.WriteString(", nil")
-	}
-	_buffer.WriteString("\n\tdefault:\n\t\treturn nil, errors.Wrapf(ceous.ErrFieldNotFound, \"field %s not found\", name)\n\t}\n}")
+func RenderColumnValue(_buffer io.StringWriter, baseSchema *models.BaseSchema) {
 
 }

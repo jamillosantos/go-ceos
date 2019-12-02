@@ -6,33 +6,35 @@ package tpl
 
 import (
 	. "github.com/jamillosantos/go-ceous/generator/helpers"
-	generatorModels "github.com/jamillosantos/go-ceous/generator/models"
+	"github.com/jamillosantos/go-ceous/generator/models"
 	"github.com/sipin/gorazor/gorazor"
 	"io"
 	"strings"
 )
 
 // Creator generates tpl/creator.gohtml
-func Creator(models []*generatorModels.Model) string {
+func Creator(env *models.Environment) string {
 	var _b strings.Builder
-	RenderCreator(&_b, models)
+	RenderCreator(&_b, env)
 	return _b.String()
 }
 
 // RenderCreator render tpl/creator.gohtml
-func RenderCreator(_buffer io.StringWriter, models []*generatorModels.Model) {
+func RenderCreator(_buffer io.StringWriter, env *models.Environment) {
 	_buffer.WriteString("\n\ntype Creator struct {")
-	for _, model := range models {
+	for _, query := range env.Queries {
 		_buffer.WriteString("\n\t")
-		_buffer.WriteString(gorazor.HTMLEscape(model.Name))
-		_buffer.WriteString("Query(options ...ceous.CeousOption) ")
+		_buffer.WriteString(gorazor.HTMLEscape(query.FullName))
+		_buffer.WriteString("(options ...ceous.CeousOption) ")
 		_buffer.WriteString(gorazor.HTMLEscape(Pointer))
-		_buffer.WriteString(gorazor.HTMLEscape(model.QueryName()))
+		_buffer.WriteString(gorazor.HTMLEscape(query.FullName))
+	}
+	for _, store := range env.Stores {
 		_buffer.WriteString("\n\t")
-		_buffer.WriteString(gorazor.HTMLEscape(model.Name))
-		_buffer.WriteString("Store(options ...ceous.CeousOption) ")
+		_buffer.WriteString(gorazor.HTMLEscape(store.FullName))
+		_buffer.WriteString("(options ...ceous.CeousOption) ")
 		_buffer.WriteString(gorazor.HTMLEscape(Pointer))
-		_buffer.WriteString(gorazor.HTMLEscape(model.QueryName()))
+		_buffer.WriteString(gorazor.HTMLEscape(store.FullName))
 	}
 	_buffer.WriteString("\n}")
 

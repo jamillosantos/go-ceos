@@ -23,9 +23,12 @@ import (
 
 @{RenderTransaction(_buffer, env)}
 
+@{RenderSchema(_buffer, env)}
+
 @for _, query := range env.Queries {@
 	@{RenderQuery(_buffer, env, query)}
 }
+
 @for _, store := range env.Stores {@
 	@{RenderStore(_buffer, env, store)}
 }

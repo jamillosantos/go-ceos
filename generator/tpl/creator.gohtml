@@ -1,13 +1,16 @@
 @{
-	import generatorModels "github.com/jamillosantos/go-ceous/generator/models"
+	import "github.com/jamillosantos/go-ceous/generator/models"
 	import . "github.com/jamillosantos/go-ceous/generator/helpers"
 
-	var models []*generatorModels.Model
+	var env *models.Environment
 }
 
 type Creator struct {
-@for _, model := range models {@
-	@model.Name@:Query(options ...ceous.CeousOption) @Pointer@model.QueryName()
-	@model.Name@:Store(options ...ceous.CeousOption) @Pointer@model.QueryName()
+@for _, query := range env.Queries {@
+	@query.FullName@:(options ...ceous.CeousOption) @Pointer@query.FullName
+}
+
+@for _, store := range env.Stores {@
+	@store.FullName@:(options ...ceous.CeousOption) @Pointer@store.FullName
 }
 }

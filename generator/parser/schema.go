@@ -67,23 +67,27 @@ func parseSchemaField(ctx *parseSchemaFieldContext, field *models.Field) error {
 
 	// If the field is a model type, it has to be parsed as a subschema.
 	if field.Fieldable != nil {
-		err := parseSchema(&parseSchemaContext{
-			Env:          ctx.Env,
-			BaseSchema:   ctx.BaseSchema,
-			Schema:       ctx.Schema,
-			Reporter:     ctx.Reporter,
-			ColumnPrefix: AppendStringIfNotEmpty(ctx.ColumnPrefix, field.Column),
-			FieldPath:    append(ctx.FieldPath, field.Name),
-		}, field.Fieldable)
-		if err != nil {
-			return err
+		if field.ForeignKeyColumn == "" {
+			schema := models.NewSchema(namePrefix(append(ctx.FieldPath, ctx.Schema.Name, field.Name)), ctx.BaseSchema)
+			ctx.Env.AddSchema(schema)
+			err := parseSchema(&parseSchemaContext{
+				Env:          ctx.Env,
+				BaseSchema:   ctx.BaseSchema,
+				Schema:       schema,
+				Reporter:     ctx.Reporter,
+				ColumnPrefix: AppendStringIfNotEmpty(ctx.ColumnPrefix, field.Column),
+				FieldPath:    append(ctx.FieldPath, field.Name),
+			}, field.Fieldable)
+			ctx.Schema.AddField(field.Name, field.Type, schema.FullName, columnName)
+			if err != nil {
+				return err
+			}
+			return nil
 		}
-		return nil
+		return Skip
 	}
-
-	schemaField := ctx.Schema.AddField(field.Name, columnName)
-	baseSchemaField := ctx.BaseSchema.AddField(field.Name, columnName)
-	ctx.Reporter.Linef("+ %s => %s", schemaField.Name, baseSchemaField.ColumnName)
+	ctx.BaseSchema.AddField(field.Name, columnName)
+	ctx.Schema.AddField(field.Name, "", "", columnName)
 
 	return nil
 }

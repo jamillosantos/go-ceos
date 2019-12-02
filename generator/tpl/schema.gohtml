@@ -1,33 +1,35 @@
 @{
-	import generatorModels "github.com/jamillosantos/go-ceous/generator/models"
-	import "strconv"
+	import "github.com/jamillosantos/go-ceous/generator/models"
+	import . "github.com/jamillosantos/go-ceous/generator/helpers"
+	// import "strconv"
 
-	var ctx *generatorModels.GenContext
-	var models []*generatorModels.Model
--}
+	var env *models.Environment
+}
 
 type schema struct {
-@for _, m := range models {@
-	@m.Name@: @raw("*")@m.SchemaName()
+@for _, schema := range env.Schemas {
+	if schema.IsModel {@
+	@schema.Name@: @Pointer@schema.FullName}
 }
 }
 
-@for _, s := range ctx.Schemas {@
-// schema@s.Name have all fields for the model @s.Name@:.
-type schema@s.Name@: struct {
-	@if s.IsModel {@
+@for _, schema := range env.Schemas {@
+// @schema.FullName have all fields for the model @schema.Name@:.
+type @schema.FullName@: struct {
+	@if schema.IsModel {@
 	*ceous.BaseSchema
 	}
-	@for _, field := range s.Fields {@
+	@for _, field := range schema.Fields {@
 		@field.Name @if field.Type == "" {
 			_buffer.WriteString("ceous.SchemaField")
 		} else {
-			_buffer.WriteString(field.Type)
+			_buffer.WriteString(field.SchemaName)
 		}}
 }
 
 }
 
+@*
 
 var (
 @for _, s := range ctx.Schemas {
@@ -72,3 +74,4 @@ var (
 @:
 }
 )
+*@

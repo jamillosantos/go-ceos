@@ -1,10 +1,12 @@
 @{
 	import "github.com/jamillosantos/go-ceous/generator/models"
-	import . "github.com/jamillosantos/go-ceous/generator/helpers"
+	// import . "github.com/jamillosantos/go-ceous/generator/helpers"
 
-	var ctx *models.GenContext
-	var model *models.Model
+	var env *models.Environment
+	var model *models.Schema
 }
+
+@*
 
 @if model.PK != nil {@
 @:
@@ -13,6 +15,7 @@ func (model @Pointer@model.Name@:) GetID() interface{} {
 	return model.@model.PK.Name
 }
 }
+
 
 @for _, relation := range model.Relations {@
 // @PascalCase(relation.FromField) returns the @relation.FromField@: from @model.Name@:.
@@ -40,3 +43,5 @@ func (model @Pointer@model.Name@:) Set@PascalCase(relation.FromField)@:(value @P
 
 @{RenderColumnAddress(_buffer, model)}
 @{RenderColumnValue(_buffer, model)}
+
+*@

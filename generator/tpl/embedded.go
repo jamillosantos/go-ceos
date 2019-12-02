@@ -6,42 +6,18 @@ package tpl
 
 import (
 	"github.com/jamillosantos/go-ceous/generator/models"
-	"github.com/sipin/gorazor/gorazor"
 	"io"
 	"strings"
 )
 
 // Embedded generates tpl/embedded.gohtml
-func Embedded(model *models.Model) string {
+func Embedded(schema *models.Schema) string {
 	var _b strings.Builder
-	RenderEmbedded(&_b, model)
+	RenderEmbedded(&_b, schema)
 	return _b.String()
 }
 
 // RenderEmbedded render tpl/embedded.gohtml
-func RenderEmbedded(_buffer io.StringWriter, model *models.Model) {
-	RenderColumnAddress(_buffer, model)
-	RenderColumnValue(_buffer, model)
-	_buffer.WriteString("\n\ntype schema")
-	_buffer.WriteString(gorazor.HTMLEscape(model.Name))
-	_buffer.WriteString(" struct {")
-	for _, f := range model.Fields {
-		_buffer.WriteString("\n\t")
-		_buffer.WriteString(gorazor.HTMLEscape(f.Name))
-		_buffer.WriteString("  ceous.SchemaField")
-	}
-	_buffer.WriteString("\n}\n\nvar ")
-	_buffer.WriteString(gorazor.HTMLEscape(model.Name))
-	_buffer.WriteString("Schema = schema")
-	_buffer.WriteString(gorazor.HTMLEscape(model.Name))
-	_buffer.WriteString(" {")
-	for _, f := range model.Fields {
-		_buffer.WriteString("\n\t")
-		_buffer.WriteString(gorazor.HTMLEscape(f.Name))
-		_buffer.WriteString(": ceous.NewSchemaField(\"")
-		_buffer.WriteString(gorazor.HTMLEscape(f.FieldName))
-		_buffer.WriteString("\"),")
-	}
-	_buffer.WriteString("\n}")
+func RenderEmbedded(_buffer io.StringWriter, schema *models.Schema) {
 
 }

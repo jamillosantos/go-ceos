@@ -1,9 +1,11 @@
 @{
 	import "github.com/jamillosantos/go-ceous/generator/models"
-	import . "github.com/jamillosantos/go-ceous/generator/helpers"
+	// import . "github.com/jamillosantos/go-ceous/generator/helpers"
 
-	var model *models.Model
+	var model *models.Schema
 }
+
+@*
 @{
 	modelName := CamelCase(model.Name) + "ResultSet"
 }
@@ -17,3 +19,5 @@ func New@model.Name@:ResultSet(rs ceous.ResultSet, err error) @raw("*")@modelNam
 		RecordResultSet: ceous.NewRecordResultSet(rs, err),
 	}
 }
+
+*@

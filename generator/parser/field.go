@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	. "github.com/jamillosantos/go-ceous/generator/helpers"
 	"github.com/jamillosantos/go-ceous/generator/models"
 	"github.com/jamillosantos/go-ceous/generator/reporters"
 	myasthurts "github.com/lab259/go-my-ast-hurts"
@@ -64,9 +65,6 @@ func parseFieldCeous(ctx *parseFieldContext, tagCeous *myasthurts.TagParam, tagF
 	var column string
 	if tagCeous != nil {
 		column = tagCeous.Value
-		if column == "" {
-			column = f.Name
-		}
 	}
 
 	var foreignKeyColumn string
@@ -94,7 +92,7 @@ func parseFieldCeous(ctx *parseFieldContext, tagCeous *myasthurts.TagParam, tagF
 
 	optsReporter := []string{}
 	if column != "" {
-		optsReporter = append(optsReporter, column)
+		optsReporter = AppendStringIfNotEmpty(optsReporter, column)
 	}
 	if tagCeous != nil {
 		for _, opt := range tagCeous.Options {

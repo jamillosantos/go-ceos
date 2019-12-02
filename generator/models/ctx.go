@@ -27,7 +27,7 @@ func NewCtxImports(pkg *myasthurts.Package) *CtxImports {
 	}
 }
 
-func (ctx *CtxImports) addImportPkg(pkg *myasthurts.Package) *CtxPkg {
+func (ctx *CtxImports) AddImportPkg(pkg *myasthurts.Package) *CtxPkg {
 	if pkg.RealPath == ctx.Pkg.RealPath {
 		return &CtxPkg{
 			Pkg:   pkg,
@@ -62,7 +62,7 @@ func (ctx *CtxImports) AddRefType(refType myasthurts.RefType) *CtxPkg {
 	pkg := refType.Pkg()
 	ctxPkg, ok := ctx.Imports[pkg.ImportPath]
 	if !ok {
-		return ctx.addImportPkg(pkg)
+		return ctx.AddImportPkg(pkg)
 	}
 	return ctxPkg
 }
