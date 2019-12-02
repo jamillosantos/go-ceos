@@ -5,7 +5,9 @@
 package tpl
 
 import (
+	. "github.com/jamillosantos/go-ceous/generator/helpers"
 	"github.com/jamillosantos/go-ceous/generator/models"
+	"github.com/sipin/gorazor/gorazor"
 	"io"
 	"strings"
 )
@@ -19,5 +21,19 @@ func Resultset(model *models.Schema) string {
 
 // RenderResultset render tpl/resultset.gohtml
 func RenderResultset(_buffer io.StringWriter, model *models.Schema) {
+
+	resultSetName := CamelCase(model.Name) + "ResultSet"
+
+	_buffer.WriteString("\n\ntype ")
+	_buffer.WriteString(gorazor.HTMLEscape(resultSetName))
+	_buffer.WriteString(" struct {\n\t*ceous.RecordResultSet\n}\n\nfunc New")
+	_buffer.WriteString(gorazor.HTMLEscape(model.Name))
+	_buffer.WriteString("ResultSet(rs ceous.ResultSet, err error) ")
+	_buffer.WriteString(("*"))
+	_buffer.WriteString(gorazor.HTMLEscape(resultSetName))
+	_buffer.WriteString(" {\n\treturn ")
+	_buffer.WriteString(("&"))
+	_buffer.WriteString(gorazor.HTMLEscape(resultSetName))
+	_buffer.WriteString("{\n\t\tRecordResultSet: ceous.NewRecordResultSet(rs, err),\n\t}\n}")
 
 }

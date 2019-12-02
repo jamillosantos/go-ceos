@@ -1,23 +1,20 @@
 @{
 	import "github.com/jamillosantos/go-ceous/generator/models"
-	// import . "github.com/jamillosantos/go-ceous/generator/helpers"
+	import . "github.com/jamillosantos/go-ceous/generator/helpers"
 
 	var model *models.Schema
 }
 
-@*
 @{
-	modelName := CamelCase(model.Name) + "ResultSet"
+	resultSetName := CamelCase(model.Name) + "ResultSet"
 }
 
-type @modelName struct {
+type @resultSetName struct {
 	*ceous.RecordResultSet
 }
 
-func New@model.Name@:ResultSet(rs ceous.ResultSet, err error) @raw("*")@modelName@: {
-	return @raw("&")@modelName@:{
+func New@model.Name@:ResultSet(rs ceous.ResultSet, err error) @raw("*")@resultSetName@: {
+	return @raw("&")@resultSetName@:{
 		RecordResultSet: ceous.NewRecordResultSet(rs, err),
 	}
 }
-
-*@

@@ -14,32 +14,26 @@ func (model @Pointer@model.Name@:) GetID() interface{} {
 }
 }
 
-@*
-
 @for _, relation := range model.Relations {@
-// @PascalCase(relation.FromField) returns the @relation.FromField@: from @model.Name@:.
-func (model @Pointer@model.Name@:) @PascalCase(relation.FromField)@:() @Pointer@relation.ToModel.Name {
-	return model.@relation.FromField
+// @PascalCase(relation.Name) returns the @relation.LocalField@: from @model.Name@:.
+func (model @Pointer@model.Name@:) @PascalCase(relation.LocalField)@:() @Pointer@relation.LocalModelType {
+	return model.@relation.LocalField
 }
 @:
-// Set@PascalCase(relation.FromField) updates the value for the @relation.FromField@:,
-// updating the @relation.FromField@:.
-func (model @Pointer@model.Name@:) Set@PascalCase(relation.FromField)@:(value @Pointer@ctx.InputPkgCtx.Ref(ctx.InputPkg, relation.FromColumnType.RefType.Name())) error {
-	c, err := model.ColumnAddress("@relation.ToColumn")
+// Set@PascalCase(relation.LocalField) updates the value for the @relation.LocalField@:,
+// updating the @relation.LocalField@:.
+func (model @Pointer@model.Name@:) Set@PascalCase(relation.LocalField)@:(value @Pointer@relation.ForeignModelType) error {
+	localPkPtr, err := model.ColumnAddress("@relation.ForeignColumn")
 	if err != nil {
 		return err
 	}
 
-	v, ok := c.(@Pointer@ctx.ModelsImports.Ref(relation.ToModel.PK.Type.RefType))
+	localFKTypedPtr, ok := localPkPtr.(@Pointer@relation.ForeignFieldType)
 	if !ok {
-		return errors.New("invalid key value") // TODO(jota): To formalize this error.
+		return errors.New("invalid key type") // TODO(jota): To formalize this error.
 	}
-	*v = value.@relation.ToModel.PK.Name
-	model.@relation.FromField = value
+	*localFKTypedPtr = value.@relation.ForeignField
+	model.@relation.LocalField = value
 	return nil
 }
 }
-
-@{RenderColumnAddress(_buffer, model)}
-*@
-

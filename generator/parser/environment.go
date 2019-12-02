@@ -39,17 +39,20 @@ func ParseEnvironment(ctx *EnvironmentContext) (*models.Environment, error) {
 			env.AddSchema(schema)
 			env.AddBaseSchema(baseSchema)
 
-			if fillable.IsModel {
-				model, err := parseModel(&parseModelContext{}, fillable)
-				if err != nil {
-					return nil, err
-				}
-				env.AddModel(model)
+			if !fillable.IsModel {
+				continue
 			}
+
+			model, err := parseModel(&parseModelContext{}, fillable)
+			if err != nil {
+				return nil, err
+			}
+			env.AddModel(model)
 
 			query := models.NewQuery(fillable.Name)
 			err = parseQuery(&parseQueryContext{
 				Query:  query,
+				Model:  model,
 				Prefix: []string{},
 			}, fillable)
 			if err != nil {
@@ -100,11 +103,32 @@ func ParseEnvironment(ctx *EnvironmentContext) (*models.Environment, error) {
 	ctx.Reporter.Line("Queries")
 	for _, query := range env.Queries {
 		subReporter.Linef("+ %s", query.FullName)
+		if len(query.Relations) == 0 {
+			continue
+		}
+		ss := reporters.SubReporter(subReporter)
+		ss.Line("Relations:")
+		for _, relation := range query.Relations {
+			ss.Linef("- %s (%s -> %s.%s)", relation.Name, relation.LocalField, relation.ForeignModelType, relation.ForeignColumn)
+		}
 	}
 	ctx.Reporter.Line()
 	ctx.Reporter.Line("Stores")
 	for _, store := range env.Stores {
 		subReporter.Linef("+ %s", store.FullName)
+	}
+	ctx.Reporter.Line()
+	ctx.Reporter.Line("Models")
+	for _, model := range env.Models {
+		subReporter.Linef("+ %s", model.Name)
+		if len(model.Relations) == 0 {
+			continue
+		}
+		ss := reporters.SubReporter(subReporter)
+		ss.Line("Relations:")
+		for _, relation := range model.Relations {
+			ss.Linef("- %s (%s -> %s.%s)", relation.Name, relation.LocalField, relation.ForeignModelType, relation.ForeignColumn)
+		}
 	}
 
 	return env, nil
