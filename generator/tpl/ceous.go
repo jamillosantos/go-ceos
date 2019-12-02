@@ -39,7 +39,6 @@ func RenderCeous(_buffer io.StringWriter, env *models.Environment) {
 	_buffer.WriteString("\n)")
 	RenderConnections(_buffer, env)
 	RenderTransaction(_buffer, env)
-	RenderSchema(_buffer, env)
 	for _, query := range env.Queries {
 		_buffer.WriteString("\n\t")
 		RenderQuery(_buffer, env, query)

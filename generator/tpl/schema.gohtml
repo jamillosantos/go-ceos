@@ -1,7 +1,7 @@
 @{
 	import "github.com/jamillosantos/go-ceous/generator/models"
 	import . "github.com/jamillosantos/go-ceous/generator/helpers"
-	// import "strconv"
+	import "strconv"
 
 	var env *models.Environment
 }
@@ -29,49 +29,50 @@ type @schema.FullName@: struct {
 
 }
 
-@*
-
 var (
-@for _, s := range ctx.Schemas {
-	@if !s.IsModel {@
-	baseSchema@s.Name = schema@s.Name {
-		@for _, field := range s.Fields {@
-			@field.Name : baseSchema@s.BaseSchema.Name@:.ColumnsArr[@s.BaseSchema.FieldsMap[field.ColumnName]],
-		}
-	}
-	}
-}
-)
-
-// Schema represents the schema of the package "@ctx.InputPkg.Name@:".
-var Schema = schema{
-@for _, m := range models {@
-	@m.Name@:: @raw("&")@m.SchemaName()@: {
-	BaseSchema: @m.BaseSchemaName(),
-
-	@for _, field := range m.Fields {
-		@field.Name@:: 
-		@if field.SchemaType == "" {
-		i := m.ColumnsMap[field.FieldName]
-		_buffer.WriteString(m.BaseSchemaName() + ".ColumnsArr[" + strconv.Itoa(i) + "],\n")
-	} else {
-		_buffer.WriteString("baseSchema" + field.SchemaType + ",\n")
-	}
-	}},
-}
-}
-
-var (
-@for i, schema := range ctx.BaseSchemas {@
+@for i, schema := range env.BaseSchemas {@
 	baseSchema@schema.Name = ceous.NewBaseSchema(
 		"",
 		"", @for _, field := range schema.Fields {@
 		ceous.NewSchemaField("@field.ColumnName"),}
 	)
-	@if i+1 == len(ctx.BaseSchemas) {
+	@if i+1 == len(env.BaseSchemas) {
 		_buffer.WriteString("\n")
 	}
 @:
 }
 )
-*@
+
+
+var (
+@for _, s := range env.Schemas {@ @if s.IsModel {
+		continue
+	}
+	baseSchema@s.Name = schema@s.Name {
+		@for _, field := range s.Fields {@
+			@field.Name : baseSchema@s.BaseSchema.Name@:.ColumnsArr[@s.BaseSchema.FieldsMap[field.ColumnName]],}
+	}
+}
+)
+
+// Schema represents the schema of the package "@env.InputPkg.Name@:".
+var Schema = schema{
+@for _, schema := range env.Schemas {@
+	@if !schema.IsModel {
+		continue
+	}
+
+	@schema.Name@:: @raw("&")@schema.FullName@: {
+	BaseSchema: @schema.BaseSchema.FullName,
+
+	@for _, field := range schema.Fields {
+		@field.Name@:: 
+		@if field.Type == "" {
+		i := schema.BaseSchema.FieldsMap[field.Name]
+		_buffer.WriteString(schema.BaseSchema.FullName + ".ColumnsArr[" + strconv.Itoa(i) + "],\n")
+	} else {
+		_buffer.WriteString(field.Type + ",\n")
+	}
+	}},
+}
+}

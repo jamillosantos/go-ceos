@@ -78,7 +78,7 @@ func parseSchemaField(ctx *parseSchemaFieldContext, field *models.Field) error {
 				ColumnPrefix: AppendStringIfNotEmpty(ctx.ColumnPrefix, field.Column),
 				FieldPath:    append(ctx.FieldPath, field.Name),
 			}, field.Fieldable)
-			ctx.Schema.AddField(field.Name, field.Type, schema.FullName, columnName)
+			ctx.Schema.AddField(field.Name, "baseSchema"+namePrefix(append(ctx.FieldPath, schema.Name)), schema.FullName, columnName)
 			if err != nil {
 				return err
 			}

@@ -37,5 +37,6 @@ func RenderModels(_buffer io.StringWriter, env *models.Environment) {
 		_buffer.WriteString("\"")
 	}
 	_buffer.WriteString("\n)")
+	RenderSchema(_buffer, env)
 
 }

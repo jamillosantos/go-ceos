@@ -133,64 +133,6 @@ func (c *Transaction) UserGroupStoreStore(options ...ceous.CeousOption) *UserGro
 	return NewUserGroupStore(append(options, ceous.WithRunner(c))...)
 }
 
-type schema struct {
-	User      *schemaUser
-	Group     *schemaGroup
-	UserGroup *schemaUserGroup
-}
-
-// schemaUserAddress have all fields for the model UserAddress.
-type schemaUserAddress struct {
-	Street ceous.SchemaField
-	Number ceous.SchemaField
-	City   ceous.SchemaField
-	State  ceous.SchemaField
-}
-
-// schemaUserWork have all fields for the model UserWork.
-type schemaUserWork struct {
-	Street ceous.SchemaField
-	Number ceous.SchemaField
-	City   ceous.SchemaField
-	State  ceous.SchemaField
-}
-
-// schemaUser have all fields for the model User.
-type schemaUser struct {
-	*ceous.BaseSchema
-
-	ID        ceous.SchemaField
-	Name      ceous.SchemaField
-	Password  ceous.SchemaField
-	Role      ceous.SchemaField
-	Address   schemaUserAddress
-	Work      schemaUserWork
-	CreatedAt ceous.SchemaField
-	UpdatedAt ceous.SchemaField
-}
-
-// schemaGroup have all fields for the model Group.
-type schemaGroup struct {
-	*ceous.BaseSchema
-
-	ID   ceous.SchemaField
-	Name ceous.SchemaField
-}
-
-// schemaUserGroupID have all fields for the model UserGroupID.
-type schemaUserGroupID struct {
-	UserID  ceous.SchemaField
-	GroupID ceous.SchemaField
-}
-
-// schemaUserGroup have all fields for the model UserGroup.
-type schemaUserGroup struct {
-	*ceous.BaseSchema
-
-	ID    schemaUserGroupID
-	Admin ceous.SchemaField
-}
-
 // UserQuery is the query for the model `UserQuery`.
 type UserQuery struct {
 	*ceous.BaseQuery
