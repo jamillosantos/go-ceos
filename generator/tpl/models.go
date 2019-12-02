@@ -37,6 +37,15 @@ func RenderModels(_buffer io.StringWriter, env *models.Environment) {
 		_buffer.WriteString("\"")
 	}
 	_buffer.WriteString("\n)")
+	for _, model := range env.Models {
+		RenderModel(_buffer, env, model)
+	}
+
+	for _, baseSchema := range env.BaseSchemas {
+		RenderColumnValue(_buffer, baseSchema)
+		RenderColumnAddress(_buffer, baseSchema)
+	}
+
 	RenderSchema(_buffer, env)
 
 }

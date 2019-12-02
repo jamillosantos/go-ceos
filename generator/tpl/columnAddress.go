@@ -5,6 +5,7 @@
 package tpl
 
 import (
+	. "github.com/jamillosantos/go-ceous/generator/helpers"
 	"github.com/jamillosantos/go-ceous/generator/models"
 	"github.com/sipin/gorazor/gorazor"
 	"io"
@@ -21,7 +22,7 @@ func ColumnAddress(baseSchema *models.BaseSchema) string {
 // RenderColumnAddress render tpl/columnAddress.gohtml
 func RenderColumnAddress(_buffer io.StringWriter, baseSchema *models.BaseSchema) {
 	_buffer.WriteString("\n\n// ColumnAddress returns the pointer address of a field given its column name.\nfunc (model ")
-	_buffer.WriteString(("*"))
+	_buffer.WriteString(gorazor.HTMLEscape(Pointer))
 	_buffer.WriteString(gorazor.HTMLEscape(baseSchema.Name))
 	_buffer.WriteString(") ColumnAddress(name string) (interface{}, error) {\n\tswitch name {")
 	for _, field := range baseSchema.Fields {

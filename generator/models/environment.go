@@ -15,6 +15,7 @@ type Environment struct {
 	Stores         []*Store
 	Connections    []*Connection
 	connectionsMap map[string]*Connection
+	Models         []*Model
 	Imports        *CtxImports
 	ModelsImports  *CtxImports
 }
@@ -38,6 +39,7 @@ func NewEnvironment(inputPkg, outputPkg *myasthurts.Package, imports *CtxImports
 		Stores:         make([]*Store, 0),
 		Connections:    make([]*Connection, 0),
 		connectionsMap: make(map[string]*Connection, 0),
+		Models:         make([]*Model, 0),
 		Imports:        imports,
 		ModelsImports:  modelsImports,
 	}
@@ -77,4 +79,10 @@ func (env *Environment) EnsureConnection(name string) (*Connection, bool) {
 	env.Connections = append(env.Connections, conn)
 	env.connectionsMap[name] = conn
 	return conn, false
+}
+
+// AddModel adds a `Model` to the environment model list.
+func (env *Environment) AddModel(model *Model) *Model {
+	env.Models = append(env.Models, model)
+	return model
 }

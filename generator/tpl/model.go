@@ -5,19 +5,31 @@
 package tpl
 
 import (
+	. "github.com/jamillosantos/go-ceous/generator/helpers"
 	"github.com/jamillosantos/go-ceous/generator/models"
+	"github.com/sipin/gorazor/gorazor"
 	"io"
 	"strings"
 )
 
 // Model generates tpl/model.gohtml
-func Model(env *models.Environment, model *models.Schema) string {
+func Model(env *models.Environment, model *models.Model) string {
 	var _b strings.Builder
 	RenderModel(&_b, env, model)
 	return _b.String()
 }
 
 // RenderModel render tpl/model.gohtml
-func RenderModel(_buffer io.StringWriter, env *models.Environment, model *models.Schema) {
+func RenderModel(_buffer io.StringWriter, env *models.Environment, model *models.Model) {
+	if model.PK != nil {
+		_buffer.WriteString("\n\n// GetID returns the primary key for model `")
+		_buffer.WriteString(gorazor.HTMLEscape(model.Name))
+		_buffer.WriteString("`.\nfunc (model ")
+		_buffer.WriteString(gorazor.HTMLEscape(Pointer))
+		_buffer.WriteString(gorazor.HTMLEscape(model.Name))
+		_buffer.WriteString(") GetID() interface{} {\n\treturn model.")
+		_buffer.WriteString(gorazor.HTMLEscape(model.PK.Name))
+		_buffer.WriteString("\n}")
+	}
 
 }

@@ -19,11 +19,11 @@ type EnvironmentContext struct {
 func ParseEnvironment(ctx *EnvironmentContext) (*models.Environment, error) {
 	ctx.Imports.AddImportPkg(ctx.InputPkg)
 	env := models.NewEnvironment(ctx.InputPkg, ctx.OutputPkg, ctx.Imports, ctx.ModelsImports)
-	for _, model := range ctx.Fieldables {
-		if model.IsModel {
-			baseSchema := models.NewBaseSchema(model.Name, model.TableName)
-			env.EnsureConnection(model.Connection)
-			schema := models.NewSchema(model.Name, baseSchema)
+	for _, fillable := range ctx.Fieldables {
+		if fillable.IsModel {
+			baseSchema := models.NewBaseSchema(fillable.Name, fillable.TableName)
+			env.EnsureConnection(fillable.Connection)
+			schema := models.NewSchema(fillable.Name, baseSchema)
 			schema.IsModel = true
 			err := parseSchema(&parseSchemaContext{
 				Env:          env,
@@ -32,27 +32,35 @@ func ParseEnvironment(ctx *EnvironmentContext) (*models.Environment, error) {
 				Reporter:     ctx.Reporter,
 				FieldPath:    []string{},
 				ColumnPrefix: []string{},
-			}, model)
+			}, fillable)
 			if err != nil {
 				return nil, err
 			}
 			env.AddSchema(schema)
 			env.AddBaseSchema(baseSchema)
 
-			query := models.NewQuery(model.Name)
+			if fillable.IsModel {
+				model, err := parseModel(&parseModelContext{}, fillable)
+				if err != nil {
+					return nil, err
+				}
+				env.AddModel(model)
+			}
+
+			query := models.NewQuery(fillable.Name)
 			err = parseQuery(&parseQueryContext{
 				Query:  query,
 				Prefix: []string{},
-			}, model)
+			}, fillable)
 			if err != nil {
 				return nil, err
 			}
 			env.AddQuery(query)
 
-			store := models.NewStore(model.Name)
+			store := models.NewStore(fillable.Name)
 			err = parseStore(&parseStoreContext{
 				Store: store,
-			}, model)
+			}, fillable)
 			if err != nil {
 				return nil, err
 			}

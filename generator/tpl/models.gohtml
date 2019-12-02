@@ -18,11 +18,16 @@ import (
 }
 )
 
-@*
-@{for _, m := range env.Models {
-	RenderModel(_buffer, env, m)
+@{for _, model := range env.Models {
+	RenderModel(_buffer, env, model)
 }}
 
-*@
+@{
+for _, baseSchema := range env.BaseSchemas {
+	RenderColumnValue(_buffer, baseSchema)
+	RenderColumnAddress(_buffer, baseSchema)
+}
+}
+
 @{RenderSchema(_buffer, env)}
 
