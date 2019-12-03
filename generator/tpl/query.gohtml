@@ -9,9 +9,6 @@
 // @query.FullName is the query for the model `@query.FullName`.
 type @query.FullName@: struct {
 	*ceous.BaseQuery
-@for _, field := range query.Fields {@
-	@field.Name	ceous.SchemaField
-}
 }
 
 // New@query.FullName creates a new query for model `@query.FullName`.
@@ -27,8 +24,8 @@ func New@query.FullName@:(options ...ceous.CeousOption) @Pointer@query.FullName@
 
 @for _, field := range query.Fields {@
 // By@field.Name add a filter by `@field.Name@:`.
-func (q @Pointer@query.FullName) By@field.Name@:(value @field.Type@:) @Pointer@query.FullName@: {
-	q.BaseQuery.Where(ceous.Eq(@env.InputPkgCtx.Ref(env.OutputPkg, "Schema")@:.@field.Name@:, value@:))
+func (q @Pointer@query.FullName) By@field.MethodName@:(value @field.Type@:) @Pointer@query.FullName@: {
+	q.BaseQuery.Where(ceous.Eq(@env.InputPkgCtx.Ref(env.OutputPkg, "Schema")@:.@query.Name@:.@field.FieldPath@:, value@:))
 	return q
 }
 
@@ -63,7 +60,7 @@ func (q @Pointer@query.FullName) Offset(offset uint64) @Pointer@query.FullName {
 }
 
 // One results only one record matching the query.
-func (q @Pointer@query.FullName) One() (m @env.InputPkgCtx.Ref(env.OutputPkg, query.FullName)@:, err error) {
+func (q @Pointer@query.FullName) One() (m @env.InputPkgCtx.Ref(env.OutputPkg, query.Name)@:, err error) {
 	q.Limit(1).Offset(0)
 
 	query, err := q.RawQuery()
@@ -71,7 +68,7 @@ func (q @Pointer@query.FullName) One() (m @env.InputPkgCtx.Ref(env.OutputPkg, qu
 		return
 	}
 
-	rs := New@query.FullName@:ResultSet(query, nil)
+	rs := New@query.Name@:ResultSet(query, nil)
 	defer rs.Close()
 
 	if rs.Next() {
@@ -83,7 +80,7 @@ func (q @Pointer@query.FullName) One() (m @env.InputPkgCtx.Ref(env.OutputPkg, qu
 		for _, rel := range q.BaseQuery.Relations {
 			err = rel.Aggregate(&m)
 			if err != nil {
-				return @env.InputPkgCtx.Ref(env.OutputPkg, query.FullName)@:{}, err // TODO(jota): Shall this error be wrapped? At first, yes.
+				return @env.InputPkgCtx.Ref(env.OutputPkg, query.Name)@:{}, err // TODO(jota): Shall this error be wrapped? At first, yes.
 			}
 		}
 	} else {
@@ -94,7 +91,7 @@ func (q @Pointer@query.FullName) One() (m @env.InputPkgCtx.Ref(env.OutputPkg, qu
 		for _, rel := range q.BaseQuery.Relations {
 			err = rel.Realize()
 			if err != nil {
-				return @env.InputPkgCtx.Ref(env.OutputPkg, query.FullName)@:{}, err // TODO(jota): Shall this error be wrapped? At first, yes.
+				return @env.InputPkgCtx.Ref(env.OutputPkg, query.Name)@:{}, err // TODO(jota): Shall this error be wrapped? At first, yes.
 			}
 		}
 	}
@@ -103,18 +100,18 @@ func (q @Pointer@query.FullName) One() (m @env.InputPkgCtx.Ref(env.OutputPkg, qu
 }
 
 // All return all records that match the query.
-func (q @Pointer@query.FullName) All() ([]@Pointer@env.InputPkgCtx.Ref(env.OutputPkg, query.FullName)@:, error) {
+func (q @Pointer@query.FullName) All() ([]@Pointer@env.InputPkgCtx.Ref(env.OutputPkg, query.Name)@:, error) {
 	query, err := q.RawQuery()
 	if err != nil {
 		return nil, err
 	}
 
-	rs := New@query.FullName@:ResultSet(query, nil)
+	rs := New@query.Name@:ResultSet(query, nil)
 	defer rs.Close()
 
-	ms := make([]@Pointer@env.InputPkgCtx.Ref(env.OutputPkg, query.FullName)@:, 0)
+	ms := make([]@Pointer@env.InputPkgCtx.Ref(env.OutputPkg, query.Name)@:, 0)
 	for rs.Next() {
-		m := &@env.InputPkgCtx.Ref(env.OutputPkg, query.FullName)@:{}
+		m := &@env.InputPkgCtx.Ref(env.OutputPkg, query.Name)@:{}
 		err = rs.ToModel(m)
 		if err != nil {
 			return nil, err
@@ -144,9 +141,6 @@ func (q @Pointer@query.FullName) OrderBy(fields ...interface{}) @Pointer@query.F
 	return q
 }
 
-@*
 @for _, relation := range query.Relations {
 	RenderRelation(_buffer, env, relation)
 }
-
-*@

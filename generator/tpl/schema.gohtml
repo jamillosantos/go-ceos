@@ -50,7 +50,7 @@ var (
 	}
 	baseSchema@s.Name = schema@s.Name {
 		@for _, field := range s.Fields {@
-			@field.Name : baseSchema@s.BaseSchema.Name@:.ColumnsArr[@s.BaseSchema.FieldsMap[field.ColumnName]],}
+			@field.Name : baseSchema@s.BaseSchema.Name@:.ColumnsArr[@s.BaseSchema.FieldsIdxMap[field.ColumnName]],}
 	}
 }
 )
@@ -68,7 +68,7 @@ var Schema = schema{
 	@for _, field := range schema.Fields {
 		@field.Name@:: 
 		@if field.Type == "" {
-		i := schema.BaseSchema.FieldsMap[field.Name]
+		i := schema.BaseSchema.FieldsIdxMap[field.Name]
 		_buffer.WriteString(schema.BaseSchema.FullName + ".ColumnsArr[" + strconv.Itoa(i) + "],\n")
 	} else {
 		_buffer.WriteString(field.Type + ",\n")

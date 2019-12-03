@@ -116,6 +116,10 @@ to quickly create a Cobra application.`,
 			FieldableMap:  fieldableCtx.FieldableMap,
 		})
 
+		if err != nil {
+			panic(errors.Wrapf(err, "error parsing environment"))
+		}
+
 		reporter.Line("Generating code ...")
 		buffCeous := bytes.NewBuffer(nil)
 		buffModels := bytes.NewBuffer(nil)

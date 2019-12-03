@@ -8,6 +8,7 @@ import (
 type (
 	Field struct {
 		Name             string
+		FieldPath        string
 		Column           string
 		IsAutoIncrement  bool
 		IsPrimaryKey     bool
@@ -17,13 +18,14 @@ type (
 	}
 
 	Fieldable struct {
-		Name       string
-		TableName  string
-		Connection string
-		IsModel    bool
-		IsEmbedded bool
-		Fields     []*Field
-		PK         *Field
+		Name              string
+		TableName         string
+		Connection        string
+		IsModel           bool
+		IsEmbedded        bool
+		Fields            []*Field
+		FieldsByColumnMap map[string]*Field
+		PK                *Field
 	}
 
 	FieldableContext struct {
@@ -51,8 +53,20 @@ func NewFieldableContext(inputPkg, outputPkg *myasthurts.Package, reporter repor
 // NewFieldable returns a new instance of `Fieldable` with the given `name` set.
 func NewFieldable(name string) *Fieldable {
 	return &Fieldable{
-		Name:   name,
-		Fields: make([]*Field, 0),
+		Name:              name,
+		Fields:            make([]*Field, 0),
+		FieldsByColumnMap: make(map[string]*Field),
+	}
+}
+
+// NewField returns a new instance of `Field` with the given `name`, `fieldPath`,
+// `column` set.
+func NewField(name, fieldPath, column, foreignKeyColumn string) *Field {
+	return &Field{
+		Name:             name,
+		FieldPath:        fieldPath,
+		Column:           column,
+		ForeignKeyColumn: foreignKeyColumn,
 	}
 }
 
@@ -61,6 +75,9 @@ func (f *Fieldable) AddField(field *Field) *Field {
 	f.Fields = append(f.Fields, field)
 	if field.IsPrimaryKey {
 		f.PK = field // TODO(jota): This should support composite PKs.
+	}
+	if field.Column != "" {
+		f.FieldsByColumnMap[field.Column] = field
 	}
 	return field
 }

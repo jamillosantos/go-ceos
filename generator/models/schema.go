@@ -8,11 +8,12 @@ type (
 	}
 
 	BaseSchema struct {
-		Name      string
-		FullName  string
-		TableName string
-		Fields    []*BaseSchemaField
-		FieldsMap map[string]int
+		Name         string
+		FullName     string
+		TableName    string
+		Fields       []*BaseSchemaField
+		FieldsIdxMap map[string]int
+		FieldsMap    map[string]*BaseSchemaField
 	}
 
 	SchemaField struct {
@@ -33,11 +34,12 @@ type (
 
 func NewBaseSchema(name, tableName string) *BaseSchema {
 	return &BaseSchema{
-		Name:      name,
-		FullName:  "baseSchema" + name,
-		TableName: tableName,
-		Fields:    make([]*BaseSchemaField, 0),
-		FieldsMap: make(map[string]int),
+		Name:         name,
+		FullName:     "baseSchema" + name,
+		TableName:    tableName,
+		Fields:       make([]*BaseSchemaField, 0),
+		FieldsIdxMap: make(map[string]int),
+		FieldsMap:    make(map[string]*BaseSchemaField),
 	}
 }
 
@@ -58,7 +60,8 @@ func (schema *BaseSchema) AddField(name, columnName string) *BaseSchemaField {
 		ColumnName: columnName,
 	}
 	schema.Fields = append(schema.Fields, field)
-	schema.FieldsMap[field.ColumnName] = len(schema.Fields) - 1
+	schema.FieldsIdxMap[field.ColumnName] = len(schema.Fields) - 1
+	schema.FieldsMap[field.ColumnName] = field
 	return field
 }
 

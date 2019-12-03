@@ -19,56 +19,77 @@ type EnvironmentContext struct {
 func ParseEnvironment(ctx *EnvironmentContext) (*models.Environment, error) {
 	ctx.Imports.AddImportPkg(ctx.InputPkg)
 	env := models.NewEnvironment(ctx.InputPkg, ctx.OutputPkg, ctx.Imports, ctx.ModelsImports)
+
 	for _, fillable := range ctx.Fieldables {
-		if fillable.IsModel {
-			baseSchema := models.NewBaseSchema(fillable.Name, fillable.TableName)
-			env.EnsureConnection(fillable.Connection)
-			schema := models.NewSchema(fillable.Name, baseSchema)
-			schema.IsModel = true
-			err := parseSchema(&parseSchemaContext{
-				Env:          env,
-				BaseSchema:   baseSchema,
-				Schema:       schema,
-				Reporter:     ctx.Reporter,
-				FieldPath:    []string{},
-				ColumnPrefix: []string{},
-			}, fillable)
-			if err != nil {
-				return nil, err
-			}
-			env.AddSchema(schema)
-			env.AddBaseSchema(baseSchema)
-
-			if !fillable.IsModel {
-				continue
-			}
-
-			model, err := parseModel(&parseModelContext{}, fillable)
-			if err != nil {
-				return nil, err
-			}
-			env.AddModel(model)
-
-			query := models.NewQuery(fillable.Name)
-			err = parseQuery(&parseQueryContext{
-				Query:  query,
-				Model:  model,
-				Prefix: []string{},
-			}, fillable)
-			if err != nil {
-				return nil, err
-			}
-			env.AddQuery(query)
-
-			store := models.NewStore(fillable.Name)
-			err = parseStore(&parseStoreContext{
-				Store: store,
-			}, fillable)
-			if err != nil {
-				return nil, err
-			}
-			env.AddStore(store)
+		if !fillable.IsEmbedded {
+			continue
 		}
+		baseSchema := models.NewBaseSchema(fillable.Name, fillable.TableName)
+		schema := models.NewSchema(fillable.Name, baseSchema)
+		schema.IsModel = true
+		err := parseSchema(&parseSchemaContext{
+			Env:          env,
+			BaseSchema:   baseSchema,
+			Schema:       schema,
+			Reporter:     ctx.Reporter,
+			FieldPath:    []string{},
+			ColumnPrefix: []string{},
+		}, fillable)
+		if err != nil {
+			return nil, err
+		}
+		env.AddSchema(schema)
+		env.AddBaseSchema(baseSchema)
+	}
+
+	for _, fillable := range ctx.Fieldables {
+		if !fillable.IsModel {
+			ctx.Reporter.Linef("Ignoring non model %s", fillable.Name)
+			continue
+		}
+		baseSchema := models.NewBaseSchema(fillable.Name, fillable.TableName)
+		env.EnsureConnection(fillable.Connection)
+		schema := models.NewSchema(fillable.Name, baseSchema)
+		schema.IsModel = true
+		err := parseSchema(&parseSchemaContext{
+			Env:          env,
+			BaseSchema:   baseSchema,
+			Schema:       schema,
+			Reporter:     ctx.Reporter,
+			FieldPath:    []string{},
+			ColumnPrefix: []string{},
+		}, fillable)
+		if err != nil {
+			return nil, err
+		}
+		env.AddSchema(schema)
+		env.AddBaseSchema(baseSchema)
+
+		model, err := parseModel(&parseModelContext{}, fillable)
+		if err != nil {
+			return nil, err
+		}
+		env.AddModel(model)
+
+		query := models.NewQuery(baseSchema, fillable.Name)
+		err = parseQuery(&parseQueryContext{
+			Query:  query,
+			Model:  model,
+			Prefix: []string{},
+		}, fillable)
+		if err != nil {
+			return nil, err
+		}
+		env.AddQuery(query)
+
+		store := models.NewStore(fillable.Name)
+		err = parseStore(&parseStoreContext{
+			Store: store,
+		}, fillable)
+		if err != nil {
+			return nil, err
+		}
+		env.AddStore(store)
 	}
 
 	ctx.Reporter.Line("Connections")
@@ -127,7 +148,7 @@ func ParseEnvironment(ctx *EnvironmentContext) (*models.Environment, error) {
 		ss := reporters.SubReporter(subReporter)
 		ss.Line("Relations:")
 		for _, relation := range model.Relations {
-			ss.Linef("- %s (%s -> %s.%s)", relation.Name, relation.LocalField, relation.ForeignModelType, relation.ForeignColumn)
+			ss.Linef("- %s (%s -> %s.%s)", relation.Name, relation.LocalColumn, relation.ForeignModelType, relation.ForeignField)
 		}
 	}
 

@@ -44,6 +44,7 @@ func Parse(ctx *models.FieldableContext) error {
 				Fieldable:     fieldable,
 				Reporter:      reporters.SubReporter(ctx.Reporter),
 				ModelsImports: ctx.ModelsImports,
+				Imports:       ctx.Imports,
 			}, f)
 			if err == Skip {
 				continue

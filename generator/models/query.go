@@ -1,29 +1,36 @@
 package models
 
-import . "github.com/jamillosantos/go-ceous/generator/helpers"
+import (
+	"strings"
+
+	. "github.com/jamillosantos/go-ceous/generator/helpers"
+)
 
 type (
 	Query struct {
-		Name      string
-		FullName  string
-		Fields    []*QueryField
-		Relations []*Relation
+		Name       string
+		FullName   string
+		BaseSchema *BaseSchema
+		Fields     []*QueryField
+		Relations  []*Relation
 	}
 
 	QueryField struct {
-		Name      string
-		FieldPath []string
-		Type      string
+		Name       string
+		FieldPath  string
+		MethodName string
+		Type       string
 	}
 )
 
 // NewQuery returns a new instance of `Query` with the given `name` set.
-func NewQuery(name string) *Query {
+func NewQuery(baseSchema *BaseSchema, name string) *Query {
 	return &Query{
-		Name:      name,
-		FullName:  PascalCase(name) + "Query",
-		Fields:    make([]*QueryField, 0),
-		Relations: make([]*Relation, 0),
+		BaseSchema: baseSchema,
+		Name:       name,
+		FullName:   PascalCase(name) + "Query",
+		Fields:     make([]*QueryField, 0),
+		Relations:  make([]*Relation, 0),
 	}
 }
 
@@ -31,8 +38,9 @@ func NewQuery(name string) *Query {
 // set.
 func NewQueryField(name string, fieldPath []string) *QueryField {
 	return &QueryField{
-		Name:      name,
-		FieldPath: fieldPath,
+		Name:       name,
+		FieldPath:  strings.Join(fieldPath, "."),
+		MethodName: strings.Join(fieldPath, ""),
 	}
 }
 

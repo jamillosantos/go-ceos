@@ -15,8 +15,8 @@ func (model @Pointer@model.Name@:) GetID() interface{} {
 }
 
 @for _, relation := range model.Relations {@
-// @PascalCase(relation.Name) returns the @relation.LocalField@: from @model.Name@:.
-func (model @Pointer@model.Name@:) @PascalCase(relation.LocalField)@:() @Pointer@relation.LocalModelType {
+// @PascalCase(relation.Name) returns the @relation.Name@: from @model.Name@:.
+func (model @Pointer@model.Name@:) @PascalCase(relation.LocalField)@:() @Pointer@relation.ForeignModelType {
 	return model.@relation.LocalField
 }
 @:

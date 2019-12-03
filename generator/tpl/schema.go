@@ -89,7 +89,7 @@ func RenderSchema(_buffer io.StringWriter, env *models.Environment) {
 			_buffer.WriteString(" : baseSchema")
 			_buffer.WriteString(gorazor.HTMLEscape(s.BaseSchema.Name))
 			_buffer.WriteString(".ColumnsArr[")
-			_buffer.WriteString(gorazor.HTMLEscape(s.BaseSchema.FieldsMap[field.ColumnName]))
+			_buffer.WriteString(gorazor.HTMLEscape(s.BaseSchema.FieldsIdxMap[field.ColumnName]))
 			_buffer.WriteString("],")
 		}
 		_buffer.WriteString("\n\t}")
@@ -117,7 +117,7 @@ func RenderSchema(_buffer io.StringWriter, env *models.Environment) {
 			_buffer.WriteString(": ")
 
 			if field.Type == "" {
-				i := schema.BaseSchema.FieldsMap[field.Name]
+				i := schema.BaseSchema.FieldsIdxMap[field.Name]
 				_buffer.WriteString(schema.BaseSchema.FullName + ".ColumnsArr[" + strconv.Itoa(i) + "],\n")
 			} else {
 				_buffer.WriteString(field.Type + ",\n")

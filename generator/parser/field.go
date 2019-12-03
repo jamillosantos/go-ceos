@@ -16,6 +16,7 @@ type parseFieldContext struct {
 	Fieldable     *models.Fieldable
 	Reporter      reporters.Reporter
 	ModelsImports *models.CtxImports
+	Imports       *models.CtxImports
 }
 
 func fieldPK() string {
@@ -72,11 +73,7 @@ func parseFieldCeous(ctx *parseFieldContext, tagCeous *myasthurts.TagParam, tagF
 		foreignKeyColumn = tagFK.Value
 	}
 
-	field := &models.Field{
-		Name:             f.Name,
-		Column:           column,
-		ForeignKeyColumn: foreignKeyColumn,
-	}
+	field := models.NewField(f.Name, f.Name, column, foreignKeyColumn)
 
 	// If it is a model from the same package.
 	// TODO(jota): Add this limitation to the README.
@@ -89,7 +86,6 @@ func parseFieldCeous(ctx *parseFieldContext, tagCeous *myasthurts.TagParam, tagF
 	if foreignKeyColumn != "" {
 		fieldableStr += "[FK:" + field.Fieldable.TableName + "." + field.ForeignKeyColumn + "]"
 	}
-
 	optsReporter := []string{}
 	if column != "" {
 		optsReporter = AppendStringIfNotEmpty(optsReporter, column)
@@ -114,7 +110,8 @@ func parseFieldCeous(ctx *parseFieldContext, tagCeous *myasthurts.TagParam, tagF
 		optsStr = "(" + strings.Join(optsReporter, ",") + ")"
 	}
 
-	ctx.ModelsImports.AddRefType(f.RefType)
+	// ctx.ModelsImports.AddRefType(f.RefType)
+	ctx.Imports.AddRefType(f.RefType)
 	field.Type = ctx.ModelsImports.Ref(f.RefType)
 	ctx.Reporter.Linef("+ %s%s: %s %s", field.Name, fieldableStr, field.Type, optsStr)
 	return field, nil

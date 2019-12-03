@@ -11,7 +11,7 @@ import (
 	"database/sql"
 	ceous "github.com/jamillosantos/go-ceous"
 @for _, pkg := range env.Imports.Imports {
-	if pkg.Alias == "-" || pkg.Alias == "ceous" {
+	if pkg.Alias == "-" || pkg.Alias == "ceous" || pkg.Alias == "builtin" {
 		continue
 	}
 	@raw("\n")
@@ -27,6 +27,10 @@ import (
 	@{RenderQuery(_buffer, env, query)}
 }
 
-@for _, store := range env.Stores {@
-	@{RenderStore(_buffer, env, store)}
+@for _, store := range env.Stores {
+	RenderStore(_buffer, env, store)
+}
+
+@for _, schema := range env.Schemas {
+	RenderResultset(_buffer, schema)
 }

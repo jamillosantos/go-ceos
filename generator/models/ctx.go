@@ -40,8 +40,11 @@ func (ctx *CtxImports) AddImportPkg(pkg *myasthurts.Package) *CtxPkg {
 		if i > 0 {
 			pkgName = pkg.Name + strconv.Itoa(i)
 		}
-		_, ok := ctx.importsAlias[pkgName]
+		pkgFound, ok := ctx.importsAlias[pkgName]
 		if ok {
+			if pkgFound == pkg.ImportPath {
+				return ctx.Imports[pkgName]
+			}
 			i++
 			continue
 		}

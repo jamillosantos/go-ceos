@@ -24,7 +24,7 @@ func RenderCeous(_buffer io.StringWriter, env *models.Environment) {
 	_buffer.WriteString(gorazor.HTMLEscape(env.OutputPkg.Name))
 	_buffer.WriteString("\n\nimport (\n\t\"context\"\n\t\"database/sql\"\n\tceous \"github.com/jamillosantos/go-ceous\"")
 	for _, pkg := range env.Imports.Imports {
-		if pkg.Alias == "-" || pkg.Alias == "ceous" {
+		if pkg.Alias == "-" || pkg.Alias == "ceous" || pkg.Alias == "builtin" {
 			continue
 		}
 
@@ -44,8 +44,10 @@ func RenderCeous(_buffer io.StringWriter, env *models.Environment) {
 		RenderQuery(_buffer, env, query)
 	}
 	for _, store := range env.Stores {
-		_buffer.WriteString("\n\t")
 		RenderStore(_buffer, env, store)
+	}
+	for _, schema := range env.Schemas {
+		RenderResultset(_buffer, schema)
 	}
 
 }
