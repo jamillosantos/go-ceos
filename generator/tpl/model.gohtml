@@ -36,4 +36,11 @@ func (model @Pointer@model.Name@:) Set@PascalCase(relation.LocalField)@:(value @
 	model.@relation.LocalField = value
 	return nil
 }
+@:
+// Assign@PascalCase(relation.LocalField) is a setter for `@relation.LocalField`
+// with no further processing.
+func (model @Pointer@model.Name@:) Assign@PascalCase(relation.LocalField)@:(value @Pointer@relation.ForeignModelType) {
+	model.@relation.LocalField = value
 }
+}
+

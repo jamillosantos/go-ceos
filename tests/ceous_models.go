@@ -44,6 +44,12 @@ func (model *UserGroup) SetUser(value *User) error {
 	return nil
 }
 
+// AssignUser is a setter for `user`
+// with no further processing.
+func (model *UserGroup) AssignUser(value *User) {
+	model.user = value
+}
+
 // Value returns the value from a field given its column name.
 func (model *UserGroupPK) Value(name string) (interface{}, error) {
 	switch name {

@@ -71,7 +71,21 @@ func RenderModel(_buffer io.StringWriter, env *models.Environment, model *models
 		_buffer.WriteString(gorazor.HTMLEscape(relation.ForeignField))
 		_buffer.WriteString("\n\tmodel.")
 		_buffer.WriteString(gorazor.HTMLEscape(relation.LocalField))
-		_buffer.WriteString(" = value\n\treturn nil\n}")
+		_buffer.WriteString(" = value\n\treturn nil\n}\n\n// Assign")
+		_buffer.WriteString(gorazor.HTMLEscape(PascalCase(relation.LocalField)))
+		_buffer.WriteString(" is a setter for `")
+		_buffer.WriteString(gorazor.HTMLEscape(relation.LocalField))
+		_buffer.WriteString("`\n// with no further processing.\nfunc (model ")
+		_buffer.WriteString(gorazor.HTMLEscape(Pointer))
+		_buffer.WriteString(gorazor.HTMLEscape(model.Name))
+		_buffer.WriteString(") Assign")
+		_buffer.WriteString(gorazor.HTMLEscape(PascalCase(relation.LocalField)))
+		_buffer.WriteString("(value ")
+		_buffer.WriteString(gorazor.HTMLEscape(Pointer))
+		_buffer.WriteString(gorazor.HTMLEscape(relation.ForeignModelType))
+		_buffer.WriteString(") {\n\tmodel.")
+		_buffer.WriteString(gorazor.HTMLEscape(relation.LocalField))
+		_buffer.WriteString(" = value\n}")
 	}
 
 }

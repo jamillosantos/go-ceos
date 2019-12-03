@@ -666,7 +666,7 @@ func (relation *UserGroupUserRelation) Realize() error {
 			return ceous.ErrInconsistentRelationResult
 		}
 		for _, r := range masterRecords {
-			r.SetUser(record)
+			r.AssignUser(record)
 		}
 	}
 	return nil

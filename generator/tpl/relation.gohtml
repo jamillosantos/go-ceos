@@ -46,7 +46,7 @@ func (relation @Pointer@relation.FullName@:) Realize() error {
 			return ceous.ErrInconsistentRelationResult
 		}
 		for _, r := range masterRecords {
-			r.Set@PascalCase(relation.LocalField)@:(record)
+			r.Assign@PascalCase(relation.LocalField)@:(record)
 		}
 	}
 	return nil
