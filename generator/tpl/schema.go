@@ -68,9 +68,14 @@ func RenderSchema(_buffer io.StringWriter, env *models.Environment) {
 			_buffer.WriteString("\n\t\tceous.NewSchemaField(\"")
 			_buffer.WriteString(gorazor.HTMLEscape(field.ColumnName))
 			_buffer.WriteString("\"")
+
+			if field.IsPK {
+				_buffer.WriteString(", ceous.FieldPK")
+			}
 			if field.IsAutoIncr {
 				_buffer.WriteString(", ceous.FieldAutoIncrement")
 			}
+
 			_buffer.WriteString("),")
 		}
 		_buffer.WriteString("\n\t)\n\t")

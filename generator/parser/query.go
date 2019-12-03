@@ -49,7 +49,7 @@ func parseQueryField(ctx *parseQueryFieldContext, field *models.Field) (*models.
 
 		relation := models.NewRelation(
 			ctx.Query,
-			helpers.PascalCase(field.Name),
+			namePrefix(append(ctx.FieldPrefix, ctx.Query.Name, helpers.PascalCase(field.Name))),
 			field.Name,
 			localField.Name,
 			ctx.Model.Name,

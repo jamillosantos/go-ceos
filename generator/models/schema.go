@@ -6,6 +6,7 @@ type (
 		ColumnName string
 		Type       string
 		IsAutoIncr bool
+		IsPK       bool
 	}
 
 	BaseSchema struct {
@@ -55,10 +56,11 @@ func NewSchema(name string, baseSchema *BaseSchema) *Schema {
 
 // AddField adds a new instance of BaseSchemaField to the schema fields and
 // returns it.
-func (schema *BaseSchema) AddField(name, columnName string, isAutoIncr bool) *BaseSchemaField {
+func (schema *BaseSchema) AddField(name, columnName string, isPK, isAutoIncr bool) *BaseSchemaField {
 	field := &BaseSchemaField{
 		Name:       name,
 		ColumnName: columnName,
+		IsPK:       isPK,
 		IsAutoIncr: isAutoIncr,
 	}
 	schema.Fields = append(schema.Fields, field)

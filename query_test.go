@@ -313,7 +313,7 @@ var _ = Describe("Query", func() {
 			Expect(userGroup.User().Name).To(Equal("Snake Eyes"))
 		})
 
-		It("should retrieve models with relation", func() {
+		FIt("should retrieve models with relation", func() {
 			userGroups, err := db.Default.UserGroupQuery().WithUser().OrderBy(tests.Schema.UserGroup.ID.UserID, tests.Schema.UserGroup.ID.GroupID).All()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(userGroups).To(HaveLen(4))

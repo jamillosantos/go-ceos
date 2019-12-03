@@ -292,6 +292,8 @@ func (store *BaseStore) Delete(record Record) error {
 		query.WriteString(fmt.Sprintf("$%d", 1+i)) // TODO(jota): Use a placeholder configuration to ensure multi database support.
 	}
 
+	fmt.Println(query.String())
+
 	_, err = store.runner.Exec(query.String(), pkValues...)
 	return err
 }

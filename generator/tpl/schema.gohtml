@@ -34,7 +34,14 @@ var (
 	baseSchema@schema.Name = ceous.NewBaseSchema(
 		"@schema.TableName",
 		"", @for _, field := range schema.Fields {@
-		ceous.NewSchemaField("@field.ColumnName"@if field.IsAutoIncr {@, ceous.FieldAutoIncrement}),}
+		ceous.NewSchemaField("@field.ColumnName"@{
+	if field.IsPK {
+		_buffer.WriteString(", ceous.FieldPK")
+	}
+	if field.IsAutoIncr {
+		_buffer.WriteString(", ceous.FieldAutoIncrement")
+	}
+	}),}
 	)
 	@if i+1 == len(env.BaseSchemas) {
 		_buffer.WriteString("\n")

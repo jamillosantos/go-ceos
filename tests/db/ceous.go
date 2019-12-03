@@ -626,21 +626,21 @@ func (q *UserGroupQuery) OrderBy(fields ...interface{}) *UserGroupQuery {
 	return q
 }
 
-type UserRelation struct {
+type UserGroupUserRelation struct {
 	_runner ceous.DBRunner
 	keys    []interface{}
 	records map[int][]*tests.UserGroup
 }
 
-func NewUserRelation(runner ceous.DBRunner) *UserRelation {
-	return &UserRelation{
+func NewUserGroupUserRelation(runner ceous.DBRunner) *UserGroupUserRelation {
+	return &UserGroupUserRelation{
 		_runner: runner,
 		keys:    make([]interface{}, 0),
 		records: make(map[int][]*tests.UserGroup),
 	}
 }
 
-func (relation *UserRelation) Aggregate(record ceous.Record) error {
+func (relation *UserGroupUserRelation) Aggregate(record ceous.Record) error {
 	ugRecord, ok := record.(*tests.UserGroup)
 	if !ok {
 		return ceous.ErrInvalidRecordType
@@ -655,7 +655,7 @@ func (relation *UserRelation) Aggregate(record ceous.Record) error {
 	return nil
 }
 
-func (relation *UserRelation) Realize() error {
+func (relation *UserGroupUserRelation) Realize() error {
 	records, err := NewUserQuery(ceous.WithRunner(relation._runner)).Where(ceous.Eq(tests.Schema.User.ID, relation.keys)).All()
 	if err != nil {
 		return err // TODO(jota): Shall this be wrapped into a custom error?
@@ -673,7 +673,7 @@ func (relation *UserRelation) Realize() error {
 }
 
 func (q *UserGroupQuery) WithUser() *UserGroupQuery {
-	q.BaseQuery.Relations = append(q.BaseQuery.Relations, NewUserRelation(q.BaseQuery.Runner))
+	q.BaseQuery.Relations = append(q.BaseQuery.Relations, NewUserGroupUserRelation(q.BaseQuery.Runner))
 	return q
 }
 

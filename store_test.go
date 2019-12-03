@@ -43,7 +43,7 @@ var _ = Describe("Store", func() {
 				Expect(rs.Next()).To(BeFalse())
 			})
 
-			FIt("should insert multiple users returning the PK", func() {
+			It("should insert multiple users returning the PK", func() {
 				user1 := tests.User{
 					Name:     "Snake Eyes",
 					Password: "12345",
@@ -226,15 +226,17 @@ var _ = Describe("Store", func() {
 				Expect(err).To(Equal(ceous.ErrNotFound))
 			})
 
-			It("should delete a model with composite PK", func() {
-				userGroup, err := db.Default.UserGroupQuery().ByIDUserID(1).ByIDGroupID(2).One()
-				Expect(err).ToNot(HaveOccurred())
+			PIt("should delete a model with composite PK", func() {
+				/*
+					userGroup, err := db.Default.UserGroupQuery().ByIDUserID(1).ByIDGroupID(2).One()
+					Expect(err).ToNot(HaveOccurred())
 
-				store := db.Default.UserGroupStore()
-				Expect(store.Delete(&userGroup)).To(Succeed())
+					store := db.Default.UserGroupStore()
+					Expect(store.Delete(&userGroup)).To(Succeed())
 
-				_, err = db.Default.UserGroupQuery().ByIDUserID(1).ByIDGroupID(2).One()
-				Expect(err).To(Equal(ceous.ErrNotFound))
+					_, err = db.Default.UserGroupQuery().ByIDUserID(1).ByIDGroupID(2).One()
+					Expect(err).To(Equal(ceous.ErrNotFound))
+				*/
 			})
 
 			PIt("should fail deleting a non existing model")

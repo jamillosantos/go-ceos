@@ -22,7 +22,7 @@ func (model *UserGroup) GetID() interface{} {
 	return model.ID
 }
 
-// User returns the User from UserGroup.
+// UserGroupUser returns the UserGroupUser from UserGroup.
 func (model *UserGroup) User() *User {
 	return model.user
 }
@@ -270,7 +270,7 @@ var (
 	baseSchemaUser = ceous.NewBaseSchema(
 		"users",
 		"",
-		ceous.NewSchemaField("id", ceous.FieldAutoIncrement),
+		ceous.NewSchemaField("id", ceous.FieldPK, ceous.FieldAutoIncrement),
 		ceous.NewSchemaField("name"),
 		ceous.NewSchemaField("password"),
 		ceous.NewSchemaField("role"),
@@ -289,7 +289,7 @@ var (
 	baseSchemaGroup = ceous.NewBaseSchema(
 		"groups",
 		"",
-		ceous.NewSchemaField("id", ceous.FieldAutoIncrement),
+		ceous.NewSchemaField("id", ceous.FieldPK, ceous.FieldAutoIncrement),
 		ceous.NewSchemaField("name"),
 	)
 
