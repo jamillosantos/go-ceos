@@ -119,7 +119,7 @@ func RenderSchema(_buffer io.StringWriter, env *models.Environment) {
 			_buffer.WriteString(": ")
 
 			if field.Type == "" {
-				i := schema.BaseSchema.FieldsIdxMap[field.Name]
+				i := schema.BaseSchema.FieldsIdxMap[field.ColumnName]
 				_buffer.WriteString(schema.BaseSchema.FullName + ".ColumnsArr[" + strconv.Itoa(i) + "],\n")
 			} else {
 				_buffer.WriteString(field.Type + ",\n")

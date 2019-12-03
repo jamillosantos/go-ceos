@@ -68,7 +68,7 @@ var Schema = schema{
 	@for _, field := range schema.Fields {
 		@field.Name@:: 
 		@if field.Type == "" {
-		i := schema.BaseSchema.FieldsIdxMap[field.Name]
+		i := schema.BaseSchema.FieldsIdxMap[field.ColumnName]
 		_buffer.WriteString(schema.BaseSchema.FullName + ".ColumnsArr[" + strconv.Itoa(i) + "],\n")
 	} else {
 		_buffer.WriteString(field.Type + ",\n")

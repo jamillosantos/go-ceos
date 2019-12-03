@@ -331,33 +331,33 @@ var Schema = schema{
 		BaseSchema: baseSchemaUserGroupPK,
 
 		UserID:  baseSchemaUserGroupPK.ColumnsArr[0],
-		GroupID: baseSchemaUserGroupPK.ColumnsArr[0],
+		GroupID: baseSchemaUserGroupPK.ColumnsArr[1],
 	},
 
 	User: &schemaUser{
 		BaseSchema: baseSchemaUser,
 
 		ID:        baseSchemaUser.ColumnsArr[0],
-		Name:      baseSchemaUser.ColumnsArr[0],
-		Password:  baseSchemaUser.ColumnsArr[0],
-		Role:      baseSchemaUser.ColumnsArr[0],
+		Name:      baseSchemaUser.ColumnsArr[1],
+		Password:  baseSchemaUser.ColumnsArr[2],
+		Role:      baseSchemaUser.ColumnsArr[3],
 		Address:   baseSchemaUserAddress,
 		Work:      baseSchemaUserWork,
-		CreatedAt: baseSchemaUser.ColumnsArr[0],
-		UpdatedAt: baseSchemaUser.ColumnsArr[0],
+		CreatedAt: baseSchemaUser.ColumnsArr[12],
+		UpdatedAt: baseSchemaUser.ColumnsArr[13],
 	},
 
 	Group: &schemaGroup{
 		BaseSchema: baseSchemaGroup,
 
 		ID:   baseSchemaGroup.ColumnsArr[0],
-		Name: baseSchemaGroup.ColumnsArr[0],
+		Name: baseSchemaGroup.ColumnsArr[1],
 	},
 
 	UserGroup: &schemaUserGroup{
 		BaseSchema: baseSchemaUserGroup,
 
 		ID:    baseSchemaUserGroupID,
-		Admin: baseSchemaUserGroup.ColumnsArr[0],
+		Admin: baseSchemaUserGroup.ColumnsArr[2],
 	},
 }
