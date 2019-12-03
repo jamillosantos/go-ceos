@@ -9,6 +9,7 @@ import (
 
 type (
 	parseQueryContext struct {
+		Env          *models.Environment
 		Query        *models.Query
 		Model        *models.Model
 		Prefix       []string
@@ -16,6 +17,7 @@ type (
 	}
 
 	parseQueryFieldContext struct {
+		Env         *models.Environment
 		Query       *models.Query
 		Model       *models.Model
 		FieldPrefix []string
@@ -25,6 +27,7 @@ type (
 func parseQuery(ctx *parseQueryContext, model *models.Fieldable) error {
 	for _, field := range model.Fields {
 		qField, err := parseQueryField(&parseQueryFieldContext{
+			Env:         ctx.Env,
 			Model:       ctx.Model,
 			Query:       ctx.Query,
 			FieldPrefix: ctx.Prefix,
@@ -65,6 +68,7 @@ func parseQueryField(ctx *parseQueryFieldContext, field *models.Field) (*models.
 	} else if field.Fieldable != nil {
 		for _, f := range field.Fieldable.Fields {
 			qField, err := parseQueryField(&parseQueryFieldContext{
+				Env:         ctx.Env,
 				Query:       ctx.Query,
 				Model:       ctx.Model,
 				FieldPrefix: append(ctx.FieldPrefix, field.Name),
@@ -80,6 +84,6 @@ func parseQueryField(ctx *parseQueryFieldContext, field *models.Field) (*models.
 		return nil, Skip
 	}
 	qField := models.NewQueryField(field.Name, append(ctx.FieldPrefix, field.Name))
-	qField.Type = field.Type
+	qField.Type = ctx.Env.Imports.Ref(field.RefType)
 	return qField, nil
 }

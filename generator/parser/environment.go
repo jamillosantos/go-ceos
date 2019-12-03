@@ -73,6 +73,7 @@ func ParseEnvironment(ctx *EnvironmentContext) (*models.Environment, error) {
 
 		query := models.NewQuery(baseSchema, fillable.Name)
 		err = parseQuery(&parseQueryContext{
+			Env:    env,
 			Query:  query,
 			Model:  model,
 			Prefix: []string{},

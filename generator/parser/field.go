@@ -73,7 +73,7 @@ func parseFieldCeous(ctx *parseFieldContext, tagCeous *myasthurts.TagParam, tagF
 		foreignKeyColumn = tagFK.Value
 	}
 
-	field := models.NewField(f.Name, f.Name, column, foreignKeyColumn)
+	field := models.NewField(f.Name, f.Name, column, foreignKeyColumn, f.RefType)
 
 	// If it is a model from the same package.
 	// TODO(jota): Add this limitation to the README.

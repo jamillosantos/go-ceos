@@ -14,6 +14,7 @@ type (
 		IsPrimaryKey     bool
 		ForeignKeyColumn string
 		Type             string
+		RefType          myasthurts.RefType
 		Fieldable        *Fieldable
 	}
 
@@ -61,12 +62,13 @@ func NewFieldable(name string) *Fieldable {
 
 // NewField returns a new instance of `Field` with the given `name`, `fieldPath`,
 // `column` set.
-func NewField(name, fieldPath, column, foreignKeyColumn string) *Field {
+func NewField(name, fieldPath, column, foreignKeyColumn string, refType myasthurts.RefType) *Field {
 	return &Field{
 		Name:             name,
 		FieldPath:        fieldPath,
 		Column:           column,
 		ForeignKeyColumn: foreignKeyColumn,
+		RefType:          refType,
 	}
 }
 
