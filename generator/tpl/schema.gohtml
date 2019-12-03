@@ -32,7 +32,7 @@ type @schema.FullName@: struct {
 var (
 @for i, schema := range env.BaseSchemas {@
 	baseSchema@schema.Name = ceous.NewBaseSchema(
-		"",
+		"@schema.TableName",
 		"", @for _, field := range schema.Fields {@
 		ceous.NewSchemaField("@field.ColumnName"),}
 	)

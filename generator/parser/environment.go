@@ -100,7 +100,7 @@ func ParseEnvironment(ctx *EnvironmentContext) (*models.Environment, error) {
 	ctx.Reporter.Line()
 	ctx.Reporter.Line("BaseSchema")
 	for _, baseSchema := range env.BaseSchemas {
-		subReporter.Linef("+ %s", baseSchema.FullName)
+		subReporter.Linef("+ %s (%s)", baseSchema.FullName, baseSchema.TableName)
 		subSubReporter := reporters.SubReporter(subReporter)
 		for _, field := range baseSchema.Fields {
 			subSubReporter.Linef("- %s (%s)", field.Name, field.ColumnName)

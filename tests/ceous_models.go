@@ -268,7 +268,7 @@ var (
 	)
 
 	baseSchemaUser = ceous.NewBaseSchema(
-		"",
+		"users",
 		"",
 		ceous.NewSchemaField("id"),
 		ceous.NewSchemaField("name"),
@@ -287,14 +287,14 @@ var (
 	)
 
 	baseSchemaGroup = ceous.NewBaseSchema(
-		"",
+		"groups",
 		"",
 		ceous.NewSchemaField("id"),
 		ceous.NewSchemaField("name"),
 	)
 
 	baseSchemaUserGroup = ceous.NewBaseSchema(
-		"",
+		"user_groups",
 		"",
 		ceous.NewSchemaField("user_id"),
 		ceous.NewSchemaField("group_id"),

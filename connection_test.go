@@ -24,7 +24,7 @@ var _ = Describe("Connection", func() {
 			Expect(t).ToNot(BeNil())
 		})
 
-		It("should commit a transaction", func() {
+		FIt("should commit a transaction", func() {
 			t, err := db.Default.Begin()
 			Expect(err).ToNot(HaveOccurred())
 			_, err = t.Exec("delete from users")

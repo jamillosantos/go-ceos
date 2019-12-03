@@ -61,7 +61,9 @@ func RenderSchema(_buffer io.StringWriter, env *models.Environment) {
 	for i, schema := range env.BaseSchemas {
 		_buffer.WriteString("\n\tbaseSchema")
 		_buffer.WriteString(gorazor.HTMLEscape(schema.Name))
-		_buffer.WriteString(" = ceous.NewBaseSchema(\n\t\t\"\",\n\t\t\"\", ")
+		_buffer.WriteString(" = ceous.NewBaseSchema(\n\t\t\"")
+		_buffer.WriteString(gorazor.HTMLEscape(schema.TableName))
+		_buffer.WriteString("\",\n\t\t\"\", ")
 		for _, field := range schema.Fields {
 			_buffer.WriteString("\n\t\tceous.NewSchemaField(\"")
 			_buffer.WriteString(gorazor.HTMLEscape(field.ColumnName))
