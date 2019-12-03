@@ -86,7 +86,7 @@ func parseSchemaField(ctx *parseSchemaFieldContext, field *models.Field) error {
 		}
 		return Skip
 	}
-	ctx.BaseSchema.AddField(memberAccess(append(ctx.FieldPath, field.Name)...), columnName)
+	ctx.BaseSchema.AddField(memberAccess(append(ctx.FieldPath, field.Name)...), columnName, field.IsAutoIncrement)
 	ctx.Schema.AddField(field.Name, "", "", columnName)
 	return nil
 }

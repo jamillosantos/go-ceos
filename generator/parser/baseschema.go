@@ -40,6 +40,7 @@ func parseBaseSchemaField(ctx *parseBaseSchemaFieldContext, field *models.Field)
 	ctx.BaseSchema.AddField(
 		memberAccess(append(ctx.FieldPrefix, field.Name)...),
 		columnPrefix(append(ctx.ColumnPrefix, field.Column)),
+		field.IsAutoIncrement,
 	)
 	return nil
 }

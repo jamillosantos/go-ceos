@@ -270,7 +270,7 @@ var (
 	baseSchemaUser = ceous.NewBaseSchema(
 		"users",
 		"",
-		ceous.NewSchemaField("id"),
+		ceous.NewSchemaField("id", ceous.FieldAutoIncrement),
 		ceous.NewSchemaField("name"),
 		ceous.NewSchemaField("password"),
 		ceous.NewSchemaField("role"),
@@ -289,7 +289,7 @@ var (
 	baseSchemaGroup = ceous.NewBaseSchema(
 		"groups",
 		"",
-		ceous.NewSchemaField("id"),
+		ceous.NewSchemaField("id", ceous.FieldAutoIncrement),
 		ceous.NewSchemaField("name"),
 	)
 

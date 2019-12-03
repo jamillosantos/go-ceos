@@ -67,7 +67,11 @@ func RenderSchema(_buffer io.StringWriter, env *models.Environment) {
 		for _, field := range schema.Fields {
 			_buffer.WriteString("\n\t\tceous.NewSchemaField(\"")
 			_buffer.WriteString(gorazor.HTMLEscape(field.ColumnName))
-			_buffer.WriteString("\"),")
+			_buffer.WriteString("\"")
+			if field.IsAutoIncr {
+				_buffer.WriteString(", ceous.FieldAutoIncrement")
+			}
+			_buffer.WriteString("),")
 		}
 		_buffer.WriteString("\n\t)\n\t")
 		if i+1 == len(env.BaseSchemas) {
