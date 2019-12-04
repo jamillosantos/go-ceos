@@ -1,27 +1,33 @@
 package ceous
 
 // Valuer ...
-type Valuer interface {
-	Value(column string) (interface{}, error)
-}
+type (
+	Valuer interface {
+		Value(column string) (interface{}, error)
+	}
 
-type ColumnAddresser interface {
-	ColumnAddress(name string) (interface{}, error)
-}
+	ColumnAddresser interface {
+		ColumnAddress(name string) (interface{}, error)
+	}
 
-type Record interface {
-	GetID() interface{}
-	IsPersisted() bool
-	setPersisted()
-	IsWritable() bool
-	setWritable(bool)
-	ColumnAddresser
-	Valuer
-}
+	Record interface {
+		GetID() interface{}
+		IsPersisted() bool
+		setPersisted()
+		IsWritable() bool
+		setWritable(bool)
+		ColumnAddresser
+		Valuer
+	}
 
-type Model struct {
-	persisted bool
-	writable  bool
+	Model struct {
+		persisted bool
+		writable  bool
+	}
+)
+
+func MakeWritable(record Record) {
+	record.setWritable(true)
 }
 
 func (model *Model) IsPersisted() bool {

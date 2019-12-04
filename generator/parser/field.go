@@ -59,7 +59,13 @@ func parseFieldModel(ctx *parseFieldContext, f *myasthurts.Field) error {
 }
 
 func parseFieldCeous(ctx *parseFieldContext, tagCeous *myasthurts.TagParam, tagFK *myasthurts.TagParam, f *myasthurts.Field) (*models.Field, error) {
-	if (tagCeous == nil && tagFK == nil) || (tagCeous != nil && tagCeous.Value == "-" && tagFK == nil) {
+	if tagCeous == nil && tagFK == nil {
+		ctx.Reporter.Linef("Ignoring %s due to non ceous or fk tag found", f.Name)
+		return nil, Skip
+	}
+
+	if tagCeous != nil && tagCeous.Value == "-" && tagFK == nil {
+		ctx.Reporter.Linef("Ignoring %s due to ceous tag is '-'", f.Name)
 		return nil, Skip
 	}
 

@@ -76,6 +76,7 @@ func (q @Pointer@query.FullName) One() (m @env.InputPkgCtx.Ref(env.OutputPkg, qu
 		if err != nil {
 			return
 		}
+		ceous.MakeWritable(&m)
 
 		for _, rel := range q.BaseQuery.Relations {
 			err = rel.Aggregate(&m)
@@ -116,6 +117,7 @@ func (q @Pointer@query.FullName) All() ([]@Pointer@env.InputPkgCtx.Ref(env.Outpu
 		if err != nil {
 			return nil, err
 		}
+		ceous.MakeWritable(m)
 
 		for _, rel := range q.BaseQuery.Relations {
 			err = rel.Aggregate(m)

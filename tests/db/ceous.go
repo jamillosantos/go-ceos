@@ -279,6 +279,7 @@ func (q *UserQuery) One() (m tests.User, err error) {
 		if err != nil {
 			return
 		}
+		ceous.MakeWritable(&m)
 
 		for _, rel := range q.BaseQuery.Relations {
 			err = rel.Aggregate(&m)
@@ -319,6 +320,7 @@ func (q *UserQuery) All() ([]*tests.User, error) {
 		if err != nil {
 			return nil, err
 		}
+		ceous.MakeWritable(m)
 
 		for _, rel := range q.BaseQuery.Relations {
 			err = rel.Aggregate(m)
@@ -417,6 +419,7 @@ func (q *GroupQuery) One() (m tests.Group, err error) {
 		if err != nil {
 			return
 		}
+		ceous.MakeWritable(&m)
 
 		for _, rel := range q.BaseQuery.Relations {
 			err = rel.Aggregate(&m)
@@ -457,6 +460,7 @@ func (q *GroupQuery) All() ([]*tests.Group, error) {
 		if err != nil {
 			return nil, err
 		}
+		ceous.MakeWritable(m)
 
 		for _, rel := range q.BaseQuery.Relations {
 			err = rel.Aggregate(m)
@@ -561,6 +565,7 @@ func (q *UserGroupQuery) One() (m tests.UserGroup, err error) {
 		if err != nil {
 			return
 		}
+		ceous.MakeWritable(&m)
 
 		for _, rel := range q.BaseQuery.Relations {
 			err = rel.Aggregate(&m)
@@ -601,6 +606,7 @@ func (q *UserGroupQuery) All() ([]*tests.UserGroup, error) {
 		if err != nil {
 			return nil, err
 		}
+		ceous.MakeWritable(m)
 
 		for _, rel := range q.BaseQuery.Relations {
 			err = rel.Aggregate(m)

@@ -35,7 +35,7 @@ func isStructEmbedded(s *myasthurts.Struct) bool {
 func Parse(ctx *models.FieldableContext) error {
 	for _, s := range ctx.InputPkg.Structs {
 		fieldable := ctx.EnsureFieldable(s.Name())
-		ctx.Reporter.Linef("Model %s", fieldable.Name)
+		ctx.Reporter.Linef("Model %s (%d fields)", fieldable.Name, len(s.Fields))
 		fieldable.IsModel = isStructModel(s)
 		fieldable.IsEmbedded = isStructEmbedded(s)
 		for _, f := range s.Fields {

@@ -37,11 +37,17 @@ func (*fileIgnorer) BeforeFile(_ *myasthurts.ParsePackageContext, filePath strin
 		return errors.Wrap(err, "could not get the working directory")
 	}
 
+	if path.Base(filePath) == outputGeneratedFileName || path.Base(filePath) == outputModelsFileName {
+		if verbose {
+			reporter.Linef("Ignoring file %s", filePath)
+		}
+	}
+
 	for _, f := range excludedFiles {
 		if !path.IsAbs(f) {
 			f = path.Clean(path.Join(cwd, f))
 		}
-		if f == filePath || filePath == outputGeneratedFileName || filePath == outputModelsFileName {
+		if f == filePath {
 			if verbose {
 				reporter.Linef("Ignoring file %s", filePath)
 			}
