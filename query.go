@@ -245,6 +245,8 @@ func (q *BaseQuery) Builder() (*sq.SelectBuilder, error) {
 	// Creates the initial select
 	sqQuery := sq.Select(fields...).From(tableName)
 
+	sqQuery.PlaceholderFormat(sq.Dollar) // TODO(jota): To parametrize it.
+
 	// If we have conditions to be added ...
 	if len(q.where) > 0 {
 		q.applyConditions(sqQuery)

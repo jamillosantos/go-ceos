@@ -140,7 +140,6 @@ func (store *BaseStore) Insert(record Record, fields ...SchemaField) error {
 		}
 	}
 
-	// TODO(jota): Uncomment this.
 	record.setWritable(true)
 	record.setPersisted()
 	return nil
