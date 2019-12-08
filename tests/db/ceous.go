@@ -150,6 +150,12 @@ func NewUserQuery(options ...ceous.CeousOption) *UserQuery {
 	}
 }
 
+// For add a FOR [UPDATE|NO KEY UPDATE|SHARE|KEY SHARE] [NOWAIT|SKIP LOCKED] directive for the key.
+func (q *UserQuery) For(t ceous.SelectForType, lockingType ...ceous.SelectForLockingType) *UserQuery {
+	q.BaseQuery.For(t, lockingType...)
+	return q
+}
+
 // ByID add a filter by `ID`.
 func (q *UserQuery) ByID(value int) *UserQuery {
 	q.BaseQuery.Where(ceous.Eq(tests.Schema.User.ID, value))
@@ -362,6 +368,12 @@ func NewGroupQuery(options ...ceous.CeousOption) *GroupQuery {
 	}
 }
 
+// For add a FOR [UPDATE|NO KEY UPDATE|SHARE|KEY SHARE] [NOWAIT|SKIP LOCKED] directive for the key.
+func (q *GroupQuery) For(t ceous.SelectForType, lockingType ...ceous.SelectForLockingType) *GroupQuery {
+	q.BaseQuery.For(t, lockingType...)
+	return q
+}
+
 // ByID add a filter by `ID`.
 func (q *GroupQuery) ByID(value int) *GroupQuery {
 	q.BaseQuery.Where(ceous.Eq(tests.Schema.Group.ID, value))
@@ -500,6 +512,12 @@ func NewUserGroupQuery(options ...ceous.CeousOption) *UserGroupQuery {
 	return &UserGroupQuery{
 		BaseQuery: bq,
 	}
+}
+
+// For add a FOR [UPDATE|NO KEY UPDATE|SHARE|KEY SHARE] [NOWAIT|SKIP LOCKED] directive for the key.
+func (q *UserGroupQuery) For(t ceous.SelectForType, lockingType ...ceous.SelectForLockingType) *UserGroupQuery {
+	q.BaseQuery.For(t, lockingType...)
+	return q
 }
 
 // ByUserID add a filter by `UserID`.

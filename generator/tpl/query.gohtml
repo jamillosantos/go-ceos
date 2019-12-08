@@ -22,6 +22,12 @@ func New@query.FullName@:(options ...ceous.CeousOption) @Pointer@query.FullName@
 	}
 }
 
+// For add a FOR [UPDATE|NO KEY UPDATE|SHARE|KEY SHARE] [NOWAIT|SKIP LOCKED] directive for the key.
+func (q @Pointer@query.FullName) For(t ceous.SelectForType, lockingType ...ceous.SelectForLockingType) @Pointer@query.FullName@: {
+	q.BaseQuery.For(t, lockingType...)
+	return q
+}
+@:
 @for _, field := range query.Fields {@
 // By@field.Name add a filter by `@field.Name@:`.
 func (q @Pointer@query.FullName) By@field.MethodName@:(value @field.Type@:) @Pointer@query.FullName@: {
