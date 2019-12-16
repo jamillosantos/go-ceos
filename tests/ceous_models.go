@@ -199,16 +199,13 @@ func (model *UserGroup) ColumnAddress(name string) (interface{}, error) {
 }
 
 type schema struct {
-	UserGroupPK *schemaUserGroupPK
-	User        *schemaUser
-	Group       *schemaGroup
-	UserGroup   *schemaUserGroup
+	User      *schemaUser
+	Group     *schemaGroup
+	UserGroup *schemaUserGroup
 }
 
 // schemaUserGroupPK have all fields for the model UserGroupPK.
 type schemaUserGroupPK struct {
-	*ceous.BaseSchema
-
 	UserID  ceous.SchemaField
 	GroupID ceous.SchemaField
 }
@@ -309,21 +306,26 @@ var (
 )
 
 var (
-	baseSchemaUserAddress = schemaUserAddress{
+	schemaInstanceUserGroupPK = schemaUserGroupPK{
+
+		UserID:  baseSchemaUserGroupPK.ColumnsArr[0],
+		GroupID: baseSchemaUserGroupPK.ColumnsArr[1],
+	}
+	schemaInstanceUserAddress = schemaUserAddress{
 
 		Street: baseSchemaUser.ColumnsArr[4],
 		Number: baseSchemaUser.ColumnsArr[5],
 		City:   baseSchemaUser.ColumnsArr[6],
 		State:  baseSchemaUser.ColumnsArr[7],
 	}
-	baseSchemaUserWork = schemaUserWork{
+	schemaInstanceUserWork = schemaUserWork{
 
 		Street: baseSchemaUser.ColumnsArr[8],
 		Number: baseSchemaUser.ColumnsArr[9],
 		City:   baseSchemaUser.ColumnsArr[10],
 		State:  baseSchemaUser.ColumnsArr[11],
 	}
-	baseSchemaUserGroupID = schemaUserGroupID{
+	schemaInstanceUserGroupID = schemaUserGroupID{
 
 		UserID:  baseSchemaUserGroup.ColumnsArr[0],
 		GroupID: baseSchemaUserGroup.ColumnsArr[1],
@@ -333,13 +335,6 @@ var (
 // Schema represents the schema of the package "tests".
 var Schema = schema{
 
-	UserGroupPK: &schemaUserGroupPK{
-		BaseSchema: baseSchemaUserGroupPK,
-
-		UserID:  baseSchemaUserGroupPK.ColumnsArr[0],
-		GroupID: baseSchemaUserGroupPK.ColumnsArr[1],
-	},
-
 	User: &schemaUser{
 		BaseSchema: baseSchemaUser,
 
@@ -347,8 +342,8 @@ var Schema = schema{
 		Name:      baseSchemaUser.ColumnsArr[1],
 		Password:  baseSchemaUser.ColumnsArr[2],
 		Role:      baseSchemaUser.ColumnsArr[3],
-		Address:   baseSchemaUserAddress,
-		Work:      baseSchemaUserWork,
+		Address:   schemaInstanceUserAddress,
+		Work:      schemaInstanceUserWork,
 		CreatedAt: baseSchemaUser.ColumnsArr[12],
 		UpdatedAt: baseSchemaUser.ColumnsArr[13],
 	},
@@ -363,7 +358,7 @@ var Schema = schema{
 	UserGroup: &schemaUserGroup{
 		BaseSchema: baseSchemaUserGroup,
 
-		ID:    baseSchemaUserGroupID,
+		ID:    schemaInstanceUserGroupID,
 		Admin: baseSchemaUserGroup.ColumnsArr[2],
 	},
 }

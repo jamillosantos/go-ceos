@@ -4,6 +4,7 @@ import (
 	"io"
 )
 
+// ResultSet represents the abstraction of a sql.ResultSet struct.
 type ResultSet interface {
 	Next() bool
 	Scan(dest ...interface{}) error
@@ -11,24 +12,24 @@ type ResultSet interface {
 	io.Closer
 }
 
-type RecordResultSet struct {
-	ResultSet
-	lastErr error
+// RecordScanner describes a scanner for a record.
+type RecordScanner interface {
+	ScanRecord(rs ResultSet, model Record) error
 }
 
-func NewRecordResultSet(rows ResultSet, err error) *RecordResultSet {
-	return &RecordResultSet{
-		ResultSet: rows,
-		lastErr:   err,
-	}
+// RecordScannerColumns describes a column selector.
+type RecordScannerColumns interface {
+	SelectColumns() []SchemaField
 }
 
-func (rs *RecordResultSet) ToModel(model Record) error {
-	if rs.lastErr != nil {
-		return rs.lastErr
-	}
+// BaseRecordScanner implements a basic and generic `RecordScanner`.
+type BaseRecordScanner struct{}
 
-	columns, err := rs.ResultSet.Columns()
+var DefaultRecordScanner BaseRecordScanner
+
+// ScanRecord uses the ColumnAddress to read records from the given `rs`.
+func (recordScanner *BaseRecordScanner) ScanRecord(rs ResultSet, model Record) error {
+	columns, err := rs.Columns()
 	if err != nil {
 		return err
 	}
@@ -40,7 +41,7 @@ func (rs *RecordResultSet) ToModel(model Record) error {
 		}
 		scanColumns[i] = sValue
 	}
-	err = rs.ResultSet.Scan(scanColumns...)
+	err = rs.Scan(scanColumns...)
 	if err != nil {
 		return err
 	}
@@ -50,25 +51,4 @@ func (rs *RecordResultSet) ToModel(model Record) error {
 	model.setPersisted()
 
 	return nil
-}
-
-func (rs *RecordResultSet) Next() bool {
-	if rs.lastErr != nil {
-		return false
-	}
-	return rs.ResultSet.Next()
-}
-
-func (rs *RecordResultSet) Close() error {
-	if rs.lastErr != nil {
-		return rs.lastErr
-	}
-	return rs.ResultSet.Close()
-}
-
-func (rs *RecordResultSet) Scan(columns ...interface{}) error {
-	if rs.lastErr != nil {
-		return rs.lastErr
-	}
-	return rs.ResultSet.Scan(columns...)
 }

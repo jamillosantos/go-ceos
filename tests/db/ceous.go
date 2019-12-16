@@ -141,13 +141,13 @@ type UserQuery struct {
 
 // NewUserQuery creates a new query for model `UserQuery`.
 func NewUserQuery(options ...ceous.CeousOption) *UserQuery {
-	bq := ceous.NewBaseQuery(options...)
-	if bq.Schema == nil {
-		bq.Schema = tests.Schema.User.BaseSchema
+	query := &UserQuery{
+		BaseQuery: ceous.NewBaseQuery(options...),
 	}
-	return &UserQuery{
-		BaseQuery: bq,
+	if query.Schema == nil {
+		query.Schema = tests.Schema.User.BaseSchema
 	}
+	return query
 }
 
 // For add a FOR [UPDATE|NO KEY UPDATE|SHARE|KEY SHARE] [NOWAIT|SKIP LOCKED] directive for the key.
@@ -272,25 +272,31 @@ func (q *UserQuery) Offset(offset uint64) *UserQuery {
 func (q *UserQuery) One() (m tests.User, err error) {
 	q.Limit(1).Offset(0)
 
-	query, err := q.RawQuery()
-	if err != nil {
+	query, innerErr := q.RawQuery()
+	if innerErr != nil {
+		err = innerErr
 		return
 	}
 
-	rs := NewUserResultSet(query, nil)
+	rs, innerErr := NewUserResultSet(query, nil)
+	if innerErr != nil {
+		err = innerErr
+		return
+	}
 	defer rs.Close()
 
 	if rs.Next() {
-		err = rs.ToModel(&m)
+		err = rs.Scan()
 		if err != nil {
 			return
 		}
+		m = rs.Model
 		ceous.MakeWritable(&m)
 
 		for _, rel := range q.BaseQuery.Relations {
 			err = rel.Aggregate(&m)
 			if err != nil {
-				return tests.User{}, err // TODO(jota): Shall this error be wrapped? At first, yes.
+				return // TODO(jota): Shall this error be wrapped? At first, yes.
 			}
 		}
 	} else {
@@ -316,16 +322,20 @@ func (q *UserQuery) All() ([]*tests.User, error) {
 		return nil, err
 	}
 
-	rs := NewUserResultSet(query, nil)
+	rs, err := NewUserResultSet(query, nil)
+	if err != nil {
+		return nil, err
+	}
 	defer rs.Close()
 
 	ms := make([]*tests.User, 0)
 	for rs.Next() {
 		m := &tests.User{}
-		err = rs.ToModel(m)
+		err = rs.Scan()
 		if err != nil {
 			return nil, err
 		}
+		*m = rs.Model
 		ceous.MakeWritable(m)
 
 		for _, rel := range q.BaseQuery.Relations {
@@ -359,13 +369,13 @@ type GroupQuery struct {
 
 // NewGroupQuery creates a new query for model `GroupQuery`.
 func NewGroupQuery(options ...ceous.CeousOption) *GroupQuery {
-	bq := ceous.NewBaseQuery(options...)
-	if bq.Schema == nil {
-		bq.Schema = tests.Schema.Group.BaseSchema
+	query := &GroupQuery{
+		BaseQuery: ceous.NewBaseQuery(options...),
 	}
-	return &GroupQuery{
-		BaseQuery: bq,
+	if query.Schema == nil {
+		query.Schema = tests.Schema.Group.BaseSchema
 	}
+	return query
 }
 
 // For add a FOR [UPDATE|NO KEY UPDATE|SHARE|KEY SHARE] [NOWAIT|SKIP LOCKED] directive for the key.
@@ -418,25 +428,31 @@ func (q *GroupQuery) Offset(offset uint64) *GroupQuery {
 func (q *GroupQuery) One() (m tests.Group, err error) {
 	q.Limit(1).Offset(0)
 
-	query, err := q.RawQuery()
-	if err != nil {
+	query, innerErr := q.RawQuery()
+	if innerErr != nil {
+		err = innerErr
 		return
 	}
 
-	rs := NewGroupResultSet(query, nil)
+	rs, innerErr := NewGroupResultSet(query, nil)
+	if innerErr != nil {
+		err = innerErr
+		return
+	}
 	defer rs.Close()
 
 	if rs.Next() {
-		err = rs.ToModel(&m)
+		err = rs.Scan()
 		if err != nil {
 			return
 		}
+		m = rs.Model
 		ceous.MakeWritable(&m)
 
 		for _, rel := range q.BaseQuery.Relations {
 			err = rel.Aggregate(&m)
 			if err != nil {
-				return tests.Group{}, err // TODO(jota): Shall this error be wrapped? At first, yes.
+				return // TODO(jota): Shall this error be wrapped? At first, yes.
 			}
 		}
 	} else {
@@ -462,16 +478,20 @@ func (q *GroupQuery) All() ([]*tests.Group, error) {
 		return nil, err
 	}
 
-	rs := NewGroupResultSet(query, nil)
+	rs, err := NewGroupResultSet(query, nil)
+	if err != nil {
+		return nil, err
+	}
 	defer rs.Close()
 
 	ms := make([]*tests.Group, 0)
 	for rs.Next() {
 		m := &tests.Group{}
-		err = rs.ToModel(m)
+		err = rs.Scan()
 		if err != nil {
 			return nil, err
 		}
+		*m = rs.Model
 		ceous.MakeWritable(m)
 
 		for _, rel := range q.BaseQuery.Relations {
@@ -505,13 +525,13 @@ type UserGroupQuery struct {
 
 // NewUserGroupQuery creates a new query for model `UserGroupQuery`.
 func NewUserGroupQuery(options ...ceous.CeousOption) *UserGroupQuery {
-	bq := ceous.NewBaseQuery(options...)
-	if bq.Schema == nil {
-		bq.Schema = tests.Schema.UserGroup.BaseSchema
+	query := &UserGroupQuery{
+		BaseQuery: ceous.NewBaseQuery(options...),
 	}
-	return &UserGroupQuery{
-		BaseQuery: bq,
+	if query.Schema == nil {
+		query.Schema = tests.Schema.UserGroup.BaseSchema
 	}
+	return query
 }
 
 // For add a FOR [UPDATE|NO KEY UPDATE|SHARE|KEY SHARE] [NOWAIT|SKIP LOCKED] directive for the key.
@@ -570,25 +590,31 @@ func (q *UserGroupQuery) Offset(offset uint64) *UserGroupQuery {
 func (q *UserGroupQuery) One() (m tests.UserGroup, err error) {
 	q.Limit(1).Offset(0)
 
-	query, err := q.RawQuery()
-	if err != nil {
+	query, innerErr := q.RawQuery()
+	if innerErr != nil {
+		err = innerErr
 		return
 	}
 
-	rs := NewUserGroupResultSet(query, nil)
+	rs, innerErr := NewUserGroupResultSet(query, nil)
+	if innerErr != nil {
+		err = innerErr
+		return
+	}
 	defer rs.Close()
 
 	if rs.Next() {
-		err = rs.ToModel(&m)
+		err = rs.Scan()
 		if err != nil {
 			return
 		}
+		m = rs.Model
 		ceous.MakeWritable(&m)
 
 		for _, rel := range q.BaseQuery.Relations {
 			err = rel.Aggregate(&m)
 			if err != nil {
-				return tests.UserGroup{}, err // TODO(jota): Shall this error be wrapped? At first, yes.
+				return // TODO(jota): Shall this error be wrapped? At first, yes.
 			}
 		}
 	} else {
@@ -614,16 +640,20 @@ func (q *UserGroupQuery) All() ([]*tests.UserGroup, error) {
 		return nil, err
 	}
 
-	rs := NewUserGroupResultSet(query, nil)
+	rs, err := NewUserGroupResultSet(query, nil)
+	if err != nil {
+		return nil, err
+	}
 	defer rs.Close()
 
 	ms := make([]*tests.UserGroup, 0)
 	for rs.Next() {
 		m := &tests.UserGroup{}
-		err = rs.ToModel(m)
+		err = rs.Scan()
 		if err != nil {
 			return nil, err
 		}
+		*m = rs.Model
 		ceous.MakeWritable(m)
 
 		for _, rel := range q.BaseQuery.Relations {
@@ -761,72 +791,113 @@ func (store *UserGroupStore) Update(record *tests.UserGroup, fields ...ceous.Sch
 	return store.BaseStore.Update(record, fields...)
 }
 
-type userGroupPKResultSet struct {
-	*ceous.RecordResultSet
-}
-
-func NewUserGroupPKResultSet(rs ceous.ResultSet, err error) *userGroupPKResultSet {
-	return &userGroupPKResultSet{
-		RecordResultSet: ceous.NewRecordResultSet(rs, err),
-	}
-}
-
-type userAddressResultSet struct {
-	*ceous.RecordResultSet
-}
-
-func NewUserAddressResultSet(rs ceous.ResultSet, err error) *userAddressResultSet {
-	return &userAddressResultSet{
-		RecordResultSet: ceous.NewRecordResultSet(rs, err),
-	}
-}
-
-type userWorkResultSet struct {
-	*ceous.RecordResultSet
-}
-
-func NewUserWorkResultSet(rs ceous.ResultSet, err error) *userWorkResultSet {
-	return &userWorkResultSet{
-		RecordResultSet: ceous.NewRecordResultSet(rs, err),
-	}
-}
-
 type userResultSet struct {
-	*ceous.RecordResultSet
+	rs            ceous.ResultSet
+	recordScanner ceous.RecordScanner
+	Model         tests.User
 }
 
-func NewUserResultSet(rs ceous.ResultSet, err error) *userResultSet {
-	return &userResultSet{
-		RecordResultSet: ceous.NewRecordResultSet(rs, err),
+// NewUserResultSet create a new instance of the specialized
+// `ceous.ResultSet` for the model `User`.
+func NewUserResultSet(rs ceous.ResultSet, err error) (*userResultSet, error) {
+	if err != nil {
+		return nil, err
 	}
+	return &userResultSet{
+		rs:            rs,
+		recordScanner: &ceous.DefaultRecordScanner,
+	}, nil
+}
+
+func (rs *userResultSet) Next() bool {
+	return rs.rs.Next()
+}
+
+func (rs *userResultSet) Scan() error {
+	return rs.recordScanner.ScanRecord(rs.rs, &rs.Model)
+}
+
+func (rs *userResultSet) Close() error {
+	err := rs.rs.Close()
+	if err != nil {
+		return err
+	}
+	// Disposes the instance...
+	rs.rs = nil
+	rs.recordScanner = nil
+	return nil
 }
 
 type groupResultSet struct {
-	*ceous.RecordResultSet
+	rs            ceous.ResultSet
+	recordScanner ceous.RecordScanner
+	Model         tests.Group
 }
 
-func NewGroupResultSet(rs ceous.ResultSet, err error) *groupResultSet {
+// NewGroupResultSet create a new instance of the specialized
+// `ceous.ResultSet` for the model `Group`.
+func NewGroupResultSet(rs ceous.ResultSet, err error) (*groupResultSet, error) {
+	if err != nil {
+		return nil, err
+	}
 	return &groupResultSet{
-		RecordResultSet: ceous.NewRecordResultSet(rs, err),
-	}
+		rs:            rs,
+		recordScanner: &ceous.DefaultRecordScanner,
+	}, nil
 }
 
-type userGroupIDResultSet struct {
-	*ceous.RecordResultSet
+func (rs *groupResultSet) Next() bool {
+	return rs.rs.Next()
 }
 
-func NewUserGroupIDResultSet(rs ceous.ResultSet, err error) *userGroupIDResultSet {
-	return &userGroupIDResultSet{
-		RecordResultSet: ceous.NewRecordResultSet(rs, err),
+func (rs *groupResultSet) Scan() error {
+	return rs.recordScanner.ScanRecord(rs.rs, &rs.Model)
+}
+
+func (rs *groupResultSet) Close() error {
+	err := rs.rs.Close()
+	if err != nil {
+		return err
 	}
+	// Disposes the instance...
+	rs.rs = nil
+	rs.recordScanner = nil
+	return nil
 }
 
 type userGroupResultSet struct {
-	*ceous.RecordResultSet
+	rs            ceous.ResultSet
+	recordScanner ceous.RecordScanner
+	Model         tests.UserGroup
 }
 
-func NewUserGroupResultSet(rs ceous.ResultSet, err error) *userGroupResultSet {
-	return &userGroupResultSet{
-		RecordResultSet: ceous.NewRecordResultSet(rs, err),
+// NewUserGroupResultSet create a new instance of the specialized
+// `ceous.ResultSet` for the model `UserGroup`.
+func NewUserGroupResultSet(rs ceous.ResultSet, err error) (*userGroupResultSet, error) {
+	if err != nil {
+		return nil, err
 	}
+	return &userGroupResultSet{
+		rs:            rs,
+		recordScanner: &ceous.DefaultRecordScanner,
+	}, nil
+}
+
+func (rs *userGroupResultSet) Next() bool {
+	return rs.rs.Next()
+}
+
+func (rs *userGroupResultSet) Scan() error {
+	return rs.recordScanner.ScanRecord(rs.rs, &rs.Model)
+}
+
+func (rs *userGroupResultSet) Close() error {
+	err := rs.rs.Close()
+	if err != nil {
+		return err
+	}
+	// Disposes the instance...
+	rs.rs = nil
+	rs.recordScanner = nil
+	return nil
 }

@@ -16,6 +16,7 @@ type (
 		Fields       []*BaseSchemaField
 		FieldsIdxMap map[string]int
 		FieldsMap    map[string]*BaseSchemaField
+		IsModel      bool
 	}
 
 	SchemaField struct {

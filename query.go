@@ -63,10 +63,11 @@ type (
 		offset uint64
 		order  []string
 
+		RecordScanner RecordScanner
+
 		forType        *sq.SelectForType
 		forLockingType sq.SelectForLockingType
 
-		disableCache              bool
 		IsDefaultScenarioDisabled bool
 	}
 
@@ -79,11 +80,7 @@ func NewBaseQuery(options ...CeousOption) *BaseQuery {
 	for _, option := range options {
 		option(q)
 	}
-	if q.disableCache {
-		q.runner = q.Runner
-	} else {
-		q.runner = sq.NewStmtCacher(q.Runner)
-	}
+	q.runner = q.Runner
 	return q
 }
 
@@ -122,20 +119,6 @@ func WithRunner(runner DBRunner) CeousOption {
 	}
 }
 
-// WithCache returns a query option that will enable or disable the cache.
-func WithCache(useCache bool) CeousOption {
-	return func(obj interface{}) {
-		switch q := obj.(type) {
-		case *BaseQuery:
-			q.disableCache = useCache
-		case *BaseStore:
-			q.disableCache = useCache
-		default:
-			panic(errors.New(fmt.Sprintf("invalid obj: %T", obj))) // TODO(jota): To formalize this error
-		}
-	}
-}
-
 // WithSchema returns a query option that will set the schema of a Query. Useful
 // for using aliases.
 func WithSchema(schema Schema) CeousOption {
@@ -148,6 +131,15 @@ func WithSchema(schema Schema) CeousOption {
 		default:
 			panic(errors.New(fmt.Sprintf("invalid obj: %T", obj)))
 		}
+	}
+}
+
+func (q *BaseQuery) With(d interface{}) {
+	switch modifier := d.(type) {
+	case RecordScannerColumns:
+		q.Select(modifier.SelectColumns()...)
+	case RecordScanner:
+		q.RecordScanner = modifier
 	}
 }
 
@@ -236,11 +228,6 @@ func (q *BaseQuery) OrderBy(fields ...interface{}) {
 // Builder will prepare a *sq.SelectBuilder and return it with all fields,
 // conditions and limits.
 func (q *BaseQuery) Builder() (*sq.SelectBuilder, error) {
-	if q._modified != nil {
-		// If it was not modified since last `compile`, just
-		// return the cached.
-		return q._modified, nil
-	}
 	var (
 		fields         []string
 		selectedFields []SchemaField
@@ -297,9 +284,6 @@ func (q *BaseQuery) Builder() (*sq.SelectBuilder, error) {
 	if q.forType != nil {
 		sqQuery.For(*q.forType, q.forLockingType)
 	}
-
-	q._modified = sqQuery
-
 	return sqQuery, nil
 }
 
@@ -350,7 +334,12 @@ func (q *BaseQuery) RawQuery() (*sql.Rows, error) {
 		return nil, err
 	}
 	builder.PlaceholderFormat(sq.Dollar) // TODO(jota): Make this placeholder configurable and optimize this.
-	return builder.RunWith(q.runner).Query()
+	sql, args, err := builder.ToSql()
+	if err != nil {
+		return nil, err
+	}
+	rows, err := q.runner.Query(sql, args...)
+	return rows, err
 }
 
 func (q *BaseQuery) RawQueryContext(ctx context.Context) (*sql.Rows, error) {

@@ -2,6 +2,7 @@
 	import "github.com/jamillosantos/go-ceous/generator/models"
 	import . "github.com/jamillosantos/go-ceous/generator/helpers"
 
+	var env *models.Environment
 	var schema *models.Schema
 }
 
@@ -10,11 +11,38 @@
 }
 
 type @resultSetName struct {
-	*ceous.RecordResultSet
+	rs ceous.ResultSet
+	recordScanner ceous.RecordScanner
+	Model @env.InputPkgCtx.Ref(env.OutputPkg, schema.Name)
 }
 
-func New@schema.Name@:ResultSet(rs ceous.ResultSet, err error) @raw("*")@resultSetName@: {
-	return @raw("&")@resultSetName@:{
-		RecordResultSet: ceous.NewRecordResultSet(rs, err),
+// New@PascalCase(resultSetName)@: create a new instance of the specialized
+// `ceous.ResultSet` for the model `@schema.Name`.
+func New@PascalCase(resultSetName)(rs ceous.ResultSet, err error) (@Pointer@resultSetName@:, error) {
+	if err != nil {
+		return nil, err
 	}
+	return @raw("&")@resultSetName@:{
+		rs: rs,
+		recordScanner: &ceous.DefaultRecordScanner,
+	}, nil
+}
+
+func (rs @Pointer@resultSetName) Next() bool {
+	return rs.rs.Next()
+}
+
+func (rs @Pointer@resultSetName) Scan() error {
+	return rs.recordScanner.ScanRecord(rs.rs, &rs.Model)
+}
+
+func (rs @Pointer@resultSetName) Close() error {
+	err := rs.rs.Close()
+	if err != nil {
+		return err
+	}
+	// Disposes the instance...
+	rs.rs = nil
+	rs.recordScanner = nil
+	return nil
 }
