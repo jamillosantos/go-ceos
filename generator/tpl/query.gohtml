@@ -13,13 +13,13 @@ type @query.FullName@: struct {
 
 // New@query.FullName creates a new query for model `@query.FullName`.
 func New@query.FullName@:(options ...ceous.CeousOption) @Pointer@query.FullName@: {
-	bq := ceous.NewBaseQuery(options...)
-	if bq.Schema == nil {
-		bq.Schema = @env.InputPkgCtx.Ref(env.OutputPkg, "Schema")@:.@query.Name@:.BaseSchema
+	query := @raw("&")@query.FullName@:{
+		BaseQuery: ceous.NewBaseQuery(options...),
 	}
-	return @raw("&")@query.FullName@:{
-		BaseQuery: bq,
+	if query.Schema == nil {
+		query.Schema = @env.InputPkgCtx.Ref(env.OutputPkg, "Schema")@:.@query.Name@:.BaseSchema
 	}
+	return query
 }
 
 // For add a FOR [UPDATE|NO KEY UPDATE|SHARE|KEY SHARE] [NOWAIT|SKIP LOCKED] directive for the key.
@@ -69,25 +69,31 @@ func (q @Pointer@query.FullName) Offset(offset uint64) @Pointer@query.FullName {
 func (q @Pointer@query.FullName) One() (m @env.InputPkgCtx.Ref(env.OutputPkg, query.Name)@:, err error) {
 	q.Limit(1).Offset(0)
 
-	query, err := q.RawQuery()
-	if err != nil {
+	query, innerErr := q.RawQuery()
+	if innerErr != nil {
+		err = innerErr
 		return
 	}
 
-	rs := New@query.Name@:ResultSet(query, nil)
+	rs, innerErr := New@query.Name@:ResultSet(query, nil)
+	if innerErr != nil {
+		err = innerErr
+		return
+	}
 	defer rs.Close()
 
 	if rs.Next() {
-		err = rs.ToModel(&m)
+		err = rs.Scan()
 		if err != nil {
 			return
 		}
+		m = rs.Model
 		ceous.MakeWritable(&m)
 
 		for _, rel := range q.BaseQuery.Relations {
 			err = rel.Aggregate(&m)
 			if err != nil {
-				return @env.InputPkgCtx.Ref(env.OutputPkg, query.Name)@:{}, err // TODO(jota): Shall this error be wrapped? At first, yes.
+				return // TODO(jota): Shall this error be wrapped? At first, yes.
 			}
 		}
 	} else {
@@ -113,16 +119,20 @@ func (q @Pointer@query.FullName) All() ([]@Pointer@env.InputPkgCtx.Ref(env.Outpu
 		return nil, err
 	}
 
-	rs := New@query.Name@:ResultSet(query, nil)
+	rs, err := New@query.Name@:ResultSet(query, nil)
+	if err != nil {
+		return nil, err
+	}
 	defer rs.Close()
 
 	ms := make([]@Pointer@env.InputPkgCtx.Ref(env.OutputPkg, query.Name)@:, 0)
 	for rs.Next() {
-		m := &@env.InputPkgCtx.Ref(env.OutputPkg, query.Name)@:{}
-		err = rs.ToModel(m)
+		m := @raw("&")@env.InputPkgCtx.Ref(env.OutputPkg, query.Name)@:{}
+		err = rs.Scan()
 		if err != nil {
 			return nil, err
 		}
+		*m = rs.Model
 		ceous.MakeWritable(m)
 
 		for _, rel := range q.BaseQuery.Relations {

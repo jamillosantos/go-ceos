@@ -89,7 +89,7 @@ func RenderSchema(_buffer io.StringWriter, env *models.Environment) {
 		if s.IsModel {
 			continue
 		}
-		_buffer.WriteString("\n\tbaseSchema")
+		_buffer.WriteString("\n\tschemaInstance")
 		_buffer.WriteString(gorazor.HTMLEscape(s.Name))
 		_buffer.WriteString(" = schema")
 		_buffer.WriteString(gorazor.HTMLEscape(s.Name))

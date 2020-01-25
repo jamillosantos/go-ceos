@@ -32,5 +32,8 @@ import (
 }
 
 @for _, schema := range env.Schemas {
-	RenderResultset(_buffer, schema)
+	if !schema.IsModel {
+		continue
+	}
+	RenderResultset(_buffer, env, schema)
 }

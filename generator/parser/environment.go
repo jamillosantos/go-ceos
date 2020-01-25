@@ -26,7 +26,7 @@ func ParseEnvironment(ctx *EnvironmentContext) (*models.Environment, error) {
 		}
 		baseSchema := models.NewBaseSchema(fillable.Name, fillable.TableName)
 		schema := models.NewSchema(fillable.Name, baseSchema)
-		schema.IsModel = true
+		schema.IsModel = fillable.IsModel
 		err := parseSchema(&parseSchemaContext{
 			Env:          env,
 			BaseSchema:   baseSchema,

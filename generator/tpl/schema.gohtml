@@ -55,7 +55,7 @@ var (
 @for _, s := range env.Schemas {@ @if s.IsModel {
 		continue
 	}
-	baseSchema@s.Name = schema@s.Name {
+	schemaInstance@s.Name = schema@s.Name {
 		@for _, field := range s.Fields {@
 			@field.Name : baseSchema@s.BaseSchema.Name@:.ColumnsArr[@s.BaseSchema.FieldsIdxMap[field.ColumnName]],}
 	}

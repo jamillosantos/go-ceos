@@ -13,27 +13,42 @@ import (
 )
 
 // Resultset generates tpl/resultset.gohtml
-func Resultset(schema *models.Schema) string {
+func Resultset(env *models.Environment, schema *models.Schema) string {
 	var _b strings.Builder
-	RenderResultset(&_b, schema)
+	RenderResultset(&_b, env, schema)
 	return _b.String()
 }
 
 // RenderResultset render tpl/resultset.gohtml
-func RenderResultset(_buffer io.StringWriter, schema *models.Schema) {
+func RenderResultset(_buffer io.StringWriter, env *models.Environment, schema *models.Schema) {
 
 	resultSetName := CamelCase(schema.Name) + "ResultSet"
 
 	_buffer.WriteString("\n\ntype ")
 	_buffer.WriteString(gorazor.HTMLEscape(resultSetName))
-	_buffer.WriteString(" struct {\n\t*ceous.RecordResultSet\n}\n\nfunc New")
+	_buffer.WriteString(" struct {\n\trs ceous.ResultSet\n\trecordScanner ceous.RecordScanner\n\tModel ")
+	_buffer.WriteString(gorazor.HTMLEscape(env.InputPkgCtx.Ref(env.OutputPkg, schema.Name)))
+	_buffer.WriteString("\n}\n\n// New")
+	_buffer.WriteString(gorazor.HTMLEscape(PascalCase(resultSetName)))
+	_buffer.WriteString(" create a new instance of the specialized\n// `ceous.ResultSet` for the model `")
 	_buffer.WriteString(gorazor.HTMLEscape(schema.Name))
-	_buffer.WriteString("ResultSet(rs ceous.ResultSet, err error) ")
-	_buffer.WriteString(("*"))
+	_buffer.WriteString("`.\nfunc New")
+	_buffer.WriteString(gorazor.HTMLEscape(PascalCase(resultSetName)))
+	_buffer.WriteString("(rs ceous.ResultSet, err error) (")
+	_buffer.WriteString(gorazor.HTMLEscape(Pointer))
 	_buffer.WriteString(gorazor.HTMLEscape(resultSetName))
-	_buffer.WriteString(" {\n\treturn ")
+	_buffer.WriteString(", error) {\n\tif err != nil {\n\t\treturn nil, err\n\t}\n\treturn ")
 	_buffer.WriteString(("&"))
 	_buffer.WriteString(gorazor.HTMLEscape(resultSetName))
-	_buffer.WriteString("{\n\t\tRecordResultSet: ceous.NewRecordResultSet(rs, err),\n\t}\n}")
+	_buffer.WriteString("{\n\t\trs: rs,\n\t\trecordScanner: &ceous.DefaultRecordScanner,\n\t}, nil\n}\n\nfunc (rs ")
+	_buffer.WriteString(gorazor.HTMLEscape(Pointer))
+	_buffer.WriteString(gorazor.HTMLEscape(resultSetName))
+	_buffer.WriteString(") Next() bool {\n\treturn rs.rs.Next()\n}\n\nfunc (rs ")
+	_buffer.WriteString(gorazor.HTMLEscape(Pointer))
+	_buffer.WriteString(gorazor.HTMLEscape(resultSetName))
+	_buffer.WriteString(") Scan() error {\n\treturn rs.recordScanner.ScanRecord(rs.rs, &rs.Model)\n}\n\nfunc (rs ")
+	_buffer.WriteString(gorazor.HTMLEscape(Pointer))
+	_buffer.WriteString(gorazor.HTMLEscape(resultSetName))
+	_buffer.WriteString(") Close() error {\n\terr := rs.rs.Close()\n\tif err != nil {\n\t\treturn err\n\t}\n\t// Disposes the instance...\n\trs.rs = nil\n\trs.recordScanner = nil\n\treturn nil\n}")
 
 }

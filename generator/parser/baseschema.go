@@ -17,6 +17,7 @@ type (
 )
 
 func parseBaseSchema(ctx *parseBaseSchemaContext, model *models.Fieldable) error {
+	ctx.BaseSchema.IsModel = model.IsModel
 	for _, field := range model.Fields {
 		err := parseBaseSchemaField(&parseBaseSchemaFieldContext{
 			BaseSchema:  ctx.BaseSchema,

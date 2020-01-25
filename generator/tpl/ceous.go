@@ -47,7 +47,10 @@ func RenderCeous(_buffer io.StringWriter, env *models.Environment) {
 		RenderStore(_buffer, env, store)
 	}
 	for _, schema := range env.Schemas {
-		RenderResultset(_buffer, schema)
+		if !schema.IsModel {
+			continue
+		}
+		RenderResultset(_buffer, env, schema)
 	}
 
 }
