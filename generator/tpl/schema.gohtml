@@ -1,55 +1,85 @@
 @{
-	import generatorModels "github.com/jamillosantos/go-ceous/generator/models"
+	import "github.com/jamillosantos/go-ceous/generator/models"
+	import . "github.com/jamillosantos/go-ceous/generator/helpers"
+	import "strconv"
 
-	var ctxPkg *generatorModels.Ctx
-	var models []*generatorModels.Model
--}
+	var env *models.Environment
+}
 
 type schema struct {
-@for _, m := range models {@
-	@m.Name@: @raw("*")@m.SchemaName()
+@for _, schema := range env.Schemas {
+	if schema.IsModel {@
+	@schema.Name@: @Pointer@schema.FullName}
 }
 }
 
-// Schema represents the schema of the package "@ctxPkg.InputPkg.Name@:".
-var Schema = schema{
-@for _, m := range models {@
-	@m.Name@:: @raw("&")@m.SchemaName()@: {
-	BaseSchema: @m.BaseSchemaName(),
-
-	@for _, field := range m.Fields {@
-		@field.Name@:: @if field.SchemaType == "" {
-		i := m.ColumnsMap[field.FieldName]
-		@m.BaseSchemaName()@:.ColumnsArr[@i],
-	} else {
-		@field.SchemaType@:Schema,
+@for _, schema := range env.Schemas {@
+// @schema.FullName have all fields for the model @schema.Name@:.
+type @schema.FullName@: struct {
+	@if schema.IsModel {@
+	*ceous.BaseSchema
 	}
-	}
-	},
-}
+	@for _, field := range schema.Fields {@
+		@field.Name @if field.Type == "" {
+			_buffer.WriteString("ceous.SchemaField")
+		} else {
+			_buffer.WriteString(field.SchemaName)
+		}}
 }
 
-@for _, model := range models {@
-var @model.BaseSchemaName() = ceous.NewBaseSchema(
-	"@model.TableName",
-	"",@for _, field := range model.Columns {@
-	ceous.NewSchemaField("@field.Column"@if len(field.Modifiers) > 0 {
-		@for _, m := range field.Modifiers {
-			@raw(", ")@raw(m())
-		}
-	}@),
+}
+
+var (
+@for i, schema := range env.BaseSchemas {@
+	baseSchema@schema.Name = ceous.NewBaseSchema(
+		"@schema.TableName",
+		"", @for _, field := range schema.Fields {@
+		ceous.NewSchemaField("@field.ColumnName"@{
+	if field.IsPK {
+		_buffer.WriteString(", ceous.FieldPK")
+	}
+	if field.IsAutoIncr {
+		_buffer.WriteString(", ceous.FieldAutoIncrement")
+	}
+	}),}
+	)
+	@if i+1 == len(env.BaseSchemas) {
+		_buffer.WriteString("\n")
+	}
+@:
 }
 )
 
-type @model.SchemaName()@: struct {
-	*ceous.BaseSchema
 
-@for _, field := range model.SchemaFields {@
-	@field.Name @if field.SchemaType == "" {
-		@:ceous.SchemaField
-	} else {
-		@:schema@field.SchemaType
+var (
+@for _, s := range env.Schemas {@ @if s.IsModel {
+		continue
+	}
+	baseSchema@s.Name = schema@s.Name {
+		@for _, field := range s.Fields {@
+			@field.Name : baseSchema@s.BaseSchema.Name@:.ColumnsArr[@s.BaseSchema.FieldsIdxMap[field.ColumnName]],}
 	}
 }
+)
+
+// Schema represents the schema of the package "@env.InputPkg.Name@:".
+var Schema = schema{
+@for _, schema := range env.Schemas {@
+	@if !schema.IsModel {
+		continue
+	}
+
+	@schema.Name@:: @raw("&")@schema.FullName@: {
+	BaseSchema: @schema.BaseSchema.FullName,
+
+	@for _, field := range schema.Fields {
+		@field.Name@:: 
+		@if field.Type == "" {
+		i := schema.BaseSchema.FieldsIdxMap[field.ColumnName]
+		_buffer.WriteString(schema.BaseSchema.FullName + ".ColumnsArr[" + strconv.Itoa(i) + "],\n")
+	} else {
+		_buffer.WriteString(field.Type + ",\n")
+	}
+	}},
 }
 }

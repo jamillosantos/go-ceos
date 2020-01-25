@@ -36,3 +36,5 @@ require (
 	gopkg.in/yaml.v2 v2.2.7 // indirect
 	gotest.tools v2.2.0+incompatible // indirect
 )
+
+replace github.com/elgris/sqrl => github.com/jamillosantos/sqrl v0.0.0-20191208042856-7566eab79f8a

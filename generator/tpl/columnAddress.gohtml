@@ -1,15 +1,16 @@
 @{
 	import "github.com/jamillosantos/go-ceous/generator/models"
+	import . "github.com/jamillosantos/go-ceous/generator/helpers"
 
-	var model *models.Model
+	var baseSchema *models.BaseSchema
 }
 
 // ColumnAddress returns the pointer address of a field given its column name.
-func (model @raw("*")@model.Name@:) ColumnAddress(name string) (interface{}, error) {
+func (model @Pointer@baseSchema.Name@:) ColumnAddress(name string) (interface{}, error) {
 	switch name {
-@for _, field := range model.Columns {@
-	case "@field.Column":
-		return &model.@field.FullField@:, nil
+@for _, field := range baseSchema.Fields {@
+	case "@field.ColumnName":
+		return &model.@field.Name@:, nil
 }
 	default:
 		return nil, errors.Wrapf(ceous.ErrFieldNotFound, "field %s not found", name)

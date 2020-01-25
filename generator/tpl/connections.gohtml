@@ -1,17 +1,18 @@
 @{
-	import generatorModels "github.com/jamillosantos/go-ceous/generator/models"
+	import models "github.com/jamillosantos/go-ceous/generator/models"
 	import . "github.com/jamillosantos/go-ceous/generator/helpers"
 
-	var connections []*generatorModels.Connection
-	var models []*generatorModels.Model
+	var env *models.Environment
 }
 
 type Creator interface {
-@for _, model := range models {@
-	// @model.Name@:Query creates a new query related with the connection set.
-	@model.Name@:Query(options ...ceous.CeousOption) @Pointer@model.QueryName()
-	// @model.Name@:Store creates a new store related with the connection set.
-	@model.Name@:Store(options ...ceous.CeousOption) @Pointer@model.StoreName()
+@for _, query := range env.Queries {@
+	// @query.FullName creates a new query related with the connection set.
+	@query.FullName@:(options ...ceous.CeousOption) @Pointer@query.FullName
+}
+@for _, store := range env.Stores {@
+	// @store.FullName creates a new store related with the connection set.
+	@store.FullName@:(options ...ceous.CeousOption) @Pointer@store.FullName
 }
 }
 
@@ -20,25 +21,26 @@ type Connection interface {
 	Creator
 }
 
-@for _, conn := range connections {@
-type @conn.ConnectionName()  struct {
+@for _, conn := range env.Connections {@
+type @conn.FullName struct {
 	@Pointer@:ceous.BaseConnection
 }
 
-	@for _, model := range models {@
-// @model.Name@:Query creates a new query related with the connection @conn.Name@: set.
-func (c @Pointer@conn.ConnectionName()) @model.Name@:Query(options ...ceous.CeousOption) @Pointer@model.QueryName() {
-	return New@model.Name@:Query(append(options, ceous.WithConn(c))...)
+	@for _, query := range env.Queries {@
+// @query.FullName creates a new query related with the connection @conn.Name@: set.
+func (c @Pointer@conn.FullName) @query.Name@:Query(options ...ceous.CeousOption) @Pointer@query.FullName {
+	return New@query.FullName@:(append(options, ceous.WithConn(c))...)
 }
-
-// @model.Name@:Store creates a new store related with the connection @conn.Name@: set.
-func (c @Pointer@conn.ConnectionName()) @model.Name@:Store(options ...ceous.CeousOption) @Pointer@model.StoreName() {
-	return New@model.Name@:Store(append(options, ceous.WithConn(c))...)
+	}
+	@for _, store := range env.Stores {@
+// @store.Name@:Store creates a new store related with the connection @conn.Name@: set.
+func (c @Pointer@conn.FullName) @store.Name@:Store(options ...ceous.CeousOption) @Pointer@store.FullName {
+	return New@store.Name@:Store(append(options, ceous.WithConn(c))...)
 }
 	}
 
 // Begin creates a new transaction with @conn.Name@: set.
-func (c @Pointer@conn.ConnectionName()) Begin() (*Transaction, error) {
+func (c @Pointer@conn.FullName) Begin() (*Transaction, error) {
 	tx, err := c.BaseConnection.Begin()
 	if err != nil {
 		return nil, err
@@ -48,7 +50,7 @@ func (c @Pointer@conn.ConnectionName()) Begin() (*Transaction, error) {
 
 // BeginTx creates a new transaction with extended config params with the
 // connection @conn.Name@: set.
-func (c @Pointer@conn.ConnectionName()) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Transaction, error) {
+func (c @Pointer@conn.FullName) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Transaction, error) {
 	tx, err := c.BaseConnection.BeginTx(ctx, opts)
 	if err != nil {
 		return nil, err
@@ -58,16 +60,16 @@ func (c @Pointer@conn.ConnectionName()) BeginTx(ctx context.Context, opts *sql.T
 }
 
 var (
-@for _, conn := range connections {@
-	// @conn.Name@ is a database connection reference.
-	@(conn.Name) @Pointer@conn.ConnectionName()
+@for _, conn := range env.Connections {@
+	// @PascalCase(conn.Name) is a database connection reference.
+	@PascalCase(conn.Name) @Pointer@conn.FullName
 }
 )
 
-@for _, conn := range connections {@
+@for _, conn := range env.Connections {@
 // Init@PascalCase(conn.Name)@: initializes the connection `@PascalCase(conn.Name):@`.
 func Init@PascalCase(conn.Name)@:(db *sql.DB) {
-	@conn.Name = @raw("&")@conn.ConnectionName()@:{
+	@PascalCase(conn.Name) = @raw("&")@conn.FullName@:{
 		BaseConnection: ceous.NewConnection(db),
 	}
 }

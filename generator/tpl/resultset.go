@@ -13,27 +13,27 @@ import (
 )
 
 // Resultset generates tpl/resultset.gohtml
-func Resultset(model *models.Model) string {
+func Resultset(schema *models.Schema) string {
 	var _b strings.Builder
-	RenderResultset(&_b, model)
+	RenderResultset(&_b, schema)
 	return _b.String()
 }
 
 // RenderResultset render tpl/resultset.gohtml
-func RenderResultset(_buffer io.StringWriter, model *models.Model) {
+func RenderResultset(_buffer io.StringWriter, schema *models.Schema) {
 
-	modelName := CamelCase(model.Name) + "ResultSet"
+	resultSetName := CamelCase(schema.Name) + "ResultSet"
 
 	_buffer.WriteString("\n\ntype ")
-	_buffer.WriteString(gorazor.HTMLEscape(modelName))
+	_buffer.WriteString(gorazor.HTMLEscape(resultSetName))
 	_buffer.WriteString(" struct {\n\t*ceous.RecordResultSet\n}\n\nfunc New")
-	_buffer.WriteString(gorazor.HTMLEscape(model.Name))
+	_buffer.WriteString(gorazor.HTMLEscape(schema.Name))
 	_buffer.WriteString("ResultSet(rs ceous.ResultSet, err error) ")
 	_buffer.WriteString(("*"))
-	_buffer.WriteString(gorazor.HTMLEscape(modelName))
+	_buffer.WriteString(gorazor.HTMLEscape(resultSetName))
 	_buffer.WriteString(" {\n\treturn ")
 	_buffer.WriteString(("&"))
-	_buffer.WriteString(gorazor.HTMLEscape(modelName))
+	_buffer.WriteString(gorazor.HTMLEscape(resultSetName))
 	_buffer.WriteString("{\n\t\tRecordResultSet: ceous.NewRecordResultSet(rs, err),\n\t}\n}")
 
 }

@@ -5,105 +5,137 @@
 package tpl
 
 import (
-	generatorModels "github.com/jamillosantos/go-ceous/generator/models"
+	. "github.com/jamillosantos/go-ceous/generator/helpers"
+	"github.com/jamillosantos/go-ceous/generator/models"
 	"github.com/sipin/gorazor/gorazor"
 	"io"
+	"strconv"
 	"strings"
 )
 
 // Schema generates tpl/schema.gohtml
-func Schema(ctxPkg *generatorModels.Ctx, models []*generatorModels.Model) string {
+func Schema(env *models.Environment) string {
 	var _b strings.Builder
-	RenderSchema(&_b, ctxPkg, models)
+	RenderSchema(&_b, env)
 	return _b.String()
 }
 
 // RenderSchema render tpl/schema.gohtml
-func RenderSchema(_buffer io.StringWriter, ctxPkg *generatorModels.Ctx, models []*generatorModels.Model) {
+func RenderSchema(_buffer io.StringWriter, env *models.Environment) {
 	_buffer.WriteString("\n\ntype schema struct {")
-	for _, m := range models {
-		_buffer.WriteString("\n\t")
-		_buffer.WriteString(gorazor.HTMLEscape(m.Name))
-		_buffer.WriteString(" ")
-		_buffer.WriteString(("*"))
-		_buffer.WriteString(gorazor.HTMLEscape(m.SchemaName()))
-	}
-	_buffer.WriteString("\n}\n\n// Schema represents the schema of the package \"")
-	_buffer.WriteString(gorazor.HTMLEscape(ctxPkg.InputPkg.Name))
-	_buffer.WriteString("\".\nvar Schema = schema{")
-	for _, m := range models {
-		_buffer.WriteString("\n\t")
-		_buffer.WriteString(gorazor.HTMLEscape(m.Name))
-		_buffer.WriteString(": ")
-		_buffer.WriteString(("&"))
-		_buffer.WriteString(gorazor.HTMLEscape(m.SchemaName()))
-		_buffer.WriteString(" {\n\tBaseSchema: ")
-		_buffer.WriteString(gorazor.HTMLEscape(m.BaseSchemaName()))
-		_buffer.WriteString(",\n\n\t")
-		for _, field := range m.Fields {
-			_buffer.WriteString("\n\t\t")
-			_buffer.WriteString(gorazor.HTMLEscape(field.Name))
-			_buffer.WriteString(": ")
-			if field.SchemaType == "" {
-				i := m.ColumnsMap[field.FieldName]
-
-				_buffer.WriteString(gorazor.HTMLEscape(m.BaseSchemaName()))
-
-				_buffer.WriteString(".ColumnsArr[")
-				_buffer.WriteString(gorazor.HTMLEscape(i))
-				_buffer.WriteString("],")
-
-			} else {
-
-				_buffer.WriteString(gorazor.HTMLEscape(field.SchemaType))
-
-				_buffer.WriteString("Schema,")
-
-			}
+	for _, schema := range env.Schemas {
+		if schema.IsModel {
 			_buffer.WriteString("\n\t")
+			_buffer.WriteString(gorazor.HTMLEscape(schema.Name))
+			_buffer.WriteString(" ")
+			_buffer.WriteString(gorazor.HTMLEscape(Pointer))
+			_buffer.WriteString(gorazor.HTMLEscape(schema.FullName))
 		}
-		_buffer.WriteString("\n\t},")
 	}
 	_buffer.WriteString("\n}")
-	for _, model := range models {
-		_buffer.WriteString("\nvar ")
-		_buffer.WriteString(gorazor.HTMLEscape(model.BaseSchemaName()))
-		_buffer.WriteString(" = ceous.NewBaseSchema(\n\t\"")
-		_buffer.WriteString(gorazor.HTMLEscape(model.TableName))
-		_buffer.WriteString("\",\n\t\"\",")
-		for _, field := range model.Columns {
-			_buffer.WriteString("\n\tceous.NewSchemaField(\"")
-			_buffer.WriteString(gorazor.HTMLEscape(field.Column))
-			_buffer.WriteString("\"")
-			if len(field.Modifiers) > 0 {
-				for _, m := range field.Modifiers {
-
-					_buffer.WriteString((", "))
-					_buffer.WriteString((m()))
-
-				}
-			}
-			_buffer.WriteString("),")
+	for _, schema := range env.Schemas {
+		_buffer.WriteString("\n// ")
+		_buffer.WriteString(gorazor.HTMLEscape(schema.FullName))
+		_buffer.WriteString(" have all fields for the model ")
+		_buffer.WriteString(gorazor.HTMLEscape(schema.Name))
+		_buffer.WriteString(".\ntype ")
+		_buffer.WriteString(gorazor.HTMLEscape(schema.FullName))
+		_buffer.WriteString(" struct {\n\t")
+		if schema.IsModel {
+			_buffer.WriteString("\n\t*ceous.BaseSchema\n\t")
 		}
-		_buffer.WriteString("\n)\n\ntype ")
-		_buffer.WriteString(gorazor.HTMLEscape(model.SchemaName()))
-		_buffer.WriteString(" struct {\n\t*ceous.BaseSchema")
-		for _, field := range model.SchemaFields {
-			_buffer.WriteString("\n\t")
+		_buffer.WriteString("\n\t")
+		for _, field := range schema.Fields {
+			_buffer.WriteString("\n\t\t")
 			_buffer.WriteString(gorazor.HTMLEscape(field.Name))
 			_buffer.WriteString(" ")
-			if field.SchemaType == "" {
-
+			if field.Type == "" {
 				_buffer.WriteString("ceous.SchemaField")
-
 			} else {
-
-				_buffer.WriteString("schema")
-				_buffer.WriteString(gorazor.HTMLEscape(field.SchemaType))
-
+				_buffer.WriteString(field.SchemaName)
 			}
 		}
 		_buffer.WriteString("\n}")
 	}
+	_buffer.WriteString("\n\nvar (")
+	for i, schema := range env.BaseSchemas {
+		_buffer.WriteString("\n\tbaseSchema")
+		_buffer.WriteString(gorazor.HTMLEscape(schema.Name))
+		_buffer.WriteString(" = ceous.NewBaseSchema(\n\t\t\"")
+		_buffer.WriteString(gorazor.HTMLEscape(schema.TableName))
+		_buffer.WriteString("\",\n\t\t\"\", ")
+		for _, field := range schema.Fields {
+			_buffer.WriteString("\n\t\tceous.NewSchemaField(\"")
+			_buffer.WriteString(gorazor.HTMLEscape(field.ColumnName))
+			_buffer.WriteString("\"")
+
+			if field.IsPK {
+				_buffer.WriteString(", ceous.FieldPK")
+			}
+			if field.IsAutoIncr {
+				_buffer.WriteString(", ceous.FieldAutoIncrement")
+			}
+
+			_buffer.WriteString("),")
+		}
+		_buffer.WriteString("\n\t)\n\t")
+		if i+1 == len(env.BaseSchemas) {
+			_buffer.WriteString("\n")
+		}
+	}
+	_buffer.WriteString("\n)\n\n\nvar (")
+	for _, s := range env.Schemas {
+		_buffer.WriteString(" ")
+		if s.IsModel {
+			continue
+		}
+		_buffer.WriteString("\n\tbaseSchema")
+		_buffer.WriteString(gorazor.HTMLEscape(s.Name))
+		_buffer.WriteString(" = schema")
+		_buffer.WriteString(gorazor.HTMLEscape(s.Name))
+		_buffer.WriteString(" {\n\t\t")
+		for _, field := range s.Fields {
+			_buffer.WriteString("\n\t\t\t")
+			_buffer.WriteString(gorazor.HTMLEscape(field.Name))
+			_buffer.WriteString(" : baseSchema")
+			_buffer.WriteString(gorazor.HTMLEscape(s.BaseSchema.Name))
+			_buffer.WriteString(".ColumnsArr[")
+			_buffer.WriteString(gorazor.HTMLEscape(s.BaseSchema.FieldsIdxMap[field.ColumnName]))
+			_buffer.WriteString("],")
+		}
+		_buffer.WriteString("\n\t}")
+	}
+	_buffer.WriteString("\n)\n\n// Schema represents the schema of the package \"")
+	_buffer.WriteString(gorazor.HTMLEscape(env.InputPkg.Name))
+	_buffer.WriteString("\".\nvar Schema = schema{")
+	for _, schema := range env.Schemas {
+		_buffer.WriteString("\n\t")
+		if !schema.IsModel {
+			continue
+		}
+		_buffer.WriteString("\n\n\t")
+		_buffer.WriteString(gorazor.HTMLEscape(schema.Name))
+		_buffer.WriteString(": ")
+		_buffer.WriteString(("&"))
+		_buffer.WriteString(gorazor.HTMLEscape(schema.FullName))
+		_buffer.WriteString(" {\n\tBaseSchema: ")
+		_buffer.WriteString(gorazor.HTMLEscape(schema.BaseSchema.FullName))
+		_buffer.WriteString(",\n\n\t")
+		for _, field := range schema.Fields {
+
+			_buffer.WriteString(gorazor.HTMLEscape(field.Name))
+
+			_buffer.WriteString(": ")
+
+			if field.Type == "" {
+				i := schema.BaseSchema.FieldsIdxMap[field.ColumnName]
+				_buffer.WriteString(schema.BaseSchema.FullName + ".ColumnsArr[" + strconv.Itoa(i) + "],\n")
+			} else {
+				_buffer.WriteString(field.Type + ",\n")
+			}
+		}
+		_buffer.WriteString("},")
+	}
+	_buffer.WriteString("\n}")
 
 }

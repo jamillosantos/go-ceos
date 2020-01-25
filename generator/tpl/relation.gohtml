@@ -2,41 +2,41 @@
 	import "github.com/jamillosantos/go-ceous/generator/models"
 	import . "github.com/jamillosantos/go-ceous/generator/helpers"
 
-	var ctx *models.Ctx
-	var relation *models.ModelRelation
+	var env *models.Environment
+	var relation *models.Relation
 }
 
-type @relation.RelationName()@: struct {
+type @relation.FullName@: struct {
 	_runner ceous.DBRunner
 	keys []interface{}
-	records map[@relation.PkType()][]@raw("*")@ctx.InputPkgCtx.Ref(ctx.OutputPkg, relation.FromModel.Name)
+	records map[@relation.ForeignFieldType][]@Pointer@env.InputPkgCtx.Ref(env.OutputPkg, relation.LocalModelType)
 }
 
-func New@relation.RelationName()@:(runner ceous.DBRunner) @raw("*")@relation.RelationName()@: {
-	return @raw("&")@relation.RelationName()@:{
+func New@relation.FullName@:(runner ceous.DBRunner) @Pointer@relation.FullName@: {
+	return @raw("&")@relation.FullName@:{
 		_runner: runner,
 		keys:    make([]interface{}, 0),
-		records: make(map[@relation.PkType()][]@raw("*")@ctx.InputPkgCtx.Ref(ctx.OutputPkg, relation.FromModel.Name)@:),
+		records: make(map[@relation.ForeignFieldType][]@Pointer@env.InputPkgCtx.Ref(env.OutputPkg, relation.LocalModelType)@:),
 	}
 }
 
-func (relation @raw("*")@relation.RelationName()@:) Aggregate(record ceous.Record) error {
-	ugRecord, ok := record.(@raw("*")@ctx.InputPkgCtx.Ref(ctx.OutputPkg, relation.FromModel.Name))
+func (relation @Pointer@relation.FullName@:) Aggregate(record ceous.Record) error {
+	ugRecord, ok := record.(@Pointer@env.InputPkgCtx.Ref(env.OutputPkg, relation.LocalModelType))
 	if !ok {
 		return ceous.ErrInvalidRecordType
 	}
-	if rs, ok := relation.records[ugRecord.@relation.Column().FullField@:]; ok {
-		relation.records[ugRecord.@relation.Column().FullField@:] = append(rs, ugRecord)
+	if rs, ok := relation.records[ugRecord.@relation.LocalFieldRef@:]; ok {
+		relation.records[ugRecord.@relation.LocalFieldRef@:] = append(rs, ugRecord)
 		// No need to add the key here, since its will be already in the `keys`.
 	} else {
-		relation.records[ugRecord.@relation.Column().FullField@:] = append(rs, ugRecord)
-		relation.keys = append(relation.keys, ugRecord.@relation.Column().FullField@:)
+		relation.records[ugRecord.@relation.LocalFieldRef@:] = append(rs, ugRecord)
+		relation.keys = append(relation.keys, ugRecord.@relation.LocalFieldRef@:)
 	}
 	return nil
 }
 
-func (relation @raw("*")@relation.RelationName()@:) Realize() error {
-	records, err := NewUserQuery(ceous.WithRunner(relation._runner)).Where(ceous.Eq(@ctx.InputPkgCtx.Ref(ctx.OutputPkg, "Schema").@relation.ToModel.Name@:.ID, relation.keys)).All()
+func (relation @Pointer@relation.FullName@:) Realize() error {
+	records, err := NewUserQuery(ceous.WithRunner(relation._runner)).Where(ceous.Eq(@env.InputPkgCtx.Ref(env.OutputPkg, "Schema").@relation.ForeignModelType@:.ID, relation.keys)).All()
 	if err != nil {
 		return err // TODO(jota): Shall this be wrapped into a custom error?
 	}
@@ -46,13 +46,13 @@ func (relation @raw("*")@relation.RelationName()@:) Realize() error {
 			return ceous.ErrInconsistentRelationResult
 		}
 		for _, r := range masterRecords {
-			r.Set@PascalCase(relation.FromField)@:(record)
+			r.Assign@PascalCase(relation.LocalField)@:(record)
 		}
 	}
 	return nil
 }
 
-func (q @raw("*")@relation.FromModel.QueryName()@:) With@PascalCase(relation.FromField)@:() @raw("*")@relation.FromModel.QueryName()@: {
-	q.BaseQuery.Relations = append(q.BaseQuery.Relations, New@relation.RelationName()@:(q.BaseQuery.Runner))
+func (q @Pointer@relation.Query.FullName@:) With@PascalCase(relation.LocalField)@:() @Pointer@relation.Query.FullName@: {
+	q.BaseQuery.Relations = append(q.BaseQuery.Relations, New@relation.FullName@:(q.BaseQuery.Runner))
 	return q
 }

@@ -1,26 +1,27 @@
 @{
 	import "github.com/jamillosantos/go-ceous/generator/models"
+	import . "github.com/jamillosantos/go-ceous/generator/helpers"
 
-	var ctx *models.Ctx
-	var model *models.Model
+	var env *models.Environment
+	var store *models.Store
 }
 
-// @model.StoreName() is the query for the model `@model.Name`.
-type @model.StoreName()@: struct {
+// @store.FullName is the query for the store `@store.Name`.
+type @store.FullName@: struct {
 	*ceous.BaseStore
 }
 
-// New@model.Name@:Store creates a new query for model `@model.Name`.
-func New@model.Name@:Store(options ...ceous.CeousOption) @raw("*")@model.StoreName()@: {
-	return @raw("&")@model.StoreName()@:{
-		BaseStore: ceous.NewStore(@ctx.InputPkgCtx.Ref(ctx.OutputPkg, "Schema." + model.Name)@:, options...),
+// New@store.FullName creates a new query for model `@store.Name`.
+func New@store.FullName@:(options ...ceous.CeousOption) @Pointer@store.FullName@: {
+	return @raw("&")@store.FullName@:{
+		BaseStore: ceous.NewStore(@env.InputPkgCtx.Ref(env.OutputPkg, "Schema." + store.Name)@:, options...),
 	}
 }
 
-func (store @raw("*")@model.StoreName()@:) Insert(record @raw("*")@ctx.InputPkgCtx.Ref(ctx.OutputPkg, model.Name)@:, fields ...ceous.SchemaField) error {
+func (store @Pointer@store.FullName@:) Insert(record @Pointer@env.InputPkgCtx.Ref(env.OutputPkg, store.Name)@:, fields ...ceous.SchemaField) error {
 	return store.BaseStore.Insert(record, fields...)
 }
 
-func (store @raw("*")@model.StoreName()@:) Update(record @raw("*")@ctx.InputPkgCtx.Ref(ctx.OutputPkg, model.Name)@:, fields ...ceous.SchemaField) (int64, error) {
+func (store @Pointer@store.FullName@:) Update(record @Pointer@env.InputPkgCtx.Ref(env.OutputPkg, store.Name)@:, fields ...ceous.SchemaField) (int64, error) {
 	return store.BaseStore.Update(record, fields...)
 }

@@ -1,15 +1,15 @@
 package models
 
 type Connection struct {
-	Name string
+	Name     string
+	FullName string
 }
 
+// NewConnection retrurns a new instance of `Connection` with the given `name`
+// set.
 func NewConnection(name string) *Connection {
 	return &Connection{
-		Name: name,
+		Name:     name,
+		FullName: name + "Connection",
 	}
-}
-
-func (conn *Connection) ConnectionName() string {
-	return conn.Name + "Connection"
 }

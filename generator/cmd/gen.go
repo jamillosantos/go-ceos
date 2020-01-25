@@ -3,10 +3,13 @@ package cmd
 import (
 	"bytes"
 	"go/format"
+	"go/scanner"
 	"os"
 	"path"
+	"reflect"
 
 	generatorModels "github.com/jamillosantos/go-ceous/generator/models"
+	"github.com/jamillosantos/go-ceous/generator/parser"
 	"github.com/jamillosantos/go-ceous/generator/reporters"
 	"github.com/jamillosantos/go-ceous/generator/tpl"
 	myasthurts "github.com/lab259/go-my-ast-hurts"
@@ -29,8 +32,22 @@ type fileIgnorer struct{}
 
 // BeforeFile will ignore all files defined by the command line.
 func (*fileIgnorer) BeforeFile(_ *myasthurts.ParsePackageContext, filePath string) error {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return errors.Wrap(err, "could not get the working directory")
+	}
+
+	if path.Base(filePath) == outputGeneratedFileName || path.Base(filePath) == outputModelsFileName {
+		if verbose {
+			reporter.Linef("Ignoring file %s", filePath)
+		}
+	}
+
 	for _, f := range excludedFiles {
-		if f == filePath || filePath == outputGeneratedFileName || filePath == outputModelsFileName {
+		if !path.IsAbs(f) {
+			f = path.Clean(path.Join(cwd, f))
+		}
+		if f == filePath {
 			if verbose {
 				reporter.Linef("Ignoring file %s", filePath)
 			}
@@ -38,14 +55,6 @@ func (*fileIgnorer) BeforeFile(_ *myasthurts.ParsePackageContext, filePath strin
 		}
 	}
 	return nil
-}
-
-func isModel(refType myasthurts.RefType) bool {
-	return refType.Pkg().Name == "ceous" && refType.Name() == "Model"
-}
-
-func isEmbedded(refType myasthurts.RefType) bool {
-	return refType.Pkg().Name == "ceous" && refType.Name() == "Embedded"
 }
 
 // genCmd represents the gen command
@@ -93,71 +102,59 @@ to quickly create a Cobra application.`,
 
 		// Models will be a list of the structs that implement Model
 
-		models := make([]*generatorModels.Model, 0)
-		embeddeds := make([]*generatorModels.Model, 0)
-		connections := make([]*generatorModels.Connection, 0)
-		connectionsMap := make(map[string]*generatorModels.Connection, 0)
-
-		ctx := generatorModels.NewCtx(reporter, inputPkg, outputPkg, env.BuiltIn)
-
-		var (
-			model *generatorModels.Model
-		)
-
-		for _, s := range inputPkg.Structs {
-			reporter.Line("Analysing", s.Name())
-			for _, f := range s.Fields {
-				if f.RefType.Pkg() == nil {
-					continue
-				}
-				if isModel(f.RefType) {
-					model, err = generatorModels.ParseModel(ctx, s)
-					if err != nil {
-						panic(errors.Wrapf(err, "error parsing model %s", s.Name())) // TODO(jota): Decide how critical errors will be reported.
-					}
-					models = append(models, model)
-				} else if isEmbedded(f.RefType) {
-					model, err = generatorModels.ParseModel(ctx, s)
-					if err != nil {
-						panic(errors.Wrapf(err, "error parsing embedded %s", s.Name())) // TODO(jota): Decide how critical errors will be reported.
-					}
-					embeddeds = append(embeddeds, model)
-				} else {
-					continue
-				}
-
-				if _, ok := connectionsMap[model.Connection]; !ok {
-					conn := generatorModels.NewConnection(model.Connection)
-					connectionsMap[model.Connection] = conn
-					connections = append(connections, conn)
-				}
-			}
+		fieldableCtx := generatorModels.NewFieldableContext(inputPkg, outputPkg, reporter)
+		err = parser.Parse(fieldableCtx)
+		if err != nil {
+			panic(errors.Wrap(err, "could not parse information"))
 		}
 
+		reporter.Linef("Models loaded.")
+		reporter.Line()
+		reporter.Linef("Preparing schema...")
+
+		parsedEnv, err := parser.ParseEnvironment(&parser.EnvironmentContext{
+			Reporter:      reporter,
+			InputPkg:      inputPkg,
+			OutputPkg:     outputPkg,
+			Imports:       fieldableCtx.Imports,
+			ModelsImports: fieldableCtx.ModelsImports,
+			Fieldables:    fieldableCtx.Fieldables,
+			FieldableMap:  fieldableCtx.FieldableMap,
+		})
+
+		if err != nil {
+			panic(errors.Wrapf(err, "error parsing environment"))
+		}
+
+		reporter.Line("Generating code ...")
 		buffCeous := bytes.NewBuffer(nil)
 		buffModels := bytes.NewBuffer(nil)
 
-		reporter.Line("Generating code ...")
-		tpl.RenderCeous(buffCeous, ctx, models, embeddeds, connections)
-		tpl.RenderModels(buffModels, ctx, models, embeddeds, connections)
+		tpl.RenderCeous(buffCeous, parsedEnv)
+		tpl.RenderModels(buffModels, parsedEnv)
 
 		reporter.Line("Formatting code ...")
 
 		formattedCeousCode, err := format.Source(buffCeous.Bytes())
 		if err != nil {
-			/*
-				TODO(jota): In case of error, report the excerpt of the code.
-				if serr, ok := err.(scanner.ErrorList); ok {
-					for _, serri := range serr {
-						// reporter.Line(reflect.TypeOf(serri))
-					}
+			// TODO(jota): In case of error, report the excerpt of the code.
+			if serr, ok := err.(scanner.ErrorList); ok {
+				for _, serri := range serr {
+					reporter.Line(reflect.TypeOf(serri))
 				}
-				reporter.Line(buffCeous.String())
-			*/
+			}
+			reporter.Line(buffCeous.String())
 			panic(errors.Wrapf(err, "could not format the ceous code"))
 		}
 		formattedModelsCode, err := format.Source(buffModels.Bytes())
 		if err != nil {
+			// TODO(jota): In case of error, report the excerpt of the code.
+			if serr, ok := err.(scanner.ErrorList); ok {
+				for _, serri := range serr {
+					reporter.Line(reflect.TypeOf(serri))
+				}
+			}
+			reporter.Line(buffModels.String())
 			panic(errors.Wrapf(err, "could not format the models code"))
 		}
 

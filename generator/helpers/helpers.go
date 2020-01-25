@@ -16,4 +16,13 @@ func PascalCase(name string) string {
 	return strings.ToUpper(name[0:1]) + name[1:]
 }
 
+func AppendStringIfNotEmpty(arr []string, data ...string) []string {
+	for _, s := range data {
+		if s != "" {
+			arr = append(arr, s)
+		}
+	}
+	return arr
+}
+
 const Pointer = "*"

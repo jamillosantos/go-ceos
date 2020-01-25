@@ -183,7 +183,7 @@ var _ = Describe("Query", func() {
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(sql).To(Equal("SELECT id FROM users WHERE id = ?"))
+					Expect(sql).To(Equal("SELECT id FROM users WHERE id = $1"))
 					Expect(args).To(ConsistOf(1))
 				})
 
@@ -193,7 +193,7 @@ var _ = Describe("Query", func() {
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(sql).To(Equal("SELECT id FROM users WHERE id = ? AND name = ?"))
+					Expect(sql).To(Equal("SELECT id FROM users WHERE id = $1 AND name = $2"))
 					Expect(args).To(ConsistOf(1, "Snake Eyes"))
 				})
 
@@ -213,7 +213,7 @@ var _ = Describe("Query", func() {
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(sql).To(Equal("SELECT id FROM users WHERE LENGTH(password) < ?"))
+					Expect(sql).To(Equal("SELECT id FROM users WHERE LENGTH(password) < $1"))
 					Expect(args).To(ConsistOf(6))
 				})
 
@@ -224,7 +224,7 @@ var _ = Describe("Query", func() {
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(sql).To(Equal("SELECT id FROM users WHERE LENGTH(password) < ?"))
+					Expect(sql).To(Equal("SELECT id FROM users WHERE LENGTH(password) < $1"))
 					Expect(args).To(ConsistOf(6))
 				})
 
@@ -237,7 +237,7 @@ var _ = Describe("Query", func() {
 					Expect(err).ToNot(HaveOccurred())
 					sql, args, err := builder.ToSql()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(sql).To(Equal("SELECT id FROM users WHERE (id = ? AND NOT (password = ?))"))
+					Expect(sql).To(Equal("SELECT id FROM users WHERE (id = $1 AND NOT (password = $2))"))
 					Expect(args).To(ConsistOf(1, "12345"))
 				})
 			})
@@ -307,22 +307,8 @@ var _ = Describe("Query", func() {
 		})
 
 		It("should retrieve a model with relation", func() {
-			userGroup, err := db.Default.UserGroupQuery().ByID(tests.UserGroupPK{
-				UserID:  1,
-				GroupID: 2,
-			}).WithUser().One()
+			userGroup, err := db.Default.UserGroupQuery().ByIDUserID(1).ByIDGroupID(2).WithUser().One()
 			Expect(err).ToNot(HaveOccurred())
-			Expect(userGroup.User().ID).To(Equal(1))
-			Expect(userGroup.User().Name).To(Equal("Snake Eyes"))
-		})
-
-		It("should retrieve a model with relation", func() {
-			userGroup, err := db.Default.UserGroupQuery().WithUser().ByID(tests.UserGroupPK{
-				UserID:  1,
-				GroupID: 2,
-			}).One()
-			Expect(err).ToNot(HaveOccurred())
-			Expect(userGroup.User()).ToNot(BeNil())
 			Expect(userGroup.User().ID).To(Equal(1))
 			Expect(userGroup.User().Name).To(Equal("Snake Eyes"))
 		})

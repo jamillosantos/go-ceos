@@ -14,6 +14,31 @@ var (
 )
 
 type (
+	SelectForType        = sq.SelectForType
+	SelectForLockingType = sq.SelectForLockingType
+)
+
+const (
+	// ForUpdate marks a use a FOR UPDATE.
+	ForUpdate = sq.ForUpdate
+	// ForNoKeyUpdate marks a use a FOR NO KEY UPDATE.
+	ForNoKeyUpdate = sq.ForNoKeyUpdate
+	// ForShare marks a use a FOR SHARE.
+	ForShare = sq.ForShare
+	// ForKeyShare marks a use a FOR KEY SHARE.
+	ForKeyShare = sq.ForKeyShare
+)
+
+const (
+	// ForUpdateTypeNone will generate the FOR [OPTION] with no modifier.
+	ForUpdateTypeNone = sq.ForUpdateTypeNone
+	// SkipLocked will generate the FOR [OPTION] SKIP LOCKED modifier.
+	SkipLocked = sq.SkipLocked
+	// NoWait will generate the FOR [OPTION] NOWAIT modifier.
+	NoWait = sq.NoWait
+)
+
+type (
 	Query interface {
 		RawQuery() (*sql.Rows, error)
 		RawQueryContext(context.Context) (*sql.Rows, error)
@@ -37,6 +62,9 @@ type (
 		limit  uint64
 		offset uint64
 		order  []string
+
+		forType        *sq.SelectForType
+		forLockingType sq.SelectForLockingType
 
 		disableCache              bool
 		IsDefaultScenarioDisabled bool
@@ -245,6 +273,8 @@ func (q *BaseQuery) Builder() (*sq.SelectBuilder, error) {
 	// Creates the initial select
 	sqQuery := sq.Select(fields...).From(tableName)
 
+	sqQuery.PlaceholderFormat(sq.Dollar) // TODO(jota): To parametrize it.
+
 	// If we have conditions to be added ...
 	if len(q.where) > 0 {
 		q.applyConditions(sqQuery)
@@ -262,6 +292,10 @@ func (q *BaseQuery) Builder() (*sq.SelectBuilder, error) {
 
 	if len(q.order) > 0 {
 		sqQuery.OrderBy(q.order...)
+	}
+
+	if q.forType != nil {
+		sqQuery.For(*q.forType, q.forLockingType)
 	}
 
 	q._modified = sqQuery
@@ -336,4 +370,16 @@ func (q *BaseQuery) RawQueryRow() sq.RowScanner {
 func (q *BaseQuery) RawQueryRowContext(ctx context.Context) sq.RowScanner {
 	q._modified.PlaceholderFormat(sq.Dollar) // TODO(jota): Make this placeholder configurable and optimize this.
 	return q._modified.RunWith(q.runner).QueryRowContext(ctx)
+}
+
+func (q *BaseQuery) For(t SelectForType, lockingType ...SelectForLockingType) {
+	var lt sq.SelectForLockingType
+	if len(lockingType) > 0 {
+		lt = lockingType[0]
+		q.forLockingType = lt
+	}
+	q.forType = &t
+	if q._modified != nil {
+		q._modified.For(*q.forType, q.forLockingType)
+	}
 }
