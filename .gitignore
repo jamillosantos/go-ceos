@@ -16,3 +16,4 @@
 .history/
 
 *.coverprofile
+coverage.txt
