@@ -3,8 +3,8 @@ package parser
 import (
 	"fmt"
 
-	"github.com/jamillosantos/go-ceous/generator/helpers"
 	"github.com/jamillosantos/go-ceous/generator/models"
+	"github.com/jamillosantos/go-ceous/generator/naming"
 )
 
 type (
@@ -52,7 +52,7 @@ func parseQueryField(ctx *parseQueryFieldContext, field *models.Field) (*models.
 
 		relation := models.NewRelation(
 			ctx.Query,
-			namePrefix(append(ctx.FieldPrefix, ctx.Query.Name, helpers.PascalCase(field.Name))),
+			namePrefix(append(ctx.FieldPrefix, ctx.Query.Name, naming.PascalCase.Do(field.Name))),
 			field.Name,
 			localField.Name,
 			ctx.Model.Name,

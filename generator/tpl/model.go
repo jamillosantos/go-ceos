@@ -7,6 +7,7 @@ package tpl
 import (
 	. "github.com/jamillosantos/go-ceous/generator/helpers"
 	"github.com/jamillosantos/go-ceous/generator/models"
+	"github.com/jamillosantos/go-ceous/generator/naming"
 	"github.com/sipin/gorazor/gorazor"
 	"io"
 	"strings"
@@ -33,7 +34,7 @@ func RenderModel(_buffer io.StringWriter, env *models.Environment, model *models
 	}
 	for _, relation := range model.Relations {
 		_buffer.WriteString("\n// ")
-		_buffer.WriteString(gorazor.HTMLEscape(PascalCase(relation.Name)))
+		_buffer.WriteString(gorazor.HTMLEscape(naming.PascalCase.Do(relation.Name)))
 		_buffer.WriteString(" returns the ")
 		_buffer.WriteString(gorazor.HTMLEscape(relation.Name))
 		_buffer.WriteString(" from ")
@@ -42,14 +43,14 @@ func RenderModel(_buffer io.StringWriter, env *models.Environment, model *models
 		_buffer.WriteString(gorazor.HTMLEscape(Pointer))
 		_buffer.WriteString(gorazor.HTMLEscape(model.Name))
 		_buffer.WriteString(") ")
-		_buffer.WriteString(gorazor.HTMLEscape(PascalCase(relation.LocalField)))
+		_buffer.WriteString(gorazor.HTMLEscape(naming.PascalCase.Do(relation.LocalField)))
 		_buffer.WriteString("() ")
 		_buffer.WriteString(gorazor.HTMLEscape(Pointer))
 		_buffer.WriteString(gorazor.HTMLEscape(relation.ForeignModelType))
 		_buffer.WriteString(" {\n\treturn model.")
 		_buffer.WriteString(gorazor.HTMLEscape(relation.LocalField))
 		_buffer.WriteString("\n}\n\n// Set")
-		_buffer.WriteString(gorazor.HTMLEscape(PascalCase(relation.LocalField)))
+		_buffer.WriteString(gorazor.HTMLEscape(naming.PascalCase.Do(relation.LocalField)))
 		_buffer.WriteString(" updates the value for the ")
 		_buffer.WriteString(gorazor.HTMLEscape(relation.LocalField))
 		_buffer.WriteString(",\n// updating the ")
@@ -58,7 +59,7 @@ func RenderModel(_buffer io.StringWriter, env *models.Environment, model *models
 		_buffer.WriteString(gorazor.HTMLEscape(Pointer))
 		_buffer.WriteString(gorazor.HTMLEscape(model.Name))
 		_buffer.WriteString(") Set")
-		_buffer.WriteString(gorazor.HTMLEscape(PascalCase(relation.LocalField)))
+		_buffer.WriteString(gorazor.HTMLEscape(naming.PascalCase.Do(relation.LocalField)))
 		_buffer.WriteString("(value ")
 		_buffer.WriteString(gorazor.HTMLEscape(Pointer))
 		_buffer.WriteString(gorazor.HTMLEscape(relation.ForeignModelType))
@@ -72,14 +73,14 @@ func RenderModel(_buffer io.StringWriter, env *models.Environment, model *models
 		_buffer.WriteString("\n\tmodel.")
 		_buffer.WriteString(gorazor.HTMLEscape(relation.LocalField))
 		_buffer.WriteString(" = value\n\treturn nil\n}\n\n// Assign")
-		_buffer.WriteString(gorazor.HTMLEscape(PascalCase(relation.LocalField)))
+		_buffer.WriteString(gorazor.HTMLEscape(naming.PascalCase.Do(relation.LocalField)))
 		_buffer.WriteString(" is a setter for `")
 		_buffer.WriteString(gorazor.HTMLEscape(relation.LocalField))
 		_buffer.WriteString("`\n// with no further processing.\nfunc (model ")
 		_buffer.WriteString(gorazor.HTMLEscape(Pointer))
 		_buffer.WriteString(gorazor.HTMLEscape(model.Name))
 		_buffer.WriteString(") Assign")
-		_buffer.WriteString(gorazor.HTMLEscape(PascalCase(relation.LocalField)))
+		_buffer.WriteString(gorazor.HTMLEscape(naming.PascalCase.Do(relation.LocalField)))
 		_buffer.WriteString("(value ")
 		_buffer.WriteString(gorazor.HTMLEscape(Pointer))
 		_buffer.WriteString(gorazor.HTMLEscape(relation.ForeignModelType))

@@ -751,6 +751,10 @@ func (store *UserStore) Update(record *tests.User, fields ...ceous.SchemaField) 
 	return store.BaseStore.Update(record, fields...)
 }
 
+func (store *UserStore) Delete(record *tests.User) error {
+	return store.BaseStore.Delete(record)
+}
+
 // GroupStore is the query for the store `Group`.
 type GroupStore struct {
 	*ceous.BaseStore
@@ -771,6 +775,10 @@ func (store *GroupStore) Update(record *tests.Group, fields ...ceous.SchemaField
 	return store.BaseStore.Update(record, fields...)
 }
 
+func (store *GroupStore) Delete(record *tests.Group) error {
+	return store.BaseStore.Delete(record)
+}
+
 // UserGroupStore is the query for the store `UserGroup`.
 type UserGroupStore struct {
 	*ceous.BaseStore
@@ -789,6 +797,10 @@ func (store *UserGroupStore) Insert(record *tests.UserGroup, fields ...ceous.Sch
 
 func (store *UserGroupStore) Update(record *tests.UserGroup, fields ...ceous.SchemaField) (int64, error) {
 	return store.BaseStore.Update(record, fields...)
+}
+
+func (store *UserGroupStore) Delete(record *tests.UserGroup) error {
+	return store.BaseStore.Delete(record)
 }
 
 type userResultSet struct {

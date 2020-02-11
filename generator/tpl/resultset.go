@@ -7,6 +7,7 @@ package tpl
 import (
 	. "github.com/jamillosantos/go-ceous/generator/helpers"
 	"github.com/jamillosantos/go-ceous/generator/models"
+	"github.com/jamillosantos/go-ceous/generator/naming"
 	"github.com/sipin/gorazor/gorazor"
 	"io"
 	"strings"
@@ -22,18 +23,18 @@ func Resultset(env *models.Environment, schema *models.Schema) string {
 // RenderResultset render tpl/resultset.gohtml
 func RenderResultset(_buffer io.StringWriter, env *models.Environment, schema *models.Schema) {
 
-	resultSetName := CamelCase(schema.Name) + "ResultSet"
+	resultSetName := naming.CamelCase.Do(schema.Name) + "ResultSet"
 
 	_buffer.WriteString("\n\ntype ")
 	_buffer.WriteString(gorazor.HTMLEscape(resultSetName))
 	_buffer.WriteString(" struct {\n\trs ceous.ResultSet\n\trecordScanner ceous.RecordScanner\n\tModel ")
 	_buffer.WriteString(gorazor.HTMLEscape(env.InputPkgCtx.Ref(env.OutputPkg, schema.Name)))
 	_buffer.WriteString("\n}\n\n// New")
-	_buffer.WriteString(gorazor.HTMLEscape(PascalCase(resultSetName)))
+	_buffer.WriteString(gorazor.HTMLEscape(naming.PascalCase.Do(resultSetName)))
 	_buffer.WriteString(" create a new instance of the specialized\n// `ceous.ResultSet` for the model `")
 	_buffer.WriteString(gorazor.HTMLEscape(schema.Name))
 	_buffer.WriteString("`.\nfunc New")
-	_buffer.WriteString(gorazor.HTMLEscape(PascalCase(resultSetName)))
+	_buffer.WriteString(gorazor.HTMLEscape(naming.PascalCase.Do(resultSetName)))
 	_buffer.WriteString("(rs ceous.ResultSet, err error) (")
 	_buffer.WriteString(gorazor.HTMLEscape(Pointer))
 	_buffer.WriteString(gorazor.HTMLEscape(resultSetName))

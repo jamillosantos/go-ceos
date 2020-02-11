@@ -69,7 +69,7 @@ func (env *Environment) AddStore(store *Store) *Store {
 	return store
 }
 
-// EnsureConnection tries to find a Conection in the list, if it does not exists,
+// EnsureConnection tries to find a Connection in the list, if it does not exists,
 // the method will create one and return its reference.
 func (env *Environment) EnsureConnection(name string) (*Connection, bool) {
 	if conn, ok := env.connectionsMap[name]; ok {

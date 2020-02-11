@@ -1,5 +1,6 @@
 @{
 	import "github.com/jamillosantos/go-ceous/generator/models"
+	import "github.com/jamillosantos/go-ceous/generator/naming"
 	import . "github.com/jamillosantos/go-ceous/generator/helpers"
 
 	var env *models.Environment
@@ -15,14 +16,14 @@ func (model @Pointer@model.Name@:) GetID() interface{} {
 }
 
 @for _, relation := range model.Relations {@
-// @PascalCase(relation.Name) returns the @relation.Name@: from @model.Name@:.
-func (model @Pointer@model.Name@:) @PascalCase(relation.LocalField)@:() @Pointer@relation.ForeignModelType {
+// @naming.PascalCase.Do(relation.Name) returns the @relation.Name@: from @model.Name@:.
+func (model @Pointer@model.Name@:) @naming.PascalCase.Do(relation.LocalField)@:() @Pointer@relation.ForeignModelType {
 	return model.@relation.LocalField
 }
 @:
-// Set@PascalCase(relation.LocalField) updates the value for the @relation.LocalField@:,
+// Set@naming.PascalCase.Do(relation.LocalField) updates the value for the @relation.LocalField@:,
 // updating the @relation.LocalField@:.
-func (model @Pointer@model.Name@:) Set@PascalCase(relation.LocalField)@:(value @Pointer@relation.ForeignModelType) error {
+func (model @Pointer@model.Name@:) Set@naming.PascalCase.Do(relation.LocalField)@:(value @Pointer@relation.ForeignModelType) error {
 	localPkPtr, err := model.ColumnAddress("@relation.ForeignColumn")
 	if err != nil {
 		return err
@@ -37,9 +38,9 @@ func (model @Pointer@model.Name@:) Set@PascalCase(relation.LocalField)@:(value @
 	return nil
 }
 @:
-// Assign@PascalCase(relation.LocalField) is a setter for `@relation.LocalField`
+// Assign@naming.PascalCase.Do(relation.LocalField) is a setter for `@relation.LocalField`
 // with no further processing.
-func (model @Pointer@model.Name@:) Assign@PascalCase(relation.LocalField)@:(value @Pointer@relation.ForeignModelType) {
+func (model @Pointer@model.Name@:) Assign@naming.PascalCase.Do(relation.LocalField)@:(value @Pointer@relation.ForeignModelType) {
 	model.@relation.LocalField = value
 }
 }

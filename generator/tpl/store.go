@@ -53,6 +53,12 @@ func RenderStore(_buffer io.StringWriter, env *models.Environment, store *models
 	_buffer.WriteString(") Update(record ")
 	_buffer.WriteString(gorazor.HTMLEscape(Pointer))
 	_buffer.WriteString(gorazor.HTMLEscape(env.InputPkgCtx.Ref(env.OutputPkg, store.Name)))
-	_buffer.WriteString(", fields ...ceous.SchemaField) (int64, error) {\n\treturn store.BaseStore.Update(record, fields...)\n}")
+	_buffer.WriteString(", fields ...ceous.SchemaField) (int64, error) {\n\treturn store.BaseStore.Update(record, fields...)\n}\n\nfunc (store ")
+	_buffer.WriteString(gorazor.HTMLEscape(Pointer))
+	_buffer.WriteString(gorazor.HTMLEscape(store.FullName))
+	_buffer.WriteString(") Delete(record ")
+	_buffer.WriteString(gorazor.HTMLEscape(Pointer))
+	_buffer.WriteString(gorazor.HTMLEscape(env.InputPkgCtx.Ref(env.OutputPkg, store.Name)))
+	_buffer.WriteString(") error {\n\treturn store.BaseStore.Delete(record)\n}")
 
 }

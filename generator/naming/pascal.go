@@ -3,8 +3,6 @@ package naming
 import (
 	"regexp"
 	"strings"
-
-	"github.com/jamillosantos/go-ceous/generator/helpers"
 )
 
 type pascalCase struct{}
@@ -19,7 +17,7 @@ func (*pascalCase) Do(name string) string {
 	toks := splitRule.FindAllString(name, -1)
 	var s strings.Builder
 	for _, tok := range toks {
-		s.WriteString(helpers.PascalCase(tok))
+		s.WriteString(strings.ToUpper(tok[0:1]) + tok[1:])
 	}
 	return s.String()
 }

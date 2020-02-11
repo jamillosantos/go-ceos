@@ -25,3 +25,7 @@ func (store @Pointer@store.FullName@:) Insert(record @Pointer@env.InputPkgCtx.Re
 func (store @Pointer@store.FullName@:) Update(record @Pointer@env.InputPkgCtx.Ref(env.OutputPkg, store.Name)@:, fields ...ceous.SchemaField) (int64, error) {
 	return store.BaseStore.Update(record, fields...)
 }
+
+func (store @Pointer@store.FullName@:) Delete(record @Pointer@env.InputPkgCtx.Ref(env.OutputPkg, store.Name)@:) error {
+	return store.BaseStore.Delete(record)
+}

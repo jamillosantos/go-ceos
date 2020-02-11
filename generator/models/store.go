@@ -1,6 +1,8 @@
 package models
 
-import . "github.com/jamillosantos/go-ceous/generator/helpers"
+import (
+	"github.com/jamillosantos/go-ceous/generator/naming"
+)
 
 type Store struct {
 	Name     string
@@ -12,6 +14,6 @@ type Store struct {
 func NewStore(name string) *Store {
 	return &Store{
 		Name:     name,
-		FullName: PascalCase(name) + "Store",
+		FullName: naming.PascalCase.Do(name) + "Store",
 	}
 }

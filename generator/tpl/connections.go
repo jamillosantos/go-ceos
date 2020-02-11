@@ -7,6 +7,7 @@ package tpl
 import (
 	. "github.com/jamillosantos/go-ceous/generator/helpers"
 	models "github.com/jamillosantos/go-ceous/generator/models"
+	"github.com/jamillosantos/go-ceous/generator/naming"
 	"github.com/sipin/gorazor/gorazor"
 	"io"
 	"strings"
@@ -97,9 +98,9 @@ func RenderConnections(_buffer io.StringWriter, env *models.Environment) {
 	_buffer.WriteString("\n\nvar (")
 	for _, conn := range env.Connections {
 		_buffer.WriteString("\n\t// ")
-		_buffer.WriteString(gorazor.HTMLEscape(PascalCase(conn.Name)))
+		_buffer.WriteString(gorazor.HTMLEscape(naming.PascalCase.Do(conn.Name)))
 		_buffer.WriteString(" is a database connection reference.\n\t")
-		_buffer.WriteString(gorazor.HTMLEscape(PascalCase(conn.Name)))
+		_buffer.WriteString(gorazor.HTMLEscape(naming.PascalCase.Do(conn.Name)))
 		_buffer.WriteString(" ")
 		_buffer.WriteString(gorazor.HTMLEscape(Pointer))
 		_buffer.WriteString(gorazor.HTMLEscape(conn.FullName))
@@ -107,13 +108,13 @@ func RenderConnections(_buffer io.StringWriter, env *models.Environment) {
 	_buffer.WriteString("\n)")
 	for _, conn := range env.Connections {
 		_buffer.WriteString("\n// Init")
-		_buffer.WriteString(gorazor.HTMLEscape(PascalCase(conn.Name)))
+		_buffer.WriteString(gorazor.HTMLEscape(naming.PascalCase.Do(conn.Name)))
 		_buffer.WriteString(" initializes the connection `")
-		_buffer.WriteString(gorazor.HTMLEscape(PascalCase(conn.Name)))
+		_buffer.WriteString(gorazor.HTMLEscape(naming.PascalCase.Do(conn.Name)))
 		_buffer.WriteString(":`.\nfunc Init")
-		_buffer.WriteString(gorazor.HTMLEscape(PascalCase(conn.Name)))
+		_buffer.WriteString(gorazor.HTMLEscape(naming.PascalCase.Do(conn.Name)))
 		_buffer.WriteString("(db *sql.DB) {\n\t")
-		_buffer.WriteString(gorazor.HTMLEscape(PascalCase(conn.Name)))
+		_buffer.WriteString(gorazor.HTMLEscape(naming.PascalCase.Do(conn.Name)))
 		_buffer.WriteString(" = ")
 		_buffer.WriteString(("&"))
 		_buffer.WriteString(gorazor.HTMLEscape(conn.FullName))

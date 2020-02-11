@@ -1,5 +1,6 @@
 @{
 	import "github.com/jamillosantos/go-ceous/generator/models"
+	import "github.com/jamillosantos/go-ceous/generator/naming"
 	import . "github.com/jamillosantos/go-ceous/generator/helpers"
 
 	var env *models.Environment
@@ -7,7 +8,7 @@
 }
 
 @{
-	resultSetName := CamelCase(schema.Name) + "ResultSet"
+	resultSetName := naming.CamelCase.Do(schema.Name) + "ResultSet"
 }
 
 type @resultSetName struct {
@@ -16,9 +17,9 @@ type @resultSetName struct {
 	Model @env.InputPkgCtx.Ref(env.OutputPkg, schema.Name)
 }
 
-// New@PascalCase(resultSetName)@: create a new instance of the specialized
+// New@naming.PascalCase.Do(resultSetName)@: create a new instance of the specialized
 // `ceous.ResultSet` for the model `@schema.Name`.
-func New@PascalCase(resultSetName)(rs ceous.ResultSet, err error) (@Pointer@resultSetName@:, error) {
+func New@naming.PascalCase.Do(resultSetName)(rs ceous.ResultSet, err error) (@Pointer@resultSetName@:, error) {
 	if err != nil {
 		return nil, err
 	}

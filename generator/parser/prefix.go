@@ -3,7 +3,7 @@ package parser
 import (
 	"strings"
 
-	"github.com/jamillosantos/go-ceous/generator/helpers"
+	"github.com/jamillosantos/go-ceous/generator/naming"
 )
 
 // columnPrefix serializes the prefix array into a string by concating the
@@ -21,7 +21,7 @@ func columnPrefix(prefix []string) string {
 func namePrefix(prefix []string) string {
 	r := ""
 	for _, s := range prefix {
-		r = r + helpers.PascalCase(s)
+		r = r + naming.PascalCase.Do(s)
 	}
 	return r
 }

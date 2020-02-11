@@ -1,6 +1,8 @@
 @{
-	import models "github.com/jamillosantos/go-ceous/generator/models"
 	import . "github.com/jamillosantos/go-ceous/generator/helpers"
+	
+	import "github.com/jamillosantos/go-ceous/generator/naming"
+	import models "github.com/jamillosantos/go-ceous/generator/models"
 
 	var env *models.Environment
 }
@@ -61,15 +63,15 @@ func (c @Pointer@conn.FullName) BeginTx(ctx context.Context, opts *sql.TxOptions
 
 var (
 @for _, conn := range env.Connections {@
-	// @PascalCase(conn.Name) is a database connection reference.
-	@PascalCase(conn.Name) @Pointer@conn.FullName
+	// @naming.PascalCase.Do(conn.Name) is a database connection reference.
+	@naming.PascalCase.Do(conn.Name) @Pointer@conn.FullName
 }
 )
 
 @for _, conn := range env.Connections {@
-// Init@PascalCase(conn.Name)@: initializes the connection `@PascalCase(conn.Name):@`.
-func Init@PascalCase(conn.Name)@:(db *sql.DB) {
-	@PascalCase(conn.Name) = @raw("&")@conn.FullName@:{
+// Init@naming.PascalCase.Do(conn.Name)@: initializes the connection `@naming.PascalCase.Do(conn.Name):@`.
+func Init@naming.PascalCase.Do(conn.Name)@:(db *sql.DB) {
+	@naming.PascalCase.Do(conn.Name) = @raw("&")@conn.FullName@:{
 		BaseConnection: ceous.NewConnection(db),
 	}
 }

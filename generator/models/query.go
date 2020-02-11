@@ -3,7 +3,7 @@ package models
 import (
 	"strings"
 
-	. "github.com/jamillosantos/go-ceous/generator/helpers"
+	"github.com/jamillosantos/go-ceous/generator/naming"
 )
 
 type (
@@ -28,7 +28,7 @@ func NewQuery(baseSchema *BaseSchema, name string) *Query {
 	return &Query{
 		BaseSchema: baseSchema,
 		Name:       name,
-		FullName:   PascalCase(name) + "Query",
+		FullName:   naming.PascalCase.Do(name) + "Query",
 		Fields:     make([]*QueryField, 0),
 		Relations:  make([]*Relation, 0),
 	}

@@ -7,6 +7,7 @@ package tpl
 import (
 	. "github.com/jamillosantos/go-ceous/generator/helpers"
 	"github.com/jamillosantos/go-ceous/generator/models"
+	"github.com/jamillosantos/go-ceous/generator/naming"
 	"github.com/sipin/gorazor/gorazor"
 	"io"
 	"strings"
@@ -63,12 +64,12 @@ func RenderRelation(_buffer io.StringWriter, env *models.Environment, relation *
 	_buffer.WriteString(".")
 	_buffer.WriteString(gorazor.HTMLEscape(relation.ForeignModelType))
 	_buffer.WriteString(".ID, relation.keys)).All()\n\tif err != nil {\n\t\treturn err // TODO(jota): Shall this be wrapped into a custom error?\n\t}\n\tfor _, record := range records {\n\t\tmasterRecords, ok := relation.records[record.ID]\n\t\tif !ok {\n\t\t\treturn ceous.ErrInconsistentRelationResult\n\t\t}\n\t\tfor _, r := range masterRecords {\n\t\t\tr.Assign")
-	_buffer.WriteString(gorazor.HTMLEscape(PascalCase(relation.LocalField)))
+	_buffer.WriteString(gorazor.HTMLEscape(naming.PascalCase.Do(relation.LocalField)))
 	_buffer.WriteString("(record)\n\t\t}\n\t}\n\treturn nil\n}\n\nfunc (q ")
 	_buffer.WriteString(gorazor.HTMLEscape(Pointer))
 	_buffer.WriteString(gorazor.HTMLEscape(relation.Query.FullName))
 	_buffer.WriteString(") With")
-	_buffer.WriteString(gorazor.HTMLEscape(PascalCase(relation.LocalField)))
+	_buffer.WriteString(gorazor.HTMLEscape(naming.PascalCase.Do(relation.LocalField)))
 	_buffer.WriteString("() ")
 	_buffer.WriteString(gorazor.HTMLEscape(Pointer))
 	_buffer.WriteString(gorazor.HTMLEscape(relation.Query.FullName))

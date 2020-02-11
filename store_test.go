@@ -9,7 +9,7 @@ import (
 )
 
 var _ = Describe("Store", func() {
-	Describe("BaseStore", func() {
+	FDescribe("BaseStore", func() {
 		Context("Insert", func() {
 			BeforeEach(func() {
 				db.DBStart()
@@ -115,6 +115,7 @@ var _ = Describe("Store", func() {
 				b, err := db.Default.UserGroupQuery().Builder()
 				Expect(err).ToNot(HaveOccurred())
 				rs, err := db.NewUserGroupResultSet(b.RunWith(db.DB).Query())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(rs.Next()).To(BeTrue())
 				Expect(rs.Scan()).To(Succeed())
 				Expect(rs.Model.ID.UserID).To(Equal(1))

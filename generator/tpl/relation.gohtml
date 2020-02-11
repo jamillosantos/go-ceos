@@ -1,5 +1,6 @@
 @{
 	import "github.com/jamillosantos/go-ceous/generator/models"
+	import "github.com/jamillosantos/go-ceous/generator/naming"
 	import . "github.com/jamillosantos/go-ceous/generator/helpers"
 
 	var env *models.Environment
@@ -46,13 +47,13 @@ func (relation @Pointer@relation.FullName@:) Realize() error {
 			return ceous.ErrInconsistentRelationResult
 		}
 		for _, r := range masterRecords {
-			r.Assign@PascalCase(relation.LocalField)@:(record)
+			r.Assign@naming.PascalCase.Do(relation.LocalField)@:(record)
 		}
 	}
 	return nil
 }
 
-func (q @Pointer@relation.Query.FullName@:) With@PascalCase(relation.LocalField)@:() @Pointer@relation.Query.FullName@: {
+func (q @Pointer@relation.Query.FullName@:) With@naming.PascalCase.Do(relation.LocalField)@:() @Pointer@relation.Query.FullName@: {
 	q.BaseQuery.Relations = append(q.BaseQuery.Relations, New@relation.FullName@:(q.BaseQuery.Runner))
 	return q
 }
