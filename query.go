@@ -262,6 +262,8 @@ func (q *BaseQuery) Builder() (*sq.SelectBuilder, error) {
 
 	sqQuery.PlaceholderFormat(sq.Dollar) // TODO(jota): To parametrize it.
 
+	q._modified = sqQuery
+
 	// If we have conditions to be added ...
 	if len(q.where) > 0 {
 		q.applyConditions(sqQuery)

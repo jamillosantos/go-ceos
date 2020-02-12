@@ -9,7 +9,7 @@ import (
 )
 
 var _ = Describe("Store", func() {
-	FDescribe("BaseStore", func() {
+	Describe("BaseStore", func() {
 		Context("Insert", func() {
 			BeforeEach(func() {
 				db.DBStart()

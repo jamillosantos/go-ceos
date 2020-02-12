@@ -11,6 +11,6 @@ func FieldAliasExample() {
 	userAlias := tests.Schema.User.As("u")
 	u := ceous.FieldAlias(userAlias)
 	field := u(tests.Schema.User.Name)
-	fmt.Println(field.Reference())
 	// It will print "u.Name"
+	fmt.Println(field)
 }

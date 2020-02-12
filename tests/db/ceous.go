@@ -5,9 +5,10 @@ package db
 import (
 	"context"
 	"database/sql"
+	time "time"
+
 	ceous "github.com/jamillosantos/go-ceous"
 	tests "github.com/jamillosantos/go-ceous/tests"
-	time "time"
 )
 
 type Creator interface {

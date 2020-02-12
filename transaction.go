@@ -3,6 +3,8 @@ package ceous
 import (
 	"context"
 	"database/sql"
+
+	sq "github.com/elgris/sqrl"
 )
 
 type (
@@ -44,7 +46,7 @@ func (tx *BaseTxRunner) QueryRow(query string, args ...interface{}) *sql.Row {
 	return tx.tx.QueryRow(query, args)
 }
 
-func (tx *BaseTxRunner) QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row {
+func (tx *BaseTxRunner) QueryRowContext(ctx context.Context, query string, args ...interface{}) sq.RowScanner {
 	return tx.tx.QueryRowContext(ctx, query, args...)
 }
 
